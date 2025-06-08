@@ -1,0 +1,118 @@
+.modalContainer {
+  max-width: 900px;
+  margin: 2rem auto;
+  padding: 1.5rem;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+}
+
+.backButton {
+  margin-bottom: 1rem;
+  background-color: #eee;
+  border: none;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.modalContent {
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.productImage {
+  width: 100%;
+  max-width: 320px;
+  height: auto;
+  object-fit: contain;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+}
+
+.productInfo {
+  flex: 1;
+  min-width: 250px;
+}
+
+.price {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+
+.attributeGroup {
+  margin-bottom: 1rem;
+}
+
+.attributeLabel {
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+.radioGroup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.radioLabel {
+  background-color: #f0f0f0;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.radioInput {
+  margin-right: 0.5rem;
+}
+
+.quantitySection {
+  margin-top: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.quantityLabel {
+  font-weight: bold;
+}
+
+.quantityButton {
+  width: 32px;
+  height: 32px;
+  background-color: #eee;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.disabledButton {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.quantityValue {
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+
+.addToCartButton {
+  margin-top: 1.5rem;
+  background-color: #6a0dad;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  cursor: pointer;
+  border-radius: 4px;
+  font-weight: bold;
+  font-size: 1rem;
+  transition: background 0.3s ease;
+}
+
+.addToCartButton:hover {
+  background-color: #581c9e;
+}

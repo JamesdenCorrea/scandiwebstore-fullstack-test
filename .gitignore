@@ -1,0 +1,19 @@
+# === FRONTEND ===
+node_modules/
+dist/
+.vite/
+.env
+.env.*
+
+# === BACKEND ===
+vendor/
+*.log
+.env
+
+# === GENERAL ===
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.idea/
+.vscode/
