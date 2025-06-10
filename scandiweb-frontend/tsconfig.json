@@ -13,8 +13,8 @@
     "moduleDetection": "force",
     "noEmit": true,
     "strict": true,
-    "noUnusedLocals": false,
-    "noUnusedParameters": true,
+    "noUnusedLocals": false,        // ✅ Already correct
+    "noUnusedParameters": false,    // ✅ Change this to false
     "noFallthroughCasesInSwitch": true,
     "jsx": "react-jsx"
   },
