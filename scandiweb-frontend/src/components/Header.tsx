@@ -37,14 +37,14 @@ export default function Header({
         <nav className="nav-categories" aria-label="Product Categories">
           <ul className="category-list">
             {categories.map((category) => {
-              const href = `/${category}`;
+              const href = `/${category.toLowerCase()}`;
               const isActive = location.pathname === href;
 
               return (
                 <li key={category}>
                   <Link
                     to={href}
-                    data-testid={category === 'all' ? 'category-link-all' : 'category-link'}
+                    data-testid={category.toLowerCase() === 'all' ? 'category-link-all' : 'category-link'}
                     className={`category-link ${isActive ? 'active' : ''}`}
                     aria-current={isActive ? 'page' : undefined}
                     aria-label={`Category ${category}`}

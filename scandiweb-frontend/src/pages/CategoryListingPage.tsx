@@ -1,4 +1,5 @@
-import React, { useState, useMemo, useEffect } from 'react';
+// src/pages/CategoryListingPage.tsx
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { gql, useQuery } from '@apollo/client';
 import { useParams, useNavigate } from 'react-router-dom';
 
@@ -76,8 +77,8 @@ const determineCategory = (productName: string): string => {
 
 export default function CategoryListingPage() {
   const { cartItems, addToCart } = useCart();
-  const [showCart, setShowCart] = useState<boolean>(false);
-  const [orderPlaced, setOrderPlaced] = useState<boolean>(false);
+  const [showCart, setShowCart] = useState(false);
+  const [orderPlaced, setOrderPlaced] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
   const { category = 'all' } = useParams<{ category: string }>();
@@ -137,6 +138,18 @@ export default function CategoryListingPage() {
     setShowCart(false);
     setTimeout(() => setOrderPlaced(false), 3000);
   };
+
+  const handleEscKey = useCallback((e: KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      if (showCart) setShowCart(false);
+      if (selectedProduct) setSelectedProduct(null);
+    }
+  }, [showCart, selectedProduct]);
+
+  useEffect(() => {
+    document.addEventListener('keydown', handleEscKey);
+    return () => document.removeEventListener('keydown', handleEscKey);
+  }, [handleEscKey]);
 
   return (
     <div className="category-listing-page">
