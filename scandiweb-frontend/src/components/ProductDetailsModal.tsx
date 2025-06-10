@@ -93,9 +93,18 @@ const ProductDetailsModal: React.FC<Props> = ({ product, onClose }) => {
   const hasLongDescription = product.description && product.description.length > 500;
 
   return (
-    <div className={styles.modalOverlay} onClick={handleOverlayClick} role="dialog" aria-modal="true">
+    <div
+      className={styles.modalOverlay}
+      onClick={handleOverlayClick}
+      role="dialog"
+      aria-modal="true"
+    >
       <div className={styles.modalContent}>
-        <button className={styles.closeButton} onClick={onClose} aria-label="Close">
+        <button
+          className={styles.closeButton}
+          onClick={onClose}
+          aria-label="Close"
+        >
           ✕
         </button>
 
@@ -118,20 +127,21 @@ const ProductDetailsModal: React.FC<Props> = ({ product, onClose }) => {
             </div>
 
             {product.description && (
-              <div className={styles.descriptionContainer}>
-                <h3 className={styles.sectionTitle}>Description</h3>
-                <div
-                  className={`${styles.productDescription} ${hasLongDescription && !isExpanded ? styles.collapsedDescription : ''}`}
-                  dangerouslySetInnerHTML={{ __html: product.description }}
-                />
-                {hasLongDescription && (
-                  <button 
-                    className={styles.readMoreButton}
-                    onClick={() => setIsExpanded(!isExpanded)}
-                  >
-                    {isExpanded ? 'Show Less' : 'Read More'}
-                  </button>
-                )}
+              <div className={styles.descriptionSection}>
+                <h4>Description:</h4>
+                <p>
+                  {hasLongDescription && !isExpanded
+                    ? `${product.description.slice(0, 500)}... `
+                    : product.description}
+                  {hasLongDescription && (
+                    <button
+                      onClick={() => setIsExpanded(!isExpanded)}
+                      className={styles.readMoreButton}
+                    >
+                      {isExpanded ? 'Show less' : 'Read more'}
+                    </button>
+                  )}
+                </p>
               </div>
             )}
 
@@ -142,7 +152,9 @@ const ProductDetailsModal: React.FC<Props> = ({ product, onClose }) => {
                   {values.map((value) => (
                     <button
                       key={value}
-                      className={`${styles.attributeOption} ${selectedAttributes[name] === value ? styles.selected : ''}`}
+                      className={`${styles.attributeOption} ${
+                        selectedAttributes[name] === value ? styles.selected : ''
+                      }`}
                       onClick={() => handleAttributeChange(name, value)}
                     >
                       {value}
@@ -155,16 +167,16 @@ const ProductDetailsModal: React.FC<Props> = ({ product, onClose }) => {
             <div className={styles.quantitySection}>
               <h3 className={styles.sectionTitle}>Quantity</h3>
               <div className={styles.quantityControl}>
-                <button 
-                  className={styles.quantityButton} 
+                <button
+                  className={styles.quantityButton}
                   onClick={() => setQuantity(q => Math.max(1, q - 1))}
                   aria-label="Decrease quantity"
                 >
                   −
                 </button>
                 <span className={styles.quantityValue}>{quantity}</span>
-                <button 
-                  className={styles.quantityButton} 
+                <button
+                  className={styles.quantityButton}
                   onClick={() => setQuantity(q => q + 1)}
                   aria-label="Increase quantity"
                 >

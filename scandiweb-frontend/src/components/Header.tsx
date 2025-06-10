@@ -1,4 +1,3 @@
-
 import './Header.css';
 
 type HeaderProps = {
@@ -21,7 +20,6 @@ export default function Header({
   return (
     <header className="header" role="banner">
       <div className="header-container">
-        {/* Logo/Brand */}
         <div className="logo-container">
           <div className="logo" aria-label="Site Logo">
             <svg className="logo-icon" viewBox="0 0 24 24">
@@ -32,7 +30,6 @@ export default function Header({
           </div>
         </div>
 
-        {/* Navigation Categories */}
         <nav className="nav-categories" aria-label="Product Categories">
           <ul className="category-list">
             {categories.map((category) => (
@@ -43,9 +40,7 @@ export default function Header({
                       ? 'active-category-link'
                       : 'category-link'
                   }
-                  className={`category-link ${
-                    activeCategory === category ? 'active' : ''
-                  }`}
+                  className={`category-link ${activeCategory === category ? 'active' : ''}`}
                   onClick={() => onCategoryChange(category)}
                   aria-current={activeCategory === category ? 'page' : undefined}
                   aria-label={`Category ${category}`}
@@ -58,7 +53,6 @@ export default function Header({
           </ul>
         </nav>
 
-        {/* Cart Button */}
         <div className="cart-container">
           <button
             className="cart-button"

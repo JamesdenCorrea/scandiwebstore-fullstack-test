@@ -1,4 +1,3 @@
-
 type Attribute = {
   name: string;
   value: string;
@@ -37,7 +36,7 @@ export default function ProductCard({ product, onAddToCart, onClickImage }: Prod
         padding: '1.2rem',
         width: '100%',
         maxWidth: '250px',
-        height: '360px', // Fixed height for consistency
+        height: '360px',
         backgroundColor: '#fff',
         opacity: inStock ? 1 : 0.6,
         transition: 'box-shadow 0.3s ease, transform 0.3s ease',
@@ -76,25 +75,25 @@ export default function ProductCard({ product, onAddToCart, onClickImage }: Prod
       />
 
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-        <h3 style={{ 
-          margin: '0.5rem 0', 
-          fontWeight: '600', 
-          fontSize: '1.1rem', 
+        <h3 style={{
+          margin: '0.5rem 0',
+          fontWeight: '600',
+          fontSize: '1.1rem',
           color: '#4b0082',
           overflow: 'hidden',
           textOverflow: 'ellipsis',
           display: '-webkit-box',
           WebkitLineClamp: 2,
-          WebkitBoxOrient: 'vertical'
+          WebkitBoxOrient: 'vertical',
         }}>
           {name}
         </h3>
 
-        <p style={{ 
-          fontWeight: '700', 
-          fontSize: '1.05rem', 
-          color: '#6a0dad', 
-          margin: '0.5rem 0 1rem'
+        <p style={{
+          fontWeight: '700',
+          fontSize: '1.05rem',
+          color: '#6a0dad',
+          margin: '0.5rem 0 1rem',
         }}>
           ${price.toFixed(2)}
         </p>

@@ -59,7 +59,7 @@ export default function CartOverlay({ onClose, onPlaceOrder }: Props) {
   return (
     <div className={styles.overlayContainer}>
       <div className={styles.overlayBackdrop} onClick={onClose} />
-      
+
       <div data-testid="cart-overlay" className={styles.overlay}>
         <div className={styles.header}>
           <h2 data-testid="cart-title" className={styles.title}>Your Shopping Cart</h2>
