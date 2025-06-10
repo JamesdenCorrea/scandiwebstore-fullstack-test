@@ -18,6 +18,7 @@ function App() {
             <Route path="/phones" element={<CategoryListingPage />} />
             <Route path="/accessories" element={<CategoryListingPage />} />
             <Route path="/product/:id" element={<ProductDetails />} />
+            <Route path="/:category?" element={<CategoryListingPage />} />
           </Route>
         </Routes>
       </Router>
