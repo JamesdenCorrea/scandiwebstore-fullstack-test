@@ -10,6 +10,8 @@ type Props = {
   onPlaceOrder: () => void;
 };
 
+const isHexColor = (str: string) => /^#([0-9A-F]{3}){1,2}$/i.test(str);
+
 export default function CartOverlay({ onClose, onPlaceOrder }: Props) {
   const { cartItems, removeFromCart, updateQuantity, clearCart } = useCart();
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
@@ -122,12 +124,23 @@ export default function CartOverlay({ onClose, onPlaceOrder }: Props) {
 
                     {item.selectedAttributes && (
                       <div className={styles.attributes}>
-                        {Object.entries(item.selectedAttributes).map(([key, value]) => (
-                          <div key={key} className={styles.attribute}>
-                            <span className={styles.attributeName}>{key}:</span>
-                            <span className={styles.attributeValue}>{value}</span>
-                          </div>
-                        ))}
+                        {Object.entries(item.selectedAttributes).map(([key, value]) => {
+                          const isColor = isHexColor(value);
+                          return (
+                            <div key={key} className={styles.attribute}>
+                              <span className={styles.attributeName}>{key}:</span>
+                              <span className={styles.attributeValue}>
+                                {isColor ? (
+                                  <span 
+                                    className={styles.colorSwatch} 
+                                    style={{ backgroundColor: value }}
+                                    title={value}
+                                  />
+                                ) : value}
+                              </span>
+                            </div>
+                          );
+                        })}
                       </div>
                     )}
 

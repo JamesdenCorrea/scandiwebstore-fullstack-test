@@ -26,6 +26,8 @@ type Props = {
   onClose: () => void;
 };
 
+const isHexColor = (str: string) => /^#([0-9A-F]{3}){1,2}$/i.test(str);
+
 const ProductDetailsModal: React.FC<Props> = ({ product, onClose }) => {
   const { addToCart } = useCart();
   const [quantity, setQuantity] = useState(1);
@@ -155,17 +157,22 @@ const ProductDetailsModal: React.FC<Props> = ({ product, onClose }) => {
               <div key={name} className={styles.attributeSection}>
                 <h3 className={styles.sectionTitle}>{name}</h3>
                 <div className={styles.attributeOptions}>
-                  {values.map((value) => (
-                    <button
-                      key={value}
-                      className={`${styles.attributeOption} ${
-                        selectedAttributes[name] === value ? styles.selected : ''
-                      }`}
-                      onClick={() => handleAttributeChange(name, value)}
-                    >
-                      {value}
-                    </button>
-                  ))}
+                  {values.map((value) => {
+                    const isColor = isHexColor(value);
+                    return (
+                      <button
+                        key={value}
+                        className={`${styles.attributeOption} ${
+                          selectedAttributes[name] === value ? styles.selected : ''
+                        } ${isColor ? styles.colorOption : ''}`}
+                        onClick={() => handleAttributeChange(name, value)}
+                        title={isColor ? value : undefined}
+                        style={isColor ? { backgroundColor: value } : undefined}
+                      >
+                        {!isColor && value}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             ))}
