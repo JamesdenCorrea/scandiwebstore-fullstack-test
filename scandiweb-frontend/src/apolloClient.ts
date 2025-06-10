@@ -1,7 +1,7 @@
 import { ApolloClient, InMemoryCache } from '@apollo/client';
 
 const client = new ApolloClient({
-  uri: 'https://appealing-nature-production.up.railway.app/graphql.php',
+  uri: 'http://localhost:8000/graphql.php',
   cache: new InMemoryCache(),
 });
 
