@@ -1,10 +1,13 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { gql, useQuery } from '@apollo/client';
+import { useParams, useNavigate } from 'react-router-dom';
+
 import Header from '../components/Header';
 import ProductCard from '../components/ProductCard';
 import CartOverlay from '../components/CartOverlay';
 import ProductDetailsModal from '../components/ProductDetailsModal';
 import { useCart } from '../context/CartContext';
+
 import './CategoryListingPage.css';
 
 const DESIRED_CATEGORIES = ['All', 'Consoles', 'Computers', 'Phones', 'Accessories'];
@@ -73,10 +76,21 @@ const determineCategory = (productName: string): string => {
 
 export default function CategoryListingPage() {
   const { cartItems, addToCart } = useCart();
-  const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [showCart, setShowCart] = useState<boolean>(false);
   const [orderPlaced, setOrderPlaced] = useState<boolean>(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+
+  const { category = 'all' } = useParams<{ category: string }>();
+  const navigate = useNavigate();
+
+  const selectedCategory = useMemo(() => {
+    const capitalized = category.charAt(0).toUpperCase() + category.slice(1).toLowerCase();
+    return DESIRED_CATEGORIES.includes(capitalized) ? capitalized : 'All';
+  }, [category]);
+
+  const handleCategoryChange = (newCategory: string) => {
+    navigate(`/${newCategory.toLowerCase()}`);
+  };
 
   const { loading, error, data } = useQuery(PRODUCTS_QUERY);
 
@@ -132,7 +146,7 @@ export default function CategoryListingPage() {
         title="Scandiweb Store"
         categories={DESIRED_CATEGORIES}
         activeCategory={selectedCategory}
-        onCategoryChange={setSelectedCategory}
+        onCategoryChange={handleCategoryChange}
       />
 
       <div className="page-content">

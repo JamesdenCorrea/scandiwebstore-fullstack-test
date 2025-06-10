@@ -20,11 +20,17 @@ type ProductCardProps = {
 };
 
 export default function ProductCard({ product, onAddToCart, onClickImage }: ProductCardProps) {
-  const { name, image, price, inStock } = product;
+  const { name, image, price, inStock, attributes } = product;
+
+  const hasAttributes = attributes && attributes.length > 0;
 
   const handleAddToCart = () => {
     if (!inStock) return;
-    onAddToCart?.();
+    if (hasAttributes) {
+      onClickImage?.(); // open modal for attribute selection
+    } else {
+      onAddToCart?.(); // add directly
+    }
   };
 
   return (
@@ -75,26 +81,30 @@ export default function ProductCard({ product, onAddToCart, onClickImage }: Prod
       />
 
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-        <h3 style={{
-          margin: '0.5rem 0',
-          fontWeight: '600',
-          fontSize: '1.1rem',
-          color: '#4b0082',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          display: '-webkit-box',
-          WebkitLineClamp: 2,
-          WebkitBoxOrient: 'vertical',
-        }}>
+        <h3
+          style={{
+            margin: '0.5rem 0',
+            fontWeight: '600',
+            fontSize: '1.1rem',
+            color: '#4b0082',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            display: '-webkit-box',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical',
+          }}
+        >
           {name}
         </h3>
 
-        <p style={{
-          fontWeight: '700',
-          fontSize: '1.05rem',
-          color: '#6a0dad',
-          margin: '0.5rem 0 1rem',
-        }}>
+        <p
+          style={{
+            fontWeight: '700',
+            fontSize: '1.05rem',
+            color: '#6a0dad',
+            margin: '0.5rem 0 1rem',
+          }}
+        >
           ${price.toFixed(2)}
         </p>
 
@@ -102,6 +112,7 @@ export default function ProductCard({ product, onAddToCart, onClickImage }: Prod
           <button
             onClick={handleAddToCart}
             disabled={!inStock}
+            title={!inStock ? 'Out of stock' : hasAttributes ? 'Select attributes' : 'Add to Cart'}
             style={{
               background: inStock ? '#6a0dad' : '#ccc',
               color: 'white',
@@ -116,7 +127,7 @@ export default function ProductCard({ product, onAddToCart, onClickImage }: Prod
               transition: 'background-color 0.3s ease, box-shadow 0.3s ease',
             }}
           >
-            {inStock ? 'Add to Cart' : 'Out of Stock'}
+            {inStock ? (hasAttributes ? 'Add to Cart' : 'Add to Cart') : 'Out of Stock'}
           </button>
         </div>
       </div>

@@ -32,6 +32,13 @@ const ProductDetailsModal: React.FC<Props> = ({ product, onClose }) => {
   const [selectedAttributes, setSelectedAttributes] = useState<Record<string, string>>({});
   const [isExpanded, setIsExpanded] = useState(false);
 
+  // Strip HTML tags from description for safer display
+  const plainDescription = useMemo(() => {
+    return product.description ? product.description.replace(/<[^>]+>/g, '') : '';
+  }, [product.description]);
+
+  const hasLongDescription = plainDescription.length > 500;
+
   const groupedAttributes = useMemo(() => {
     const map = new Map<string, Set<string>>();
     product.attributes.forEach(attr => {
@@ -90,8 +97,6 @@ const ProductDetailsModal: React.FC<Props> = ({ product, onClose }) => {
     }
   };
 
-  const hasLongDescription = product.description && product.description.length > 500;
-
   return (
     <div
       className={styles.modalOverlay}
@@ -126,22 +131,23 @@ const ProductDetailsModal: React.FC<Props> = ({ product, onClose }) => {
               </div>
             </div>
 
-            {product.description && (
-              <div className={styles.descriptionSection}>
-                <h4>Description:</h4>
-                <p>
+            {/* Improved description section with user-friendly layout */}
+            {plainDescription && (
+              <div className={styles.descriptionContainer}>
+                <h3 className={styles.sectionTitle}>Description</h3>
+                <div className={`${styles.productDescription} ${hasLongDescription && !isExpanded ? styles.collapsedDescription : ''}`}>
                   {hasLongDescription && !isExpanded
-                    ? `${product.description.slice(0, 500)}... `
-                    : product.description}
-                  {hasLongDescription && (
-                    <button
-                      onClick={() => setIsExpanded(!isExpanded)}
-                      className={styles.readMoreButton}
-                    >
-                      {isExpanded ? 'Show less' : 'Read more'}
-                    </button>
-                  )}
-                </p>
+                    ? `${plainDescription.slice(0, 500)}...`
+                    : plainDescription}
+                </div>
+                {hasLongDescription && (
+                  <button 
+                    className={styles.readMoreButton}
+                    onClick={() => setIsExpanded(!isExpanded)}
+                  >
+                    {isExpanded ? 'Show Less' : 'Read More'}
+                  </button>
+                )}
               </div>
             )}
 

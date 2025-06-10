@@ -1,4 +1,6 @@
+// src/components/Header.tsx
 import './Header.css';
+import { Link, useLocation } from 'react-router-dom';
 
 type HeaderProps = {
   categories: string[];
@@ -17,6 +19,8 @@ export default function Header({
   onCartClick,
   title = 'ScandiShop',
 }: HeaderProps) {
+  const location = useLocation();
+
   return (
     <header className="header" role="banner">
       <div className="header-container">
@@ -32,24 +36,25 @@ export default function Header({
 
         <nav className="nav-categories" aria-label="Product Categories">
           <ul className="category-list">
-            {categories.map((category) => (
-              <li key={category}>
-                <button
-                  data-testid={
-                    activeCategory === category
-                      ? 'active-category-link'
-                      : 'category-link'
-                  }
-                  className={`category-link ${activeCategory === category ? 'active' : ''}`}
-                  onClick={() => onCategoryChange(category)}
-                  aria-current={activeCategory === category ? 'page' : undefined}
-                  aria-label={`Category ${category}`}
-                  type="button"
-                >
-                  {category}
-                </button>
-              </li>
-            ))}
+            {categories.map((category) => {
+              const href = `/${category}`;
+              const isActive = location.pathname === href;
+
+              return (
+                <li key={category}>
+                  <Link
+                    to={href}
+                    data-testid={category === 'all' ? 'category-link-all' : 'category-link'}
+                    className={`category-link ${isActive ? 'active' : ''}`}
+                    aria-current={isActive ? 'page' : undefined}
+                    aria-label={`Category ${category}`}
+                    onClick={() => onCategoryChange(category)}
+                  >
+                    {category}
+                  </Link>
+                </li>
+              );
+            })}
           </ul>
         </nav>
 

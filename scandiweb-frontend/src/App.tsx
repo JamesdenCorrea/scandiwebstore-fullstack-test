@@ -1,18 +1,21 @@
-
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+// src/App.tsx
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { CartProvider } from './context/CartContext';
 
+import Layout from './components/Layout';
 import CategoryListingPage from './pages/CategoryListingPage';
-import ProductDetails from './pages/ProductDetails'; // import product page
+import ProductDetails from './pages/ProductDetails';
 
 function App() {
   return (
     <CartProvider>
       <Router>
         <Routes>
-          <Route path="/" element={<CategoryListingPage />} />
-          <Route path="/product/:id" element={<ProductDetails />} />
-          {/* other routes */}
+          <Route element={<Layout />}>
+            <Route path="/" element={<Navigate to="/all" />} />
+            <Route path="/:category" element={<CategoryListingPage />} />
+            <Route path="/product/:id" element={<ProductDetails />} />
+          </Route>
         </Routes>
       </Router>
     </CartProvider>

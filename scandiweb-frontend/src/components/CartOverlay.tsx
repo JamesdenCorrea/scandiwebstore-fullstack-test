@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useCart } from '../context/CartContext';
 import { gql, request } from 'graphql-request';
 import styles from './CartOverlay.module.css';
@@ -14,10 +14,21 @@ export default function CartOverlay({ onClose, onPlaceOrder }: Props) {
   const { cartItems, removeFromCart, updateQuantity, clearCart } = useCart();
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
   const [orderError, setOrderError] = useState<string | null>(null);
+  const [toast, setToast] = useState<string | null>(null);
 
   const total = cartItems
     .reduce((sum, item) => sum + item.price * item.quantity, 0)
     .toFixed(2);
+
+  useEffect(() => {
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, [onClose]);
 
   const handlePlaceOrder = async () => {
     setIsPlacingOrder(true);
@@ -47,6 +58,7 @@ export default function CartOverlay({ onClose, onPlaceOrder }: Props) {
     try {
       await request(GRAPHQL_ENDPOINT, mutation, { input: orderData });
       clearCart();
+      setToast('Order placed successfully!');
       onPlaceOrder();
     } catch (error) {
       console.error('Order failed:', error);
@@ -54,13 +66,15 @@ export default function CartOverlay({ onClose, onPlaceOrder }: Props) {
     } finally {
       setIsPlacingOrder(false);
     }
+
+    setTimeout(() => setToast(null), 3000);
   };
 
   return (
     <div className={styles.overlayContainer}>
       <div className={styles.overlayBackdrop} onClick={onClose} />
 
-      <div data-testid="cart-overlay" className={styles.overlay}>
+      <div data-testid="cart-overlay" className={`${styles.overlay} ${styles.fadeIn}`}>
         <div className={styles.header}>
           <h2 data-testid="cart-title" className={styles.title}>Your Shopping Cart</h2>
           <button
@@ -191,6 +205,12 @@ export default function CartOverlay({ onClose, onPlaceOrder }: Props) {
               </button>
             </div>
           </>
+        )}
+
+        {toast && (
+          <div className={styles.toast}>
+            {toast}
+          </div>
         )}
       </div>
     </div>
