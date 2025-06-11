@@ -66,6 +66,14 @@ const COLOR_NAMES: Record<string, string> = {
   // Add more color mappings as needed
 };
 
+// Function to get display value for an attribute
+const getDisplayValue = (type: string, value: string): string => {
+  if (type === 'color') {
+    return COLOR_NAMES[value] || value;
+  }
+  return value;
+};
+
 export default function ProductDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -235,36 +243,39 @@ export default function ProductDetails() {
               >
                 <h3 className={styles.attributeName}>{name}:</h3>
                 <div className={styles.attributeOptions}>
-                  {Array.from(attributeData.values).map(value => (
-                    <div
-                      key={value}
-                      className={`${styles.attributeOptionContainer} ${
-                        attributeData.type === 'color' ? styles.colorOptionContainer : ''
-                      }`}
-                    >
-                      <button
-                        className={`${styles.attributeOption} ${
-                          selectedAttributes[name] === value ? styles.selected : ''
-                        } ${attributeData.type === 'color' ? styles.colorOption : ''}`}
-                        onClick={() => handleAttributeChange(name, value)}
-                        data-testid={`product-attribute-${toKebabCase(name)}-${toKebabCase(value)}`}
+                  {Array.from(attributeData.values).map(value => {
+                    const displayValue = getDisplayValue(attributeData.type, value);
+                    return (
+                      <div
+                        key={value}
+                        className={`${styles.attributeOptionContainer} ${
+                          attributeData.type === 'color' ? styles.colorOptionContainer : ''
+                        }`}
                       >
-                        {attributeData.type === 'color' ? (
-                          <span 
-                            className={styles.colorSwatch} 
-                            style={{ backgroundColor: value }}
-                          />
-                        ) : (
-                          value
+                        <button
+                          className={`${styles.attributeOption} ${
+                            selectedAttributes[name] === value ? styles.selected : ''
+                          } ${attributeData.type === 'color' ? styles.colorOption : ''}`}
+                          onClick={() => handleAttributeChange(name, value)}
+                          data-testid={`product-attribute-${toKebabCase(name)}-${toKebabCase(displayValue)}`}
+                        >
+                          {attributeData.type === 'color' ? (
+                            <span 
+                              className={styles.colorSwatch} 
+                              style={{ backgroundColor: value }}
+                            />
+                          ) : (
+                            displayValue
+                          )}
+                        </button>
+                        {attributeData.type === 'color' && (
+                          <span className={styles.colorName}>
+                            {displayValue}
+                          </span>
                         )}
-                      </button>
-                      {attributeData.type === 'color' && (
-                        <span className={styles.colorName}>
-                          {COLOR_NAMES[value] || value}
-                        </span>
-                      )}
-                    </div>
-                  ))}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             ))}

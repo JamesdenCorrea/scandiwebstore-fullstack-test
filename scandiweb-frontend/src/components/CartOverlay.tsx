@@ -80,7 +80,7 @@ export default function CartOverlay({ onClose, onPlaceOrder }: Props) {
         data-testid="cart-overlay-backdrop"
       />
 
-      <div data-testid="cart-overlay" className={`${styles.overlay}`}>
+      <div data-testid="cart-overlay" className={styles.overlay}>
         <div className={styles.header}>
           <h2 data-testid="cart-title" className={styles.title}>Your Shopping Cart</h2>
           <button
@@ -114,23 +114,33 @@ export default function CartOverlay({ onClose, onPlaceOrder }: Props) {
 
                   <div className={styles.itemInfo}>
                     <div className={styles.itemHeader}>
-                      <h3 data-testid={`cart-item-name-${index}`} className={styles.itemName}>{item.name}</h3>
-                      <span data-testid={`cart-item-price-${index}`} className={styles.itemPrice}>${(item.price * item.quantity).toFixed(2)}</span>
+                      <h3 className={styles.itemName}>{item.name}</h3>
+                      <span className={styles.itemPrice}>${(item.price * item.quantity).toFixed(2)}</span>
                     </div>
 
                     {item.selectedAttributes && (
                       <div className={styles.attributes}>
                         {Object.entries(item.selectedAttributes).map(([key, value]) => {
+                          const attrKey = key.toLowerCase().replace(/\s+/g, '-');
+                          const attrValue = value.toLowerCase().replace(/\s+/g, '-');
                           const isColor = isHexColor(value);
                           return (
-                            <div key={key} className={styles.attribute}>
+                            <div 
+                              key={key}
+                              data-testid={`cart-item-attribute-${attrKey}`}
+                              className={styles.attribute}
+                            >
                               <span className={styles.attributeName}>{key}:</span>
-                              <span className={styles.attributeValue}>
+                              <span 
+                                className={styles.attributeValue}
+                                data-testid={`cart-item-attribute-${attrKey}-${attrValue}`}
+                              >
                                 {isColor ? (
                                   <span
                                     className={styles.colorSwatchOnly}
                                     style={{ backgroundColor: value }}
                                     title={value}
+                                    data-testid={`cart-item-attribute-${attrKey}-${value.replace('#', '')}`}
                                   />
                                 ) : (
                                   value
@@ -144,7 +154,7 @@ export default function CartOverlay({ onClose, onPlaceOrder }: Props) {
 
                     <div className={styles.quantityControls}>
                       <button
-                        data-testid={`decrease-quantity-${index}`}
+                        data-testid="cart-item-amount-decrease"
                         onClick={() => updateQuantity(item.id, item.selectedAttributes, item.quantity - 1)}
                         disabled={item.quantity <= 1}
                         className={styles.quantityButton}
@@ -152,11 +162,11 @@ export default function CartOverlay({ onClose, onPlaceOrder }: Props) {
                       >
                         −
                       </button>
-                      <span data-testid={`item-quantity-${index}`} className={styles.quantityValue}>
+                      <span data-testid="cart-item-amount" className={styles.quantityValue}>
                         {item.quantity}
                       </span>
                       <button
-                        data-testid={`increase-quantity-${index}`}
+                        data-testid="cart-item-amount-increase"
                         onClick={() => updateQuantity(item.id, item.selectedAttributes, item.quantity + 1)}
                         className={styles.quantityButton}
                         aria-label="Increase quantity"
@@ -167,7 +177,6 @@ export default function CartOverlay({ onClose, onPlaceOrder }: Props) {
                   </div>
 
                   <button
-                    data-testid={`remove-item-${index}`}
                     onClick={() => removeFromCart(item.id, item.selectedAttributes)}
                     className={styles.removeButton}
                     aria-label="Remove item"
