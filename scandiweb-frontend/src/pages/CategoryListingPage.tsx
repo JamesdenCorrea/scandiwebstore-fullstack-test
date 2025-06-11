@@ -1,5 +1,6 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { gql, useQuery } from '@apollo/client';
+import { useLocation } from 'react-router-dom';
 import Header from '../components/Header';
 import ProductCard from '../components/ProductCard';
 import CartOverlay from '../components/CartOverlay';
@@ -7,7 +8,7 @@ import ProductDetailsModal from '../components/ProductDetailsModal';
 import { useCart } from '../context/CartContext';
 import './CategoryListingPage.css';
 
-const DESIRED_CATEGORIES = ['All', 'Consoles', 'Computers', 'Phones', 'Accessories'];
+const DESIRED_CATEGORIES = ['All', 'Clothes', 'Tech'];
 
 export type Attribute = {
   name: string;
@@ -23,6 +24,7 @@ export type Product = {
   type: string;
   attributes: Attribute[];
   category: string;
+  brand: string;
   image_url: string;
   image: string;
   inStock: boolean;
@@ -35,48 +37,49 @@ type RawProduct = {
   name: string;
   price: number;
   type: string;
-  attributes: Attribute[];
   category: string;
+  brand: string;
   image_url: string;
   in_stock: number;
   description?: string;
+  attributes: Attribute[];
 };
 
 const PRODUCTS_QUERY = gql`
-  query Products {
+  query FreshProducts {
     products {
       id
       sku
       name
       price
       type
+      category
+      image_url
+      in_stock
+      description
       attributes {
         name
         value
         type
       }
-      category
-      image_url
-      in_stock
-      description
     }
   }
 `;
 
-const determineCategory = (productName: string): string => {
-  const lowerName = productName.toLowerCase();
-  if (/playstation|ps5|ps4|xbox|nintendo|console/.test(lowerName)) return 'Consoles';
-  if (/imac|macbook|mac pro|computer|pc|desktop|laptop/.test(lowerName)) return 'Computers';
-  if (/iphone|galaxy|pixel|phone|smartphone|mobile/.test(lowerName)) return 'Phones';
-  return 'Accessories';
-};
-
 export default function CategoryListingPage() {
   const { cartItems, addToCart } = useCart();
-  const [selectedCategory, setSelectedCategory] = useState<string>('All');
+  const location = useLocation();
   const [showCart, setShowCart] = useState<boolean>(false);
   const [orderPlaced, setOrderPlaced] = useState<boolean>(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const toggleCart = () => setShowCart(prev => !prev);
+
+  const pathSegments = location.pathname.split('/').filter(Boolean);
+  const currentCategory = pathSegments[0] || 'all';
+
+  const selectedCategory = currentCategory === 'all' 
+    ? 'All' 
+    : currentCategory.charAt(0).toUpperCase() + currentCategory.slice(1);
 
   const { loading, error, data } = useQuery(PRODUCTS_QUERY);
 
@@ -85,18 +88,35 @@ export default function CategoryListingPage() {
     return data.products.map((p: RawProduct) => {
       const fallbackImage = 'https://via.placeholder.com/300';
       return {
-        ...p,
-        category: determineCategory(p.name),
+        id: p.id,
+        sku: p.sku,
+        name: p.name,
+        price: p.price,
+        type: p.type,
+        category: p.category,
+        brand: p.brand ?? '',
         image_url: p.image_url || fallbackImage,
         image: p.image_url || fallbackImage,
         inStock: p.in_stock > 0,
+        description: p.description,
+        attributes: p.attributes || [],
       };
     });
   }, [data]);
 
   const filteredProducts = useMemo(() => {
     if (selectedCategory === 'All') return products;
-    return products.filter((p) => p.category === selectedCategory);
+
+    const categoryMap: Record<string, string> = {
+      'Clothes': 'clothes',
+      'Tech': 'tech'
+    };
+
+    const dbCategory = categoryMap[selectedCategory] || selectedCategory.toLowerCase();
+
+    return products.filter((p) =>
+      p.category.toLowerCase() === dbCategory.toLowerCase()
+    );
   }, [products, selectedCategory]);
 
   const handleAddToCart = (product: Product) => {
@@ -116,8 +136,6 @@ export default function CategoryListingPage() {
     }
   };
 
-  const handleCartClose = () => setShowCart(false);
-
   const handleOrderPlaced = () => {
     setOrderPlaced(true);
     setShowCart(false);
@@ -127,12 +145,14 @@ export default function CategoryListingPage() {
   return (
     <div className="category-listing-page">
       <Header
-        onCartClick={() => setShowCart(true)}
+        onCartClick={toggleCart}
         cartItemCount={cartItems.length}
         title="Scandiweb Store"
         categories={DESIRED_CATEGORIES}
         activeCategory={selectedCategory}
-        onCategoryChange={setSelectedCategory}
+        onCategoryChange={(category) => {
+          console.log('Category changed to:', category);
+        }}
       />
 
       <div className="page-content">
@@ -166,7 +186,10 @@ export default function CategoryListingPage() {
         </main>
 
         {showCart && (
-          <CartOverlay onClose={handleCartClose} onPlaceOrder={handleOrderPlaced} />
+          <CartOverlay 
+            onClose={() => setShowCart(false)} 
+            onPlaceOrder={handleOrderPlaced} 
+          />
         )}
 
         {selectedProduct && (

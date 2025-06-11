@@ -19,7 +19,9 @@ type Product = {
   image_url: string;
   description?: string;
   inStock: boolean;
+  brand?: string; // ✅ Add this
 };
+
 
 type Props = {
   product: Product;
@@ -125,13 +127,22 @@ const ProductDetailsModal: React.FC<Props> = ({ product, onClose }) => {
           </div>
 
           <div className={styles.productInfo}>
-            <div className={styles.productHeader}>
-              <h2 className={styles.productName}>{product.name}</h2>
-              <p className={styles.productPrice}>${product.price.toFixed(2)}</p>
-              <div className={`${styles.stockStatus} ${product.inStock ? styles.inStock : styles.outOfStock}`}>
-                {product.inStock ? 'In Stock' : 'Out of Stock'}
-              </div>
-            </div>
+           <div className={styles.productHeader}>
+  <h2 className={styles.productName}>{product.name}</h2>
+
+  {product.brand && (
+    <p className={styles.productBrand}>
+      <strong>Brand:</strong> {product.brand}
+    </p>
+  )}
+
+  <p className={styles.productPrice}>${product.price.toFixed(2)}</p>
+
+  <div className={`${styles.stockStatus} ${product.inStock ? styles.inStock : styles.outOfStock}`}>
+    {product.inStock ? 'In Stock' : 'Out of Stock'}
+  </div>
+</div>
+
 
             {/* Improved description section with user-friendly layout */}
             {plainDescription && (

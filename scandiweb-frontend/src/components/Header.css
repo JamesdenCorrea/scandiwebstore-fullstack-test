@@ -17,7 +17,7 @@ html, body {
 .header {
   position: sticky;
   top: 0;
-  z-index: 1000;
+  z-index: 100;
   background: linear-gradient(135deg, #f9f5ff 0%, #f0e6ff 50%, #ffffff 100%);
   border-bottom: 1px solid #e9d8fd;
   box-shadow: 0 4px 12px rgba(106, 13, 173, 0.08);

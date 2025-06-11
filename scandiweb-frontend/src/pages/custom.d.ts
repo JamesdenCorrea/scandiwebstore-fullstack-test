@@ -1,10 +1,9 @@
-declare module './Header.jsx' {
+declare module './Header'; 
   const Header: React.FC<any>;
   export default Header;
-}
 
-declare module './ProductCard.jsx' {
+
+declare module './ProductCard';
 
   const ProductCard: React.FC<any>;
   export default ProductCard;
-}

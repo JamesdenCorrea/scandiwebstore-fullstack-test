@@ -6,12 +6,18 @@ type Attribute = {
 
 type Product = {
   id: string;
+  sku: string;
   name: string;
-  image: string;
   price: number;
-  inStock: boolean;
+  type: string;
   attributes: Attribute[];
+  category: string;
+  image: string;
+  description?: string;
+  inStock: boolean;
+  brand?: string; // 👈 Add this
 };
+
 
 type ProductCardProps = {
   product: Product;
@@ -96,6 +102,21 @@ export default function ProductCard({ product, onAddToCart, onClickImage }: Prod
         >
           {name}
         </h3>
+        {product.brand && (
+  <p
+    style={{
+      fontSize: '0.9rem',
+      color: '#666',
+      margin: '-0.4rem 0 0.5rem',
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+      whiteSpace: 'nowrap',
+    }}
+  >
+    by {product.brand}
+  </p>
+)}
+
 
         <p
           style={{

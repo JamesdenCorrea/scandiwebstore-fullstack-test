@@ -232,4 +232,12 @@
     width: 60%;
     padding: 0;
   }
+.productBrand {
+  font-size: 1rem;
+  color: #666;
+  margin-top: -8px;
+  margin-bottom: 12px;
+  font-weight: 500;
+}
+
 }
