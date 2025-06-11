@@ -240,4 +240,26 @@
   font-weight: 500;
 }
 
+.thumbnailContainer {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.thumbnail {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: border 0.3s ease;
+}
+
+.activeThumbnail {
+  border-color: #000;
+}
+
 }

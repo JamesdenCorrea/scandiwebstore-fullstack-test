@@ -1,17 +1,20 @@
 import { ApolloClient, InMemoryCache } from '@apollo/client';
 
-const cache = new InMemoryCache();
+// Switch based on hostname or environment variable
+const isLocalhost = window.location.hostname === 'localhost';
 
 const client = new ApolloClient({
-  uri: 'https://appealing-nature-production.up.railway.app/graphql.php',
-  cache,
+  uri: isLocalhost
+    ? 'http://localhost:8000/graphql.php'
+    : 'https://appealing-nature-production.up.railway.app/graphql.php',
+  cache: new InMemoryCache(),
   defaultOptions: {
     watchQuery: {
-      fetchPolicy: 'no-cache',   // ⬅️ always fetch fresh schema/data
+      fetchPolicy: 'no-cache',
       errorPolicy: 'all',
     },
     query: {
-      fetchPolicy: 'no-cache',   // ⬅️ prevents use of old cache
+      fetchPolicy: 'no-cache',
       errorPolicy: 'all',
     },
   },

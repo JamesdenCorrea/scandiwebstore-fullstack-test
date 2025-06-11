@@ -17,11 +17,11 @@ type Product = {
   attributes: Attribute[];
   category: string;
   image_url: string;
+  gallery: string[]; // ✅ Add this
   description?: string;
   inStock: boolean;
-  brand?: string; // ✅ Add this
+  brand?: string;
 };
-
 
 type Props = {
   product: Product;
@@ -35,8 +35,8 @@ const ProductDetailsModal: React.FC<Props> = ({ product, onClose }) => {
   const [quantity, setQuantity] = useState(1);
   const [selectedAttributes, setSelectedAttributes] = useState<Record<string, string>>({});
   const [isExpanded, setIsExpanded] = useState(false);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0); // ✅ Track selected gallery image
 
-  // Strip HTML tags from description for safer display
   const plainDescription = useMemo(() => {
     return product.description ? product.description.replace(/<[^>]+>/g, '') : '';
   }, [product.description]);
@@ -67,13 +67,11 @@ const ProductDetailsModal: React.FC<Props> = ({ product, onClose }) => {
     });
     setSelectedAttributes(initial);
     setQuantity(1);
+    setSelectedImageIndex(0); // ✅ Reset image when modal opens
   }, [groupedAttributes]);
 
   const handleAttributeChange = (name: string, value: string) => {
-    setSelectedAttributes(prev => ({
-      ...prev,
-      [name]: value,
-    }));
+    setSelectedAttributes(prev => ({ ...prev, [name]: value }));
   };
 
   const handleAddToCart = () => {
@@ -86,7 +84,7 @@ const ProductDetailsModal: React.FC<Props> = ({ product, onClose }) => {
       price: product.price,
       attributes: product.attributes,
       category: product.category,
-      image: product.image_url || 'https://via.placeholder.com/300',
+      image: product.gallery?.[selectedImageIndex] || product.image_url,
       inStock: product.inStock,
       quantity,
       selectedAttributes,
@@ -96,55 +94,47 @@ const ProductDetailsModal: React.FC<Props> = ({ product, onClose }) => {
   };
 
   const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (e.target === e.currentTarget) {
-      onClose();
-    }
+    if (e.target === e.currentTarget) onClose();
   };
 
   return (
-    <div
-      className={styles.modalOverlay}
-      onClick={handleOverlayClick}
-      role="dialog"
-      aria-modal="true"
-    >
+    <div className={styles.modalOverlay} onClick={handleOverlayClick} role="dialog" aria-modal="true">
       <div className={styles.modalContent}>
-        <button
-          className={styles.closeButton}
-          onClick={onClose}
-          aria-label="Close"
-        >
-          ✕
-        </button>
+        <button className={styles.closeButton} onClick={onClose} aria-label="Close">✕</button>
 
         <div className={styles.modalBody}>
           <div className={styles.imageContainer}>
             <img
-              src={product.image_url || 'https://via.placeholder.com/300'}
+              src={product.gallery?.[selectedImageIndex] || product.image_url}
               alt={product.name}
               className={styles.productImage}
             />
+
+            {product.gallery?.length > 1 && (
+              <div className={styles.thumbnailContainer}>
+                {product.gallery.map((url, idx) => (
+                  <img
+                    key={idx}
+                    src={url}
+                    alt={`Thumbnail ${idx + 1}`}
+                    className={`${styles.thumbnail} ${selectedImageIndex === idx ? styles.activeThumbnail : ''}`}
+                    onClick={() => setSelectedImageIndex(idx)}
+                  />
+                ))}
+              </div>
+            )}
           </div>
 
           <div className={styles.productInfo}>
-           <div className={styles.productHeader}>
-  <h2 className={styles.productName}>{product.name}</h2>
+            <div className={styles.productHeader}>
+              <h2 className={styles.productName}>{product.name}</h2>
+              {product.brand && <p className={styles.productBrand}><strong>Brand:</strong> {product.brand}</p>}
+              <p className={styles.productPrice}>${product.price.toFixed(2)}</p>
+              <div className={`${styles.stockStatus} ${product.inStock ? styles.inStock : styles.outOfStock}`}>
+                {product.inStock ? 'In Stock' : 'Out of Stock'}
+              </div>
+            </div>
 
-  {product.brand && (
-    <p className={styles.productBrand}>
-      <strong>Brand:</strong> {product.brand}
-    </p>
-  )}
-
-  <p className={styles.productPrice}>${product.price.toFixed(2)}</p>
-
-  <div className={`${styles.stockStatus} ${product.inStock ? styles.inStock : styles.outOfStock}`}>
-    {product.inStock ? 'In Stock' : 'Out of Stock'}
-  </div>
-</div>
-
-
-            {/* Improved description section with user-friendly layout */}
             {plainDescription && (
               <div className={styles.descriptionContainer}>
                 <h3 className={styles.sectionTitle}>Description</h3>
@@ -154,10 +144,7 @@ const ProductDetailsModal: React.FC<Props> = ({ product, onClose }) => {
                     : plainDescription}
                 </div>
                 {hasLongDescription && (
-                  <button 
-                    className={styles.readMoreButton}
-                    onClick={() => setIsExpanded(!isExpanded)}
-                  >
+                  <button className={styles.readMoreButton} onClick={() => setIsExpanded(!isExpanded)}>
                     {isExpanded ? 'Show Less' : 'Read More'}
                   </button>
                 )}
@@ -173,9 +160,7 @@ const ProductDetailsModal: React.FC<Props> = ({ product, onClose }) => {
                     return (
                       <button
                         key={value}
-                        className={`${styles.attributeOption} ${
-                          selectedAttributes[name] === value ? styles.selected : ''
-                        } ${isColor ? styles.colorOption : ''}`}
+                        className={`${styles.attributeOption} ${selectedAttributes[name] === value ? styles.selected : ''} ${isColor ? styles.colorOption : ''}`}
                         onClick={() => handleAttributeChange(name, value)}
                         title={isColor ? value : undefined}
                         style={isColor ? { backgroundColor: value } : undefined}
@@ -191,21 +176,9 @@ const ProductDetailsModal: React.FC<Props> = ({ product, onClose }) => {
             <div className={styles.quantitySection}>
               <h3 className={styles.sectionTitle}>Quantity</h3>
               <div className={styles.quantityControl}>
-                <button
-                  className={styles.quantityButton}
-                  onClick={() => setQuantity(q => Math.max(1, q - 1))}
-                  aria-label="Decrease quantity"
-                >
-                  −
-                </button>
+                <button className={styles.quantityButton} onClick={() => setQuantity(q => Math.max(1, q - 1))}>−</button>
                 <span className={styles.quantityValue}>{quantity}</span>
-                <button
-                  className={styles.quantityButton}
-                  onClick={() => setQuantity(q => q + 1)}
-                  aria-label="Increase quantity"
-                >
-                  +
-                </button>
+                <button className={styles.quantityButton} onClick={() => setQuantity(q => q + 1)}>+</button>
               </div>
             </div>
 

@@ -41,6 +41,7 @@ export default function ProductCard({ product, onAddToCart, onClickImage }: Prod
 
   return (
     <div
+     data-testid={`product-${product.name.toLowerCase().replace(/\s+/g, '-')}`}
       style={{
         border: '1px solid #ddd',
         boxShadow: '0 4px 12px rgba(106, 13, 173, 0.15)',

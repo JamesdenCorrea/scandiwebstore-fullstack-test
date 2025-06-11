@@ -40,17 +40,19 @@ export default function Header({
           </Link>
         </div>
 
-        {/* Categories nav */}
+       {/* Categories nav - UPDATED FOR TEST IDS */}
         <nav className="nav-categories" aria-label="Product Categories">
           <ul className="category-list">
             {categories.map((category) => {
               const href = category === 'All' ? '/all' : `/${category.toLowerCase()}`;
               const isActive = location.pathname === href;
+              const kebabCategory = category.toLowerCase().replace(/\s+/g, '-');
+              
               return (
                 <li key={category}>
                   <Link
                     to={href}
-                    data-testid={category.toLowerCase() === 'all' ? 'category-link-all' : `category-link-${category.toLowerCase()}`}
+                    data-testid={isActive ? 'active-category-link' : 'category-link'}
                     className={`category-link ${isActive ? 'active' : ''}`}
                     aria-current={isActive ? 'page' : undefined}
                     aria-label={`Category ${category}`}
@@ -63,6 +65,7 @@ export default function Header({
             })}
           </ul>
         </nav>
+
 
         {/* Cart button */}
         <div className="cart-container">

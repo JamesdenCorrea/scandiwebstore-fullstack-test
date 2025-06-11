@@ -1,10 +1,9 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { gql, useQuery } from '@apollo/client';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import ProductCard from '../components/ProductCard';
 import CartOverlay from '../components/CartOverlay';
-import ProductDetailsModal from '../components/ProductDetailsModal';
 import { useCart } from '../context/CartContext';
 import './CategoryListingPage.css';
 
@@ -29,6 +28,7 @@ export type Product = {
   image: string;
   inStock: boolean;
   description?: string;
+  gallery: string[];
 };
 
 type RawProduct = {
@@ -43,6 +43,7 @@ type RawProduct = {
   in_stock: number;
   description?: string;
   attributes: Attribute[];
+  gallery: string[];
 };
 
 const PRODUCTS_QUERY = gql`
@@ -54,9 +55,11 @@ const PRODUCTS_QUERY = gql`
       price
       type
       category
+      brand
       image_url
       in_stock
       description
+      gallery
       attributes {
         name
         value
@@ -69,24 +72,29 @@ const PRODUCTS_QUERY = gql`
 export default function CategoryListingPage() {
   const { cartItems, addToCart } = useCart();
   const location = useLocation();
-  const [showCart, setShowCart] = useState<boolean>(false);
-  const [orderPlaced, setOrderPlaced] = useState<boolean>(false);
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const toggleCart = () => setShowCart(prev => !prev);
+  const navigate = useNavigate();
+  const [showCart, setShowCart] = useState(false);
+  const [orderPlaced, setOrderPlaced] = useState(false);
 
   const pathSegments = location.pathname.split('/').filter(Boolean);
   const currentCategory = pathSegments[0] || 'all';
 
-  const selectedCategory = currentCategory === 'all' 
-    ? 'All' 
+  const selectedCategory = currentCategory === 'all'
+    ? 'All'
     : currentCategory.charAt(0).toUpperCase() + currentCategory.slice(1);
 
   const { loading, error, data } = useQuery(PRODUCTS_QUERY);
 
   const products: Product[] = useMemo(() => {
     if (!data?.products) return [];
+
     return data.products.map((p: RawProduct) => {
       const fallbackImage = 'https://via.placeholder.com/300';
+      const gallery = p.gallery && p.gallery.length > 0 ? p.gallery : [p.image_url || fallbackImage];
+
+      // Create unique gallery without duplicates
+      const uniqueGallery = Array.from(new Set([p.image_url, ...gallery]));
+
       return {
         id: p.id,
         sku: p.sku,
@@ -100,28 +108,21 @@ export default function CategoryListingPage() {
         inStock: p.in_stock > 0,
         description: p.description,
         attributes: p.attributes || [],
+        gallery: uniqueGallery,
       };
     });
   }, [data]);
 
   const filteredProducts = useMemo(() => {
     if (selectedCategory === 'All') return products;
-
-    const categoryMap: Record<string, string> = {
-      'Clothes': 'clothes',
-      'Tech': 'tech'
-    };
-
-    const dbCategory = categoryMap[selectedCategory] || selectedCategory.toLowerCase();
-
-    return products.filter((p) =>
-      p.category.toLowerCase() === dbCategory.toLowerCase()
+    return products.filter(
+      (p) => p.category.toLowerCase() === selectedCategory.toLowerCase()
     );
   }, [products, selectedCategory]);
 
   const handleAddToCart = (product: Product) => {
     if (!product.inStock) {
-      setSelectedProduct(product);
+      navigate(`/product/${product.id}`, { state: { background: location } });
       return;
     }
 
@@ -130,10 +131,15 @@ export default function CategoryListingPage() {
         ...product,
         quantity: 1,
         selectedAttributes: {},
+        image: product.image_url,
       });
     } else {
-      setSelectedProduct(product);
+      navigate(`/product/${product.id}`, { state: { background: location } });
     }
+  };
+
+  const handleImageClick = (product: Product) => {
+    navigate(`/product/${product.id}`, { state: { background: location } });
   };
 
   const handleOrderPlaced = () => {
@@ -145,14 +151,12 @@ export default function CategoryListingPage() {
   return (
     <div className="category-listing-page">
       <Header
-        onCartClick={toggleCart}
+        onCartClick={() => setShowCart(prev => !prev)}
         cartItemCount={cartItems.length}
         title="Scandiweb Store"
         categories={DESIRED_CATEGORIES}
         activeCategory={selectedCategory}
-        onCategoryChange={(category) => {
-          console.log('Category changed to:', category);
-        }}
+        onCategoryChange={(category) => console.log('Category changed to:', category)}
       />
 
       <div className="page-content">
@@ -167,8 +171,16 @@ export default function CategoryListingPage() {
           </div>
         )}
 
-        {loading && <p data-testid="loading-msg" className="status-message">Loading products...</p>}
-        {error && <p data-testid="error-msg" className="status-message error">Error loading products: {error.message}</p>}
+        {loading && (
+          <p data-testid="loading-msg" className="status-message">
+            Loading products...
+          </p>
+        )}
+        {error && (
+          <p data-testid="error-msg" className="status-message error">
+            Error loading products: {error.message}
+          </p>
+        )}
 
         <main data-testid="products-grid" className="products-grid">
           {filteredProducts.length === 0 && !loading && (
@@ -180,22 +192,15 @@ export default function CategoryListingPage() {
               key={product.id}
               product={product}
               onAddToCart={() => handleAddToCart(product)}
-              onClickImage={() => setSelectedProduct(product)}
+              onClickImage={() => handleImageClick(product)}
             />
           ))}
         </main>
 
         {showCart && (
-          <CartOverlay 
-            onClose={() => setShowCart(false)} 
-            onPlaceOrder={handleOrderPlaced} 
-          />
-        )}
-
-        {selectedProduct && (
-          <ProductDetailsModal
-            product={selectedProduct}
-            onClose={() => setSelectedProduct(null)}
+          <CartOverlay
+            onClose={() => setShowCart(false)}
+            onPlaceOrder={handleOrderPlaced}
           />
         )}
       </div>
