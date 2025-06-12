@@ -122,7 +122,7 @@ export default function CategoryListingPage() {
 
   const handleAddToCart = (product: Product) => {
     if (!product.inStock) {
-      navigate(`/product/${product.id}`, { state: { background: location } });
+      navigate(`/product/${product.id}`);
       return;
     }
 
@@ -134,12 +134,12 @@ export default function CategoryListingPage() {
         image: product.image_url,
       });
     } else {
-      navigate(`/product/${product.id}`, { state: { background: location } });
+      navigate(`/product/${product.id}`);
     }
   };
 
-  const handleImageClick = (product: Product) => {
-    navigate(`/product/${product.id}`, { state: { background: location } });
+  const handleImageClick = (productId: string) => {
+    navigate(`/product/${productId}`);
   };
 
   const handleOrderPlaced = () => {
@@ -156,7 +156,7 @@ export default function CategoryListingPage() {
         title="Scandiweb Store"
         categories={DESIRED_CATEGORIES}
         activeCategory={selectedCategory}
-        onCategoryChange={(category) => console.log('Category changed to:', category)}
+        onCategoryChange={(category) => navigate(`/${category.toLowerCase()}`)}
       />
 
       <div className="page-content">
@@ -192,7 +192,7 @@ export default function CategoryListingPage() {
               key={product.id}
               product={product}
               onAddToCart={() => handleAddToCart(product)}
-              onClickImage={() => handleImageClick(product)}
+              onClickImage={() => handleImageClick(product.id)}
             />
           ))}
         </main>

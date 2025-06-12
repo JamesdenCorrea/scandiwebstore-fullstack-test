@@ -12,6 +12,15 @@ type Props = {
 
 const isHexColor = (str: string) => /^#([0-9A-F]{3}){1,2}$/i.test(str);
 
+// Map of hex codes to color names
+const COLOR_NAMES: Record<string, string> = {
+  '#000000': 'Black',
+  '#030BFF': 'Blue',
+  '#03FFF7': 'Cyan',
+  '#44FF03': 'Green',
+  '#FFFFFF': 'White',
+};
+
 export default function CartOverlay({ onClose, onPlaceOrder }: Props) {
   const { cartItems, removeFromCart, updateQuantity, clearCart } = useCart();
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
@@ -122,8 +131,11 @@ export default function CartOverlay({ onClose, onPlaceOrder }: Props) {
                       <div className={styles.attributes}>
                         {Object.entries(item.selectedAttributes).map(([key, value]) => {
                           const attrKey = key.toLowerCase().replace(/\s+/g, '-');
-                          const attrValue = value.toLowerCase().replace(/\s+/g, '-');
+                          const displayValue = COLOR_NAMES[value] || value;
+                          const attrValue = displayValue.toLowerCase().replace(/\s+/g, '-');
+                          const hexValue = value.startsWith('#') ? value.replace('#', '') : value;
                           const isColor = isHexColor(value);
+                          
                           return (
                             <div 
                               key={key}
@@ -140,10 +152,10 @@ export default function CartOverlay({ onClose, onPlaceOrder }: Props) {
                                     className={styles.colorSwatchOnly}
                                     style={{ backgroundColor: value }}
                                     title={value}
-                                    data-testid={`cart-item-attribute-${attrKey}-${value.replace('#', '')}`}
+                                    data-testid={`cart-item-attribute-${attrKey}-${hexValue}`}
                                   />
                                 ) : (
-                                  value
+                                  displayValue
                                 )}
                               </span>
                             </div>

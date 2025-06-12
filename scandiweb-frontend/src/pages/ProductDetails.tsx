@@ -8,7 +8,6 @@ import styles from './ProductDetails.module.css';
 import DOMPurify from 'dompurify';
 import parse from 'html-react-parser';
 
-// Updated to handle null/undefined values
 const toKebabCase = (str: string | null | undefined) => {
   if (!str) return '';
   return str.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
@@ -56,20 +55,17 @@ const PRODUCTS_QUERY = gql`
 
 const DESIRED_CATEGORIES = ['All', 'Clothes', 'Tech'];
 
-// Map of hex codes to color names
 const COLOR_NAMES: Record<string, string> = {
   '#000000': 'Black',
   '#030BFF': 'Blue',
   '#03FFF7': 'Cyan',
   '#44FF03': 'Green',
   '#FFFFFF': 'White',
-  // Add more color mappings as needed
 };
 
-// Function to get display value for an attribute
 const getDisplayValue = (type: string, value: string): string => {
   if (type === 'color') {
-    return COLOR_NAMES[value] || value;
+    return COLOR_NAMES[value.toUpperCase()] || '';
   }
   return value;
 };
@@ -86,29 +82,29 @@ export default function ProductDetails() {
   const [activeImage, setActiveImage] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
 
-  // Find the specific product from all products
   const product: Product | undefined = data?.products?.find((p: Product) => p.id === id);
 
-  // Create unique images array without duplicates
   const uniqueImages = useMemo(() => {
     if (!product) return [];
-    
     const allImages = [product.image_url, ...(product.gallery || [])];
-    const unique = Array.from(new Set(allImages));
-    return unique;
+    return Array.from(new Set(allImages));
   }, [product]);
 
-  // Group attributes by name to avoid duplicates
-  const groupedAttributes = product?.attributes.reduce((acc, attr) => {
-    if (!acc[attr.name]) {
-      acc[attr.name] = {
-        type: attr.type,
-        values: new Set<string>()
-      };
-    }
-    acc[attr.name].values.add(attr.value);
-    return acc;
-  }, {} as Record<string, { type: string; values: Set<string> }>) || {};
+  const groupedAttributes = useMemo(() => {
+    if (!product) return {};
+    const result: Record<string, { type: string; values: string[] }> = {};
+
+    product.attributes.forEach(attr => {
+      if (!result[attr.name]) {
+        result[attr.name] = { type: attr.type, values: [] };
+      }
+      if (!result[attr.name].values.includes(attr.value)) {
+        result[attr.name].values.push(attr.value);
+      }
+    });
+
+    return result;
+  }, [product]);
 
   useEffect(() => {
     if (product) {
@@ -119,8 +115,6 @@ export default function ProductDetails() {
         }
       });
       setSelectedAttributes(initialAttributes);
-      
-      // Set active image to main image
       setActiveImage(product.image_url);
     }
   }, [product]);
@@ -153,7 +147,6 @@ export default function ProductDetails() {
     setQuantity(prev => Math.max(1, prev + delta));
   };
 
-  // Sanitize and parse HTML description
   const renderDescription = () => {
     if (!product?.description) return null;
     const cleanHtml = DOMPurify.sanitize(product.description);
@@ -166,7 +159,7 @@ export default function ProductDetails() {
       <p>Loading product details...</p>
     </div>
   );
-  
+
   if (error) return <p className={styles.error}>Error: {error.message}</p>;
   if (!product) return <p className={styles.notFound}>Product not found</p>;
 
@@ -191,6 +184,7 @@ export default function ProductDetails() {
         <button
           onClick={() => navigate(-1)}
           className={styles.backButton}
+          data-testid="back-button"
         >
           &larr; Back to Products
         </button>
@@ -205,6 +199,7 @@ export default function ProductDetails() {
                   alt={`${product.name} ${index}`}
                   className={`${styles.thumbnail} ${activeImage === img ? styles.activeThumbnail : ''}`}
                   onClick={() => setActiveImage(img)}
+                  data-testid={`thumbnail-${index}`}
                 />
               ))}
             </div>
@@ -213,26 +208,27 @@ export default function ProductDetails() {
                 src={activeImage}
                 alt={product.name}
                 className={styles.mainImage}
+                data-testid="main-image"
               />
-              {!product.in_stock && (
-                <div className={styles.outOfStock}>
-                  OUT OF STOCK
-                </div>
-              )}
+{!product.in_stock && (
+  <div className={styles.outOfStock} data-testid="out-of-stock">
+    OUT OF STOCK
+  </div>
+)}
             </div>
           </div>
 
           <div className={styles.info}>
             <div className={styles.productHeader}>
-              <h1 className={styles.productName}>{product.name}</h1>
+              <h1 className={styles.productName} data-testid="product-name">{product.name}</h1>
               {product.brand && (
-                <p className={styles.brand}>by {product.brand}</p>
+                <p className={styles.brand} data-testid="product-brand">by {product.brand}</p>
               )}
             </div>
-            
-            <div className={styles.priceSection}>
+
+            <div className={styles.priceSection} data-testid="price-section">
               <span className={styles.priceLabel}>Price:</span>
-              <p className={styles.price}>${product.price.toFixed(2)}</p>
+              <p className={styles.price} data-testid="product-price">${product.price.toFixed(2)}</p>
             </div>
 
             {Object.entries(groupedAttributes).map(([name, attributeData]) => (
@@ -257,21 +253,21 @@ export default function ProductDetails() {
                             selectedAttributes[name] === value ? styles.selected : ''
                           } ${attributeData.type === 'color' ? styles.colorOption : ''}`}
                           onClick={() => handleAttributeChange(name, value)}
-                          data-testid={`product-attribute-${toKebabCase(name)}-${toKebabCase(displayValue)}`}
+                          data-testid={`product-attribute-${toKebabCase(name)}-${toKebabCase(value)}`}
+                          aria-label={`Select ${name} ${displayValue || value}`}
                         >
                           {attributeData.type === 'color' ? (
-                            <span 
-                              className={styles.colorSwatch} 
+                            <span
+                              className={styles.colorSwatch}
                               style={{ backgroundColor: value }}
+                              data-testid={`color-swatch-${value.replace('#', '')}`}
                             />
                           ) : (
-                            displayValue
+                            <span className={styles.textValue}>{displayValue}</span>
                           )}
                         </button>
-                        {attributeData.type === 'color' && (
-                          <span className={styles.colorName}>
-                            {displayValue}
-                          </span>
+                        {attributeData.type === 'color' && displayValue && (
+                          <span className={styles.colorName}>{displayValue}</span>
                         )}
                       </div>
                     );
@@ -287,13 +283,15 @@ export default function ProductDetails() {
                   onClick={() => handleQuantityChange(-1)}
                   disabled={quantity <= 1}
                   className={styles.quantityButton}
+                  data-testid="decrease-quantity"
                 >
                   -
                 </button>
-                <span className={styles.quantityValue}>{quantity}</span>
+                <span className={styles.quantityValue} data-testid="quantity-value">{quantity}</span>
                 <button
                   onClick={() => handleQuantityChange(1)}
                   className={styles.quantityButton}
+                  data-testid="increase-quantity"
                 >
                   +
                 </button>
@@ -305,6 +303,7 @@ export default function ProductDetails() {
               disabled={!product.in_stock}
               className={`${styles.addToCart} ${!product.in_stock ? styles.disabled : ''}`}
               data-testid="add-to-cart"
+              aria-disabled={!product.in_stock}
             >
               {product.in_stock ? 'ADD TO CART' : 'OUT OF STOCK'}
             </button>
