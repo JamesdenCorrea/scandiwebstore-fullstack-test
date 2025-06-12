@@ -8,17 +8,12 @@ import styles from './ProductDetails.module.css';
 import DOMPurify from 'dompurify';
 import parse from 'html-react-parser';
 
-const toKebabCase = (str: string | null | undefined) => {
-  if (!str) return '';
-  return str.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-};
+const toKebabCase = (str?: string) =>
+  str
+    ? str.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
+    : '';
 
-type Attribute = {
-  name: string;
-  value: string;
-  type: string;
-};
-
+type Attribute = { name: string; value: string; type: string };
 type Product = {
   id: string;
   name: string;
@@ -63,12 +58,8 @@ const COLOR_NAMES: Record<string, string> = {
   '#FFFFFF': 'White',
 };
 
-const getDisplayValue = (type: string, value: string): string => {
-  if (type === 'color') {
-    return COLOR_NAMES[value.toUpperCase()] || '';
-  }
-  return value;
-};
+const getDisplayValue = (type: string, value?: string): string =>
+  type === 'color' && value ? COLOR_NAMES[value.toUpperCase()] || '' : value || '';
 
 export default function ProductDetails() {
   const { id } = useParams<{ id: string }>();
@@ -82,19 +73,17 @@ export default function ProductDetails() {
   const [activeImage, setActiveImage] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
 
-  const product: Product | undefined = data?.products?.find((p: Product) => p.id === id);
+  const product: Product | undefined = data?.products?.find((p) => p.id === id);
 
   const uniqueImages = useMemo(() => {
     if (!product) return [];
-    const allImages = [product.image_url, ...(product.gallery || [])];
-    return Array.from(new Set(allImages));
+    return Array.from(new Set([product.image_url, ...(product.gallery || [])]));
   }, [product]);
 
   const groupedAttributes = useMemo(() => {
     if (!product) return {};
     const result: Record<string, { type: string; values: string[] }> = {};
-
-    product.attributes.forEach(attr => {
+    product.attributes.forEach((attr) => {
       if (!result[attr.name]) {
         result[attr.name] = { type: attr.type, values: [] };
       }
@@ -102,29 +91,24 @@ export default function ProductDetails() {
         result[attr.name].values.push(attr.value);
       }
     });
-
     return result;
   }, [product]);
 
   useEffect(() => {
     if (product) {
-      const initialAttributes: Record<string, string> = {};
-      product.attributes.forEach(attr => {
-        if (attr.name && !(attr.name in initialAttributes)) {
-          initialAttributes[attr.name] = attr.value;
+      const initial: Record<string, string> = {};
+      product.attributes.forEach((a) => {
+        if (a.name && !(a.name in initial)) {
+          initial[a.name] = a.value;
         }
       });
-      setSelectedAttributes(initialAttributes);
+      setSelectedAttributes(initial);
       setActiveImage(product.image_url);
     }
   }, [product]);
 
-  const handleAttributeChange = (name: string, value: string) => {
-    setSelectedAttributes(prev => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
+  const handleAttributeChange = (name: string, value: string) =>
+    setSelectedAttributes((prev) => ({ ...prev, [name]: value }));
 
   const handleAddToCart = () => {
     if (!product || !product.in_stock) return;
@@ -141,11 +125,11 @@ export default function ProductDetails() {
       selectedAttributes,
     });
     setShowCart(true);
+    navigate(`/product/${product.id}`);
   };
 
-  const handleQuantityChange = (delta: number) => {
-    setQuantity(prev => Math.max(1, prev + delta));
-  };
+  const handleQuantityChange = (delta: number) =>
+    setQuantity((prev) => Math.max(1, prev + delta));
 
   const renderDescription = () => {
     if (!product?.description) return null;
@@ -153,13 +137,13 @@ export default function ProductDetails() {
     return parse(cleanHtml);
   };
 
-  if (loading) return (
-    <div className={styles.loadingContainer}>
-      <div className={styles.spinner}></div>
-      <p>Loading product details...</p>
-    </div>
-  );
-
+  if (loading)
+    return (
+      <div className={styles.loadingContainer}>
+        <div className={styles.spinner}></div>
+        <p>Loading product details...</p>
+      </div>
+    );
   if (error) return <p className={styles.error}>Error: {error.message}</p>;
   if (!product) return <p className={styles.notFound}>Product not found</p>;
 
@@ -192,46 +176,58 @@ export default function ProductDetails() {
         <div className={styles.content}>
           <div className={styles.gallery} data-testid="product-gallery">
             <div className={styles.thumbnails}>
-              {uniqueImages.map((img, index) => (
-                <img
-                  key={index}
-                  src={img}
-                  alt={`${product.name} ${index}`}
-                  className={`${styles.thumbnail} ${activeImage === img ? styles.activeThumbnail : ''}`}
-                  onClick={() => setActiveImage(img)}
-                  data-testid={`thumbnail-${index}`}
-                />
-              ))}
+              {uniqueImages.map((img, i) =>
+                img ? (
+                  <img
+                    key={i}
+                    src={img}
+                    alt={`${product.name} ${i}`}
+                    className={`${styles.thumbnail} ${
+                      activeImage === img ? styles.activeThumbnail : ''
+                    }`}
+                    onClick={() => setActiveImage(img)}
+                    data-testid={`thumbnail-${i}`}
+                  />
+                ) : null
+              )}
             </div>
             <div className={styles.mainImageContainer}>
-              <img
-                src={activeImage}
-                alt={product.name}
-                className={styles.mainImage}
-                data-testid="main-image"
-              />
-{!product.in_stock && (
-  <div className={styles.outOfStock} data-testid="out-of-stock">
-    OUT OF STOCK
-  </div>
-)}
+              {activeImage && (
+                <img
+                  src={activeImage}
+                  alt={product.name}
+                  className={styles.mainImage}
+                  data-testid="main-image"
+                />
+              )}
+              {!product.in_stock && (
+                <div className={styles.outOfStock} data-testid="out-of-stock">
+                  OUT OF STOCK
+                </div>
+              )}
             </div>
           </div>
 
           <div className={styles.info}>
             <div className={styles.productHeader}>
-              <h1 className={styles.productName} data-testid="product-name">{product.name}</h1>
+              <h1 className={styles.productName} data-testid="product-name">
+                {product.name}
+              </h1>
               {product.brand && (
-                <p className={styles.brand} data-testid="product-brand">by {product.brand}</p>
+                <p className={styles.brand} data-testid="product-brand">
+                  by {product.brand}
+                </p>
               )}
             </div>
 
             <div className={styles.priceSection} data-testid="price-section">
               <span className={styles.priceLabel}>Price:</span>
-              <p className={styles.price} data-testid="product-price">${product.price.toFixed(2)}</p>
+              <p className={styles.price} data-testid="product-price">
+                ${product.price.toFixed(2)}
+              </p>
             </div>
 
-            {Object.entries(groupedAttributes).map(([name, attributeData]) => (
+            {Object.entries(groupedAttributes).map(([name, attr]) => (
               <div
                 key={name}
                 className={styles.attributeGroup}
@@ -239,35 +235,41 @@ export default function ProductDetails() {
               >
                 <h3 className={styles.attributeName}>{name}:</h3>
                 <div className={styles.attributeOptions}>
-                  {Array.from(attributeData.values).map(value => {
-                    const displayValue = getDisplayValue(attributeData.type, value);
+                  {attr.values.map((value) => {
+                    const displayVal = getDisplayValue(attr.type, value);
                     return (
                       <div
                         key={value}
                         className={`${styles.attributeOptionContainer} ${
-                          attributeData.type === 'color' ? styles.colorOptionContainer : ''
+                          attr.type === 'color'
+                            ? styles.colorOptionContainer
+                            : ''
                         }`}
                       >
                         <button
                           className={`${styles.attributeOption} ${
                             selectedAttributes[name] === value ? styles.selected : ''
-                          } ${attributeData.type === 'color' ? styles.colorOption : ''}`}
+                          } ${attr.type === 'color' ? styles.colorOption : ''}`}
                           onClick={() => handleAttributeChange(name, value)}
                           data-testid={`product-attribute-${toKebabCase(name)}-${toKebabCase(value)}`}
-                          aria-label={`Select ${name} ${displayValue || value}`}
+                          aria-label={`Select ${name} ${displayVal || value}`}
                         >
-                          {attributeData.type === 'color' ? (
+                          {attr.type === 'color' ? (
                             <span
                               className={styles.colorSwatch}
                               style={{ backgroundColor: value }}
                               data-testid={`color-swatch-${value.replace('#', '')}`}
                             />
                           ) : (
-                            <span className={styles.textValue}>{displayValue}</span>
+                            <span className={styles.textValue}>
+                              {displayVal}
+                            </span>
                           )}
                         </button>
-                        {attributeData.type === 'color' && displayValue && (
-                          <span className={styles.colorName}>{displayValue}</span>
+                        {attr.type === 'color' && displayVal && (
+                          <span className={styles.colorName}>
+                            {displayVal}
+                          </span>
                         )}
                       </div>
                     );
@@ -287,7 +289,12 @@ export default function ProductDetails() {
                 >
                   -
                 </button>
-                <span className={styles.quantityValue} data-testid="quantity-value">{quantity}</span>
+                <span
+                  className={styles.quantityValue}
+                  data-testid="quantity-value"
+                >
+                  {quantity}
+                </span>
                 <button
                   onClick={() => handleQuantityChange(1)}
                   className={styles.quantityButton}
