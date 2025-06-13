@@ -1,3 +1,4 @@
+// scandiweb-frontend/src/pages/ProductDetails.tsx
 import React, { useEffect, useState, useMemo } from 'react';
 import { gql, useQuery } from '@apollo/client';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -125,7 +126,6 @@ export default function ProductDetails() {
       selectedAttributes,
     });
     setShowCart(true);
-    navigate(`/product/${product.id}`);
   };
 
   const handleQuantityChange = (delta: number) =>
@@ -181,7 +181,7 @@ export default function ProductDetails() {
                   <img
                     key={i}
                     src={img}
-                    alt={`${product.name} ${i}`}
+                    alt={`${product.name || 'Product'} ${i}`}
                     className={`${styles.thumbnail} ${
                       activeImage === img ? styles.activeThumbnail : ''
                     }`}
@@ -195,7 +195,7 @@ export default function ProductDetails() {
               {activeImage && (
                 <img
                   src={activeImage}
-                  alt={product.name}
+                  alt={product.name || 'Product Image'}
                   className={styles.mainImage}
                   data-testid="main-image"
                 />
@@ -210,7 +210,7 @@ export default function ProductDetails() {
 
           <div className={styles.info}>
             <div className={styles.productHeader}>
-              <h1 className={styles.productName} data-testid="product-name">
+              <h1 className={styles.productName} data-testid="pdp-title">
                 {product.name}
               </h1>
               {product.brand && (
@@ -231,47 +231,32 @@ export default function ProductDetails() {
               <div
                 key={name}
                 className={styles.attributeGroup}
-                data-testid={`product-attribute-${toKebabCase(name)}`}
+                data-testid={`attribute-${toKebabCase(name)}`}
               >
                 <h3 className={styles.attributeName}>{name}:</h3>
                 <div className={styles.attributeOptions}>
                   {attr.values.map((value) => {
                     const displayVal = getDisplayValue(attr.type, value);
                     return (
-                      <div
+                      <button
                         key={value}
-                        className={`${styles.attributeOptionContainer} ${
-                          attr.type === 'color'
-                            ? styles.colorOptionContainer
-                            : ''
-                        }`}
+                        onClick={() => handleAttributeChange(name, value)}
+                        data-testid="attribute-item"
+                        className={`${styles.attributeOption} ${
+                          selectedAttributes[name] === value ? styles.selected : ''
+                        } ${attr.type === 'color' ? styles.colorOption : ''}`}
+                        aria-label={`Select ${name} ${displayVal || value}`}
                       >
-                        <button
-                          className={`${styles.attributeOption} ${
-                            selectedAttributes[name] === value ? styles.selected : ''
-                          } ${attr.type === 'color' ? styles.colorOption : ''}`}
-                          onClick={() => handleAttributeChange(name, value)}
-                          data-testid={`product-attribute-${toKebabCase(name)}-${toKebabCase(value)}`}
-                          aria-label={`Select ${name} ${displayVal || value}`}
-                        >
-                          {attr.type === 'color' ? (
-                            <span
-                              className={styles.colorSwatch}
-                              style={{ backgroundColor: value }}
-                              data-testid={`color-swatch-${value.replace('#', '')}`}
-                            />
-                          ) : (
-                            <span className={styles.textValue}>
-                              {displayVal}
-                            </span>
-                          )}
-                        </button>
-                        {attr.type === 'color' && displayVal && (
-                          <span className={styles.colorName}>
-                            {displayVal}
-                          </span>
+                        {attr.type === 'color' ? (
+                          <span
+                            className={styles.colorSwatch}
+                            style={{ backgroundColor: value }}
+                            data-testid={`color-swatch-${value.replace('#', '')}`}
+                          />
+                        ) : (
+                          <span className={styles.textValue}>{displayVal}</span>
                         )}
-                      </div>
+                      </button>
                     );
                   })}
                 </div>
@@ -289,10 +274,7 @@ export default function ProductDetails() {
                 >
                   -
                 </button>
-                <span
-                  className={styles.quantityValue}
-                  data-testid="quantity-value"
-                >
+                <span className={styles.quantityValue} data-testid="quantity-value">
                   {quantity}
                 </span>
                 <button
@@ -309,7 +291,7 @@ export default function ProductDetails() {
               onClick={handleAddToCart}
               disabled={!product.in_stock}
               className={`${styles.addToCart} ${!product.in_stock ? styles.disabled : ''}`}
-              data-testid="add-to-cart"
+              data-testid="add-to-cart-btn"
               aria-disabled={!product.in_stock}
             >
               {product.in_stock ? 'ADD TO CART' : 'OUT OF STOCK'}

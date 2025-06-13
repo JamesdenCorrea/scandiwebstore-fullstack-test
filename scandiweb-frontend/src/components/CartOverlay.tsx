@@ -42,6 +42,7 @@ export default function CartOverlay({ onClose, onPlaceOrder }: Props) {
   const handlePlaceOrder = async () => {
     setIsPlacingOrder(true);
     setOrderError(null);
+
     const mutation = gql`
       mutation CreateOrder($input: OrderInput!) {
         createOrder(input: $input) {
@@ -51,6 +52,7 @@ export default function CartOverlay({ onClose, onPlaceOrder }: Props) {
         }
       }
     `;
+
     const orderData = {
       items: cartItems.map(item => ({
         productId: item.id,
@@ -69,9 +71,8 @@ export default function CartOverlay({ onClose, onPlaceOrder }: Props) {
       setOrderError('Failed to place order. Please try again.');
     } finally {
       setIsPlacingOrder(false);
+      setTimeout(() => setToast(null), 3000);
     }
-
-    setTimeout(() => setToast(null), 3000);
   };
 
   return (
@@ -99,7 +100,7 @@ export default function CartOverlay({ onClose, onPlaceOrder }: Props) {
         {cartItems.length === 0 ? (
           <div className={styles.emptyCart}>
             <svg className={styles.emptyCartIcon} viewBox="0 0 24 24">
-              <path d="M7 18c-1.1 0-1.99.9-1.99 ..."/>
+              <path d="M7 18c-1.1 0-1.99.9-1.99 ..." />
             </svg>
             <p data-testid="cart-empty" className={styles.emptyMessage}>
               Your cart is empty
@@ -132,35 +133,30 @@ export default function CartOverlay({ onClose, onPlaceOrder }: Props) {
                     </div>
 
                     {item.selectedAttributes &&
-                      Object.entries(item.selectedAttributes).map(
-                        ([key, value]) => {
-                          if (!key || !value) return null;
-                          const isColor = isHexColor(value);
-                          const displayName = isColor
-                            ? COLOR_NAMES[value.toUpperCase()] || value
-                            : value;
+                      Object.entries(item.selectedAttributes).map(([key, value]) => {
+                        if (!key || !value) return null;
+                        const isColor = isHexColor(value);
+                        const displayName = isColor
+                          ? COLOR_NAMES[value.toUpperCase()] || value
+                          : value;
 
-                          return (
-                            <div
-                              key={key}
-                              className={styles.attribute}>
-                              <span className={styles.attributeName}>
-                                {key}:
-                              </span>
-                              <span className={styles.attributeValue}>
-                                {isColor ? (
-                                  <span
-                                    className={styles.colorSwatchOnly}
-                                    style={{ backgroundColor: value }}
-                                  />
-                                ) : (
-                                  displayName
-                                )}
-                              </span>
-                            </div>
-                          );
-                        }
-                      )}
+                        return (
+                          <div key={key} className={styles.attribute}>
+                            <span className={styles.attributeName}>{key}:</span>
+                            <span className={styles.attributeValue}>
+                              {isColor ? (
+                                <span
+                                  className={styles.colorSwatchOnly}
+                                  style={{ backgroundColor: value }}
+                                />
+                              ) : (
+                                displayName
+                              )}
+                            </span>
+                          </div>
+                        );
+                      })}
+
                     <div className={styles.quantityControls}>
                       <button
                         onClick={() =>
@@ -197,12 +193,7 @@ export default function CartOverlay({ onClose, onPlaceOrder }: Props) {
                     }
                     className={styles.removeButton}
                     aria-label="Remove item">
-                    <svg
-                      viewBox="0 0 24 24"
-                      width="18"
-                      height="18">
-                      <path d="M19..."/>
-                    </svg>
+                    &times;
                   </button>
                 </div>
               ))}
@@ -244,7 +235,15 @@ export default function CartOverlay({ onClose, onPlaceOrder }: Props) {
           </>
         )}
 
-        {toast && <div className={styles.toast}>{toast}</div>}
+        {toast && (
+          <div
+            data-testid="order-toast"
+            className={styles.toast}
+            role="alert"
+            aria-live="assertive">
+            {toast}
+          </div>
+        )}
       </div>
     </div>
   );

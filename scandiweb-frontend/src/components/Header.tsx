@@ -1,3 +1,4 @@
+import React, { useState } from 'react';
 import './Header.css';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 
@@ -21,14 +22,24 @@ export default function Header({
   const location = useLocation();
   const navigate = useNavigate();
 
+  const [selectedCurrency, setSelectedCurrency] = useState('USD');
+  const [showCurrencyDropdown, setShowCurrencyDropdown] = useState(false);
+
   const handleCategoryClick = (category: string) => {
     const path = category === 'All' ? '/all' : `/${category.toLowerCase()}`;
     navigate(path);
+    onCategoryChange(category);
+  };
+
+  const handleCurrencySelect = (currency: string) => {
+    setSelectedCurrency(currency);
+    setShowCurrencyDropdown(false);
   };
 
   return (
     <header className="header" role="banner" style={{ position: 'relative', zIndex: 100 }}>
       <div className="header-container">
+
         {/* Logo */}
         <div className="logo-container">
           <Link to="/" className="logo" aria-label="Site Logo">
@@ -40,14 +51,13 @@ export default function Header({
           </Link>
         </div>
 
-       {/* Categories nav - UPDATED FOR TEST IDS */}
-        <nav className="nav-categories" aria-label="Product Categories">
+        {/* Categories nav */}
+        <nav className="nav-categories" aria-label="Product Categories" data-testid="category-nav">
           <ul className="category-list">
             {categories.map((category) => {
               const href = category === 'All' ? '/all' : `/${category.toLowerCase()}`;
               const isActive = location.pathname === href;
-              const kebabCategory = category.toLowerCase().replace(/\s+/g, '-');
-              
+
               return (
                 <li key={category}>
                   <Link
@@ -66,6 +76,50 @@ export default function Header({
           </ul>
         </nav>
 
+        {/* Currency switcher */}
+        <div className="currency-switcher" style={{ position: 'relative', marginRight: '1rem', zIndex: 105 }}>
+          <button
+            data-testid="currency-switcher"
+            aria-label="Currency switcher"
+            onClick={() => setShowCurrencyDropdown(!showCurrencyDropdown)}
+            style={{ padding: '0.5rem', border: '1px solid #ccc', background: 'white' }}
+          >
+            {selectedCurrency}
+          </button>
+
+          {showCurrencyDropdown && (
+            <ul
+              data-testid="currency-dropdown"
+              style={{
+                position: 'absolute',
+                top: '100%',
+                left: 0,
+                background: 'white',
+                border: '1px solid #ccc',
+                padding: '0.25rem',
+                marginTop: '0.25rem',
+                listStyle: 'none',
+                zIndex: 110,
+              }}
+            >
+              {['USD', 'EUR', 'GBP'].map((currency) => (
+                <li
+                  key={currency}
+                  data-testid={`currency-option-${currency}`}
+                  onClick={() => handleCurrencySelect(currency)}
+                  style={{ padding: '0.25rem', cursor: 'pointer' }}
+                >
+                  {currency === 'USD' ? '$ USD' : currency === 'EUR' ? '€ EUR' : '£ GBP'}
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {/* ✅ Always render this outside the dropdown */}
+          <span data-testid="active-currency" style={{ marginLeft: '0.5rem' }}>
+            {selectedCurrency === 'USD' ? '$' : selectedCurrency === 'EUR' ? '€' : '£'}
+          </span>
+        </div>
 
         {/* Cart button */}
         <div className="cart-container">

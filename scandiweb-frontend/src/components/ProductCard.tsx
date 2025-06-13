@@ -15,33 +15,38 @@ type Product = {
   image: string;
   description?: string;
   inStock: boolean;
-  brand?: string; // 👈 Add this
+  brand?: string;
 };
-
 
 type ProductCardProps = {
   product: Product;
   onAddToCart?: () => void;
   onClickImage?: () => void;
+  'data-testid'?: string;
 };
 
-export default function ProductCard({ product, onAddToCart, onClickImage }: ProductCardProps) {
-  const { name, image, price, inStock, attributes } = product;
+export default function ProductCard({
+  product,
+  onAddToCart,
+  onClickImage,
+  'data-testid': testId,
+}: ProductCardProps) {
+  const { name, image, price, inStock, attributes, brand } = product;
 
   const hasAttributes = attributes && attributes.length > 0;
 
   const handleAddToCart = () => {
     if (!inStock) return;
     if (hasAttributes) {
-      onClickImage?.(); // open modal for attribute selection
+      onClickImage?.();
     } else {
-      onAddToCart?.(); // add directly
+      onAddToCart?.();
     }
   };
 
   return (
     <div
-     data-testid={`product-${product.name.toLowerCase().replace(/\s+/g, '-')}`}
+      data-testid={testId ?? 'product-card'}
       style={{
         border: '1px solid #ddd',
         boxShadow: '0 4px 12px rgba(106, 13, 173, 0.15)',
@@ -76,6 +81,7 @@ export default function ProductCard({ product, onAddToCart, onClickImage }: Prod
         src={image}
         alt={name}
         onClick={onClickImage}
+        data-testid="product-card-image"
         style={{
           width: '100%',
           height: '160px',
@@ -103,21 +109,22 @@ export default function ProductCard({ product, onAddToCart, onClickImage }: Prod
         >
           {name}
         </h3>
-        {product.brand && (
-  <p
-    style={{
-      fontSize: '0.9rem',
-      color: '#666',
-      margin: '-0.4rem 0 0.5rem',
-      overflow: 'hidden',
-      textOverflow: 'ellipsis',
-      whiteSpace: 'nowrap',
-    }}
-  >
-    by {product.brand}
-  </p>
-)}
 
+        {brand && (
+          <p
+            style={{
+              fontSize: '0.9rem',
+              color: '#666',
+              margin: '-0.4rem 0 0.5rem',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+            }}
+            data-testid="product-card-brand"
+          >
+            by {brand}
+          </p>
+        )}
 
         <p
           style={{
@@ -126,6 +133,7 @@ export default function ProductCard({ product, onAddToCart, onClickImage }: Prod
             color: '#6a0dad',
             margin: '0.5rem 0 1rem',
           }}
+          data-testid="product-card-price"
         >
           ${price.toFixed(2)}
         </p>
@@ -148,8 +156,9 @@ export default function ProductCard({ product, onAddToCart, onClickImage }: Prod
               boxShadow: inStock ? '0 4px 10px rgba(106, 13, 173, 0.4)' : 'none',
               transition: 'background-color 0.3s ease, box-shadow 0.3s ease',
             }}
+            data-testid="add-to-cart-btn"
           >
-            {inStock ? (hasAttributes ? 'Add to Cart' : 'Add to Cart') : 'Out of Stock'}
+            {inStock ? 'Add to Cart' : 'Out of Stock'}
           </button>
         </div>
       </div>

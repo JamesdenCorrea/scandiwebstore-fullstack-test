@@ -1,3 +1,4 @@
+// scandiweb-frontend/src/pages/CategoryListingPage.tsx
 import React, { useState, useMemo } from 'react';
 import { gql, useQuery } from '@apollo/client';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -79,20 +80,24 @@ export default function CategoryListingPage() {
   const pathSegments = location.pathname.split('/').filter(Boolean);
   const currentCategory = pathSegments[0] || 'all';
 
-  const selectedCategory = currentCategory === 'all'
-    ? 'All'
-    : currentCategory.charAt(0).toUpperCase() + currentCategory.slice(1);
+  const selectedCategory =
+    currentCategory === 'all'
+      ? 'All'
+      : currentCategory.charAt(0).toUpperCase() + currentCategory.slice(1);
 
-  const { loading, error, data } = useQuery(PRODUCTS_QUERY);
+  const { loading, error, data } = useQuery(PRODUCTS_QUERY, {
+    fetchPolicy: "cache-and-network",
+  });
 
   const products: Product[] = useMemo(() => {
-    if (!data?.products) return [];
+    if (!data?.products) {
+      console.log('[GraphQL] No products returned');
+      return [];
+    }
 
     return data.products.map((p: RawProduct) => {
       const fallbackImage = 'https://via.placeholder.com/300';
       const gallery = p.gallery && p.gallery.length > 0 ? p.gallery : [p.image_url || fallbackImage];
-
-      // Create unique gallery without duplicates
       const uniqueGallery = Array.from(new Set([p.image_url, ...gallery]));
 
       return {
@@ -171,20 +176,30 @@ export default function CategoryListingPage() {
           </div>
         )}
 
-        {loading && (
-          <p data-testid="loading-msg" className="status-message">
+        {loading && !data && (
+          <p data-testid="loading-indicator" className="status-message">
             Loading products...
           </p>
         )}
         {error && (
-          <p data-testid="error-msg" className="status-message error">
+          <p data-testid="error-message" className="status-message error">
             Error loading products: {error.message}
           </p>
         )}
 
-        <main data-testid="products-grid" className="products-grid">
-          {filteredProducts.length === 0 && !loading && (
-            <p className="no-products-msg">No products available in this category.</p>
+        <h1 data-testid="category-title" className="category-title">
+          {selectedCategory}
+        </h1>
+
+        <main 
+          data-testid="products-grid" 
+          className="products-grid"
+          aria-busy={loading}
+        >
+          {!loading && filteredProducts.length === 0 && (
+            <p data-testid="no-products-message" className="no-products-msg">
+              No products available in this category.
+            </p>
           )}
 
           {filteredProducts.map((product) => (
@@ -193,6 +208,7 @@ export default function CategoryListingPage() {
               product={product}
               onAddToCart={() => handleAddToCart(product)}
               onClickImage={() => handleImageClick(product.id)}
+              data-testid="product-card"
             />
           ))}
         </main>
