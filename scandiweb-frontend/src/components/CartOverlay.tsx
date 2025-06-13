@@ -64,8 +64,11 @@ export default function CartOverlay({ onClose, onPlaceOrder }: Props) {
     try {
       await request(GRAPHQL_ENDPOINT, mutation, { input: orderData });
       clearCart();
-      setToast('Order placed successfully!');
-      onPlaceOrder();
+setToast('Order placed successfully!');
+setTimeout(() => {
+  onPlaceOrder();
+}, 2000); // ✅ Delay navigation so the toast can appear and Playwright can see it
+
     } catch (error) {
       console.error('Order failed:', error);
       setOrderError('Failed to place order. Please try again.');
@@ -237,7 +240,7 @@ export default function CartOverlay({ onClose, onPlaceOrder }: Props) {
 
         {toast && (
           <div
-            data-testid="order-toast"
+            data-testid="order-success"
             className={styles.toast}
             role="alert"
             aria-live="assertive">
