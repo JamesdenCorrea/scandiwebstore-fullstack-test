@@ -1,0 +1,69 @@
+# Page snapshot
+
+```yaml
+- banner:
+  - link "Site Logo":
+    - /url: /
+    - img
+    - text: Scandiweb Store
+  - navigation "Product Categories":
+    - list:
+      - listitem:
+        - link "Category All":
+          - /url: /all
+          - text: All
+      - listitem:
+        - link "Category Clothes":
+          - /url: /clothes
+          - text: Clothes
+      - listitem:
+        - link "Category Tech":
+          - /url: /tech
+          - text: Tech
+  - button "Currency switcher": USD
+  - text: $
+  - button "Cart with 0 items":
+    - img
+- heading "All" [level=1]
+- main:
+  - img "AirPods Pro"
+  - heading "AirPods Pro" [level=3]
+  - paragraph: by Apple
+  - paragraph: $300.23
+  - button "Out of Stock" [disabled]
+  - img "AirTag"
+  - heading "AirTag" [level=3]
+  - paragraph: by Apple
+  - paragraph: $120.57
+  - button "Add to Cart"
+  - img "iMac 2021"
+  - heading "iMac 2021" [level=3]
+  - paragraph: by Apple
+  - paragraph: $1688.03
+  - button "Add to Cart"
+  - img "iPhone 12 Pro"
+  - heading "iPhone 12 Pro" [level=3]
+  - paragraph: by Apple
+  - paragraph: $1000.76
+  - button "Add to Cart"
+  - img "Nike Air Huarache Le"
+  - heading "Nike Air Huarache Le" [level=3]
+  - paragraph: by Nike x Stussy
+  - paragraph: $144.69
+  - button "Add to Cart"
+  - img "Jacket"
+  - heading "Jacket" [level=3]
+  - paragraph: by Canada Goose
+  - paragraph: $518.47
+  - button "Add to Cart"
+  - img "PlayStation 5"
+  - heading "PlayStation 5" [level=3]
+  - paragraph: by Sony
+  - paragraph: $844.02
+  - button "Add to Cart"
+  - img "Xbox Series S 512GB"
+  - heading "Xbox Series S 512GB" [level=3]
+  - paragraph: by Microsoft
+  - paragraph: $333.99
+  - button "Out of Stock" [disabled]
+```

@@ -213,13 +213,14 @@ const filteredProducts = useMemo(() => {
           )}
 
           {filteredProducts.map((product) => (
-            <ProductCard
-              key={product.id}
-              product={product}
-              onAddToCart={() => handleAddToCart(product)}
-              onClickImage={() => handleImageClick(product.id)}
-              data-testid="product-card"
-            />
+<ProductCard
+  key={product.id}
+  product={product}
+  onAddToCart={() => handleAddToCart(product)}
+  onClickImage={() => handleImageClick(product.id)}
+  data-testid={`product-${product.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9\-]/g, '')}`}
+/>
+
           ))}
         </main>
 
