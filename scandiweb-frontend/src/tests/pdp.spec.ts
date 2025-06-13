@@ -1,16 +1,17 @@
 import { test, expect } from '@playwright/test';
 
-test('product detail page shows correct info and allows adding to cart', async ({ page }) => {
-  // Go directly to the product listing category to avoid redirect delays
-  await page.goto('http://localhost:5173/all');
+const BASE_URL = process.env.BASE_URL || 'http://localhost:5173';
 
-  // Wait for either products to appear or an error message to show
+test('product detail page shows correct info and allows adding to cart', async ({ page }) => {
+  // Navigate to product listing page using BASE_URL
+  await page.goto(`${BASE_URL}/all`);
+
+  // Wait for products or error message
   await Promise.race([
     page.waitForSelector('[data-testid="product-card"]', { state: 'attached', timeout: 15000 }),
     page.waitForSelector('[data-testid="error-message"]', { state: 'visible', timeout: 15000 })
   ]);
 
-  // Check if there are any products available
   const productCards = page.locator('[data-testid="product-card"]');
   const count = await productCards.count();
 
@@ -25,7 +26,7 @@ test('product detail page shows correct info and allows adding to cart', async (
 
   expect(count).toBeGreaterThan(0);
 
-  // 🔍 Find the first product that is in stock
+  // Find and click first in-stock product
   let productClicked = false;
   for (let i = 0; i < count; i++) {
     const card = productCards.nth(i);
@@ -46,12 +47,12 @@ test('product detail page shows correct info and allows adding to cart', async (
   // Wait for PDP to load
   await page.waitForSelector('[data-testid="pdp-title"]', { state: 'visible', timeout: 10000 });
 
-  // Verify add to cart button exists and is enabled
+  // Check add to cart button
   const addToCartButton = page.locator('[data-testid="add-to-cart-btn"]');
   await expect(addToCartButton).toBeVisible();
   await expect(addToCartButton).toBeEnabled();
 
-  // If there are attribute sections, select the first option from each
+  // Select attribute options if present
   const attributeSections = page.locator('[data-testid^="attribute-"]');
   const sectionCount = await attributeSections.count();
 
@@ -62,11 +63,10 @@ test('product detail page shows correct info and allows adding to cart', async (
     }
   }
 
-  // Add product to cart
+  // Add to cart
   await addToCartButton.click();
 
-// Wait for cart overlay to be visible (assumes it opens automatically after adding to cart)
-await page.waitForSelector('[data-testid="cart-overlay"]', { state: 'visible', timeout: 5000 });
-await expect(page.locator('[data-testid="cart-overlay"]')).toBeVisible();
-
+  // Verify cart overlay
+  await page.waitForSelector('[data-testid="cart-overlay"]', { state: 'visible', timeout: 5000 });
+  await expect(page.locator('[data-testid="cart-overlay"]')).toBeVisible();
 });

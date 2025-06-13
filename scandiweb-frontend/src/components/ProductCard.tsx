@@ -46,7 +46,7 @@ export default function ProductCard({
 
   return (
     <div
-      data-testid={testId ?? 'product-card'}
+      data-testid={testId ?? `product-${product.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9\-]/g, '')}`}
       style={{
         border: '1px solid #ddd',
         boxShadow: '0 4px 12px rgba(106, 13, 173, 0.15)',

@@ -1,3 +1,9 @@
+.hidden {
+  pointer-events: none;
+  opacity: 0;
+  display: none;
+}
+
 .overlayContainer {
   position: fixed;
   top: 0;
