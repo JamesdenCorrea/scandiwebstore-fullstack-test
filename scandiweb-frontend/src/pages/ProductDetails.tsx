@@ -247,11 +247,12 @@ export default function ProductDetails() {
                       <button
                         key={value}
                         onClick={() => handleAttributeChange(name, value)}
-                        data-testid={
-                          attr.type === 'color'
-                            ? `product-attribute-color-${value.toUpperCase()}`
-                            : 'attribute-item'
-                        }
+data-testid={
+  attr.type === 'color'
+    ? `product-attribute-color-${value}`
+    : `product-attribute-capacity-${value}`
+}
+
                         className={`${styles.attributeOption} ${
                           selectedAttributes[name] === value ? styles.selected : ''
                         } ${attr.type === 'color' ? styles.colorOption : ''}`}
