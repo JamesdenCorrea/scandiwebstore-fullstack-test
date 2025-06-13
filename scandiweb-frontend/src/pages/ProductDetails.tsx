@@ -227,43 +227,50 @@ export default function ProductDetails() {
               </p>
             </div>
 
-{Object.entries(groupedAttributes).map(([name, attr]) => (
-<div
-  key={name}
-  className={styles.attributeGroup}
-  data-testid={`attribute-group-${toKebabCase(name)}${attr.type === 'color' ? ' product-attribute-color' : ''}`}
->
-
-    <h3 className={styles.attributeName}>{name}:</h3>
-    <div className={styles.attributeOptions}>
-      {attr.values.map((value) => {
-        const displayVal = getDisplayValue(attr.type, value);
-        return (
-          <button
-            key={value}
-            onClick={() => handleAttributeChange(name, value)}
-            data-testid="attribute-item"
-            className={`${styles.attributeOption} ${
-              selectedAttributes[name] === value ? styles.selected : ''
-            } ${attr.type === 'color' ? styles.colorOption : ''}`}
-            aria-label={`Select ${name} ${displayVal || value}`}
-          >
-            {attr.type === 'color' ? (
-              <span
-                className={styles.colorSwatch}
-                style={{ backgroundColor: value }}
-                data-testid={`product-attribute-color-${value.toUpperCase()}`}
-              />
-            ) : (
-              <span className={styles.textValue}>{displayVal}</span>
-            )}
-          </button>
-        );
-      })}
-    </div>
-  </div>
-))}
-
+            {Object.entries(groupedAttributes).map(([name, attr]) => (
+              <div
+                key={name}
+                className={styles.attributeGroup}
+                data-testid={
+                  attr.type === 'color'
+                    ? 'product-attribute-color'
+                    : attr.type === 'text'
+                    ? 'product-attribute-capacity'
+                    : `attribute-group-${toKebabCase(name)}`
+                }
+              >
+                <h3 className={styles.attributeName}>{name}:</h3>
+                <div className={styles.attributeOptions}>
+                  {attr.values.map((value) => {
+                    const displayVal = getDisplayValue(attr.type, value);
+                    return (
+                      <button
+                        key={value}
+                        onClick={() => handleAttributeChange(name, value)}
+                        data-testid={
+                          attr.type === 'color'
+                            ? `product-attribute-color-${value.toUpperCase()}`
+                            : 'attribute-item'
+                        }
+                        className={`${styles.attributeOption} ${
+                          selectedAttributes[name] === value ? styles.selected : ''
+                        } ${attr.type === 'color' ? styles.colorOption : ''}`}
+                        aria-label={`Select ${name} ${displayVal || value}`}
+                      >
+                        {attr.type === 'color' ? (
+                          <span
+                            className={styles.colorSwatch}
+                            style={{ backgroundColor: value }}
+                          />
+                        ) : (
+                          <span className={styles.textValue}>{displayVal}</span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
 
             <div className={styles.quantitySection}>
               <h3 className={styles.quantityLabel}>Quantity:</h3>
