@@ -228,13 +228,12 @@ export default function ProductDetails() {
             </div>
 
 {Object.entries(groupedAttributes).map(([name, attr]) => (
-  <div
-    key={name}
-    className={styles.attributeGroup}
-    data-testid={
-      attr.type === 'color' ? 'product-attribute-color' : `attribute-${toKebabCase(name)}`
-    }
-  >
+<div
+  key={name}
+  className={styles.attributeGroup}
+  data-testid={`attribute-group-${toKebabCase(name)}${attr.type === 'color' ? ' product-attribute-color' : ''}`}
+>
+
     <h3 className={styles.attributeName}>{name}:</h3>
     <div className={styles.attributeOptions}>
       {attr.values.map((value) => {
@@ -253,7 +252,7 @@ export default function ProductDetails() {
               <span
                 className={styles.colorSwatch}
                 style={{ backgroundColor: value }}
-                data-testid={`product-attribute-color-${value}`}
+                data-testid={`product-attribute-color-${value.toUpperCase()}`}
               />
             ) : (
               <span className={styles.textValue}>{displayVal}</span>
