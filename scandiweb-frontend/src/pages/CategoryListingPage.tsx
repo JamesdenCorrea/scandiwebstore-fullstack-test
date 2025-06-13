@@ -118,12 +118,22 @@ export default function CategoryListingPage() {
     });
   }, [data]);
 
-  const filteredProducts = useMemo(() => {
-    if (selectedCategory === 'All') return products;
-    return products.filter(
-      (p) => p.category.toLowerCase() === selectedCategory.toLowerCase()
-    );
-  }, [products, selectedCategory]);
+const filteredProducts = useMemo(() => {
+  if (selectedCategory === 'All') return products;
+
+  const categoryMap: Record<string, string[]> = {
+    tech: ['tech', 'phones', 'mobiles', 'electronics', 'gadgets'],
+    clothes: ['clothes', 'apparel', 'wearables'],
+  };
+
+  const normalizedSelected = selectedCategory.toLowerCase();
+  const validCategories = categoryMap[normalizedSelected] || [normalizedSelected];
+
+  return products.filter((p) =>
+    validCategories.includes(p.category.toLowerCase())
+  );
+}, [products, selectedCategory]);
+
 
   const handleAddToCart = (product: Product) => {
     if (!product.inStock) {
@@ -176,7 +186,7 @@ export default function CategoryListingPage() {
           </div>
         )}
 
-        {loading && !data && (
+       {loading && !data?.products && (
           <p data-testid="loading-indicator" className="status-message">
             Loading products...
           </p>
@@ -196,7 +206,7 @@ export default function CategoryListingPage() {
           className="products-grid"
           aria-busy={loading}
         >
-          {!loading && filteredProducts.length === 0 && (
+          {!loading && !error && filteredProducts.length === 0 && (
             <p data-testid="no-products-message" className="no-products-msg">
               No products available in this category.
             </p>
