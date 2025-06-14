@@ -10,9 +10,7 @@ import DOMPurify from 'dompurify';
 import parse from 'html-react-parser';
 
 const toKebabCase = (str?: string) =>
-  str
-    ? str.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
-    : '';
+  str ? str.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') : '';
 
 type Attribute = { name: string; value: string; type: string };
 type Product = {
@@ -158,10 +156,7 @@ export default function ProductDetails() {
       />
 
       {showCart && (
-        <CartOverlay
-          onClose={() => setShowCart(false)}
-          onPlaceOrder={() => setShowCart(false)}
-        />
+        <CartOverlay onClose={() => setShowCart(false)} onPlaceOrder={() => setShowCart(false)} />
       )}
 
       <div className={styles.container}>
@@ -243,16 +238,16 @@ export default function ProductDetails() {
                 <div className={styles.attributeOptions}>
                   {attr.values.map((value) => {
                     const displayVal = getDisplayValue(attr.type, value);
+                    const testId =
+                      attr.type === 'color'
+                        ? `product-attribute-color-${value}`
+                        : `product-attribute-capacity-${value}`;
+
                     return (
                       <button
                         key={value}
                         onClick={() => handleAttributeChange(name, value)}
-data-testid={
-  attr.type === 'color'
-    ? `product-attribute-color-${value}`
-    : `product-attribute-capacity-${value}`
-}
-
+                        data-testid={testId}
                         className={`${styles.attributeOption} ${
                           selectedAttributes[name] === value ? styles.selected : ''
                         } ${attr.type === 'color' ? styles.colorOption : ''}`}
