@@ -147,7 +147,6 @@ export default function ProductDetails() {
   if (error) return <p className={styles.error}>Error: {error.message}</p>;
   if (!product) return <p className={styles.notFound}>Product not found</p>;
 
-  
   return (
     <>
       <Header
@@ -159,7 +158,12 @@ export default function ProductDetails() {
       />
 
       {showCart && (
-        <CartOverlay onClose={() => setShowCart(false)} onPlaceOrder={() => setShowCart(false)} />
+        <div data-testid="cart-overlay">
+          <CartOverlay
+            onClose={() => setShowCart(false)}
+            onPlaceOrder={() => setShowCart(false)}
+          />
+        </div>
       )}
 
       <div className={styles.container}>
@@ -244,7 +248,6 @@ export default function ProductDetails() {
                   >
                     {attr.values.map((value) => {
                       const displayVal = getDisplayValue(attr.type, value);
-
                       const testId = isColor
                         ? `product-attribute-color-${value.toUpperCase()}`
                         : attr.type === 'text'
@@ -304,9 +307,9 @@ export default function ProductDetails() {
             <button
               onClick={handleAddToCart}
               disabled={!product.in_stock}
+              aria-disabled={!product.in_stock}
               className={`${styles.addToCart} ${!product.in_stock ? styles.disabled : ''}`}
               data-testid="add-to-cart"
-              aria-disabled={!product.in_stock}
             >
               {product.in_stock ? 'ADD TO CART' : 'OUT OF STOCK'}
             </button>
