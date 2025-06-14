@@ -304,7 +304,7 @@ export default function ProductDetails() {
               onClick={handleAddToCart}
               disabled={!product.in_stock}
               className={`${styles.addToCart} ${!product.in_stock ? styles.disabled : ''}`}
-              data-testid="add-to-cart-btn"
+              data-testid="add-to-cart"
               aria-disabled={!product.in_stock}
             >
               {product.in_stock ? 'ADD TO CART' : 'OUT OF STOCK'}
