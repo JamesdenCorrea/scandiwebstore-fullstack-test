@@ -61,8 +61,9 @@ test('PDP: user can view product details and interact with attributes', async ({
   }
 
   // ✅ Adjust quantity
-  const plusBtn = page.getByTestId('quantity-plus');
-  const minusBtn = page.getByTestId('quantity-minus');
+const plusBtn = page.getByTestId('increase-quantity');
+const minusBtn = page.getByTestId('decrease-quantity');
+
   const quantityText = page.getByTestId('quantity-value');
 
   await plusBtn.click();
