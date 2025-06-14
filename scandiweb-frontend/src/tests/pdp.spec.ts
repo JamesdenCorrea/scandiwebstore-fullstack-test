@@ -1,49 +1,41 @@
-// scandiweb-frontend/src/tests/pdp.spec.ts
+// full-stack/pdp.spec.ts
 import { test, expect } from '@playwright/test';
 
-test('should display product details page and allow adding to cart', async ({ page }) => {
-  await page.goto('http://localhost:3000/');
+test('has product details', async ({ page }) => {
+  await page.goto('/');
 
-  // Click on the first product card
-  await page.locator('[data-testid="product-card"]').first().click();
+  await expect(page.locator('[data-testid="category-name"]')).toBeVisible();
+  await expect(page.locator('[data-testid="category-name"]')).toHaveText('all');
 
-  // Wait for the PDP title to be visible
-  await expect(page.getByTestId('pdp-title')).toBeVisible();
+  await page.locator('a[href="/tech"]').click();
 
-  // Wait for price section and other info to load
-  await expect(page.getByTestId('price-section')).toBeVisible();
+  await expect(page.locator('[data-testid="category-name"]')).toBeVisible();
+  await expect(page.locator('[data-testid="category-name"]')).toHaveText('tech');
 
-  // Check if the Add to Cart button is visible
-  const addToCartBtn = page.getByTestId('add-to-cart');
-  await expect(addToCartBtn).toBeVisible();
+  await page.locator('[data-testid="product-iphone-12-pro"]').click();
 
-  // Check whether it's disabled (i.e., out of stock)
-  const isDisabled = await addToCartBtn.isDisabled();
+  await expect(page.locator('[data-testid="pdp-title"]')).toBeVisible();
+  await expect(page.locator('[data-testid="product-attribute-capacity-512GB"]')).toBeVisible();
+  await expect(page.locator('[data-testid="product-attribute-color-#44FF03"]')).toBeVisible();
+  await expect(page.locator('[data-testid="price-section"]')).toBeVisible();
+
+  const addToCart = page.locator('[data-testid="add-to-cart"]');
+  await expect(addToCart).toBeVisible();
+
+  const isDisabled = await addToCart.isDisabled();
 
   if (isDisabled) {
-    console.log('Product is out of stock – skipping Add to Cart flow.');
-    await expect(addToCartBtn).toBeDisabled();
+    console.log('Product is out of stock — button is disabled.');
+    await expect(addToCart).toBeDisabled();
   } else {
-    // Select capacity attribute if present
-    const capacityOption = page.locator('[data-testid^="product-attribute-capacity-"]').first();
-    if (await capacityOption.isVisible()) {
-      await capacityOption.click();
-    }
+    // Proceed with selecting attributes and adding to cart
+    await page.locator('[data-testid="product-attribute-capacity-512GB"]').click();
+    await page.locator('[data-testid="product-attribute-color-#44FF03"]').click();
 
-    // Select color attribute if present
-    const colorOption = page.locator('[data-testid^="product-attribute-color-"]').first();
-    if (await colorOption.isVisible()) {
-      await colorOption.click();
-    }
+    await page.locator('[data-testid="increase-quantity"]').click();
+    await expect(page.locator('[data-testid="quantity-value"]')).toHaveText('2');
 
-    // Increase quantity
-    await page.getByTestId('increase-quantity').click();
-    await expect(page.getByTestId('quantity-value')).toHaveText('2');
-
-    // Click Add to Cart
-    await addToCartBtn.click();
-
-    // Assert CartOverlay becomes visible
-    await expect(page.getByTestId('cart-overlay')).toBeVisible();
+    await addToCart.click();
+    await expect(page.locator('[data-testid="cart-overlay"]')).toBeVisible();
   }
 });
