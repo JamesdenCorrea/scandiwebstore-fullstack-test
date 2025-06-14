@@ -118,22 +118,13 @@ export default function CategoryListingPage() {
     });
   }, [data]);
 
-const filteredProducts = useMemo(() => {
-  if (selectedCategory === 'All') return products;
-
-  const categoryMap: Record<string, string[]> = {
-    tech: ['tech', 'phones', 'mobiles', 'electronics', 'gadgets'],
-    clothes: ['clothes', 'apparel', 'wearables'],
-  };
-
-  const normalizedSelected = selectedCategory.toLowerCase();
-  const validCategories = categoryMap[normalizedSelected] || [normalizedSelected];
-
-  return products.filter((p) =>
-    validCategories.includes(p.category.toLowerCase())
-  );
-}, [products, selectedCategory]);
-
+  const filteredProducts = useMemo(() => {
+    if (selectedCategory === 'All') return products;
+    
+    return products.filter(p => 
+      p.category.toLowerCase() === selectedCategory.toLowerCase()
+    );
+  }, [products, selectedCategory]);
 
   const handleAddToCart = (product: Product) => {
     if (!product.inStock) {
@@ -186,7 +177,7 @@ const filteredProducts = useMemo(() => {
           </div>
         )}
 
-       {loading && !data?.products && (
+        {loading && !data?.products && (
           <p data-testid="loading-indicator" className="status-message">
             Loading products...
           </p>
@@ -213,14 +204,13 @@ const filteredProducts = useMemo(() => {
           )}
 
           {filteredProducts.map((product) => (
-<ProductCard
-  key={product.id}
-  product={product}
-  onAddToCart={() => handleAddToCart(product)}
-  onClickImage={() => handleImageClick(product.id)}
-  data-testid={`product-${product.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9\-]/g, '')}`}
-/>
-
+            <ProductCard
+              key={product.id}
+              product={product}
+              onAddToCart={() => handleAddToCart(product)}
+              onClickImage={() => handleImageClick(product.id)}
+              data-testid="product-card"
+            />
           ))}
         </main>
 

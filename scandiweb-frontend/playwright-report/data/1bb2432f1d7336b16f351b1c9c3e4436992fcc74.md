@@ -30,7 +30,7 @@
   - heading "AirPods Pro" [level=3]
   - paragraph: by Apple
   - paragraph: $300.23
-  - button "Out of Stock" [disabled]
+  - button "Add to Cart"
   - img "AirTag"
   - heading "AirTag" [level=3]
   - paragraph: by Apple
@@ -65,5 +65,5 @@
   - heading "Xbox Series S 512GB" [level=3]
   - paragraph: by Microsoft
   - paragraph: $333.99
-  - button "Out of Stock" [disabled]
+  - button "Add to Cart"
 ```

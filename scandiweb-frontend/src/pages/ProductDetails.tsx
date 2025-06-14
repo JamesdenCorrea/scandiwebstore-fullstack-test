@@ -12,6 +12,10 @@ import parse from 'html-react-parser';
 const toKebabCase = (str?: string) =>
   str ? str.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') : '';
 
+// Helper to normalize color values for test IDs
+const normalizeColorValue = (value: string) => 
+  value.startsWith('#') ? value.toUpperCase() : value;
+
 type Attribute = { name: string; value: string; type: string };
 type Product = {
   id: string;
@@ -71,18 +75,25 @@ export default function ProductDetails() {
   const [showCart, setShowCart] = useState(false);
   const [activeImage, setActiveImage] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const [currentProduct, setCurrentProduct] = useState<Product | null>(null);
 
-  const product: Product | undefined = data?.products?.find((p) => p.id === id);
+  // Update product when data changes
+  useEffect(() => {
+    if (data?.products) {
+      const found = data.products.find(p => p.id === id);
+      setCurrentProduct(found || null);
+    }
+  }, [data, id]);
 
   const uniqueImages = useMemo(() => {
-    if (!product) return [];
-    return Array.from(new Set([product.image_url, ...(product.gallery || [])]));
-  }, [product]);
+    if (!currentProduct) return [];
+    return Array.from(new Set([currentProduct.image_url, ...(currentProduct.gallery || [])]));
+  }, [currentProduct]);
 
   const groupedAttributes = useMemo(() => {
-    if (!product) return {};
+    if (!currentProduct) return {};
     const result: Record<string, { type: string; values: string[] }> = {};
-    product.attributes.forEach((attr) => {
+    currentProduct.attributes.forEach((attr) => {
       if (!result[attr.name]) {
         result[attr.name] = { type: attr.type, values: [] };
       }
@@ -91,35 +102,35 @@ export default function ProductDetails() {
       }
     });
     return result;
-  }, [product]);
+  }, [currentProduct]);
 
   useEffect(() => {
-    if (product) {
+    if (currentProduct) {
       const initial: Record<string, string> = {};
-      product.attributes.forEach((a) => {
+      currentProduct.attributes.forEach((a) => {
         if (a.name && !(a.name in initial)) {
           initial[a.name] = a.value;
         }
       });
       setSelectedAttributes(initial);
-      setActiveImage(product.image_url);
+      setActiveImage(currentProduct.image_url);
     }
-  }, [product]);
+  }, [currentProduct]);
 
   const handleAttributeChange = (name: string, value: string) =>
     setSelectedAttributes((prev) => ({ ...prev, [name]: value }));
 
   const handleAddToCart = () => {
-    if (!product || !product.in_stock) return;
+    if (!currentProduct || !currentProduct.in_stock) return;
     addToCart({
-      id: product.id,
-      sku: product.id,
-      name: product.name,
-      price: product.price,
-      attributes: product.attributes,
-      category: product.category,
-      image: product.image_url,
-      inStock: product.in_stock,
+      id: currentProduct.id,
+      sku: currentProduct.id,
+      name: currentProduct.name,
+      price: currentProduct.price,
+      attributes: currentProduct.attributes,
+      category: currentProduct.category,
+      image: currentProduct.image_url,
+      inStock: currentProduct.in_stock,
       quantity,
       selectedAttributes,
     });
@@ -130,8 +141,8 @@ export default function ProductDetails() {
     setQuantity((prev) => Math.max(1, prev + delta));
 
   const renderDescription = () => {
-    if (!product?.description) return null;
-    const cleanHtml = DOMPurify.sanitize(product.description);
+    if (!currentProduct?.description) return null;
+    const cleanHtml = DOMPurify.sanitize(currentProduct.description);
     return parse(cleanHtml);
   };
 
@@ -143,7 +154,7 @@ export default function ProductDetails() {
       </div>
     );
   if (error) return <p className={styles.error}>Error: {error.message}</p>;
-  if (!product) return <p className={styles.notFound}>Product not found</p>;
+  if (!currentProduct) return <p className={styles.notFound}>Product not found</p>;
 
   return (
     <>
@@ -176,7 +187,7 @@ export default function ProductDetails() {
                   <img
                     key={i}
                     src={img}
-                    alt={`${product.name || 'Product'} ${i}`}
+                    alt={`${currentProduct.name || 'Product'} ${i}`}
                     className={`${styles.thumbnail} ${
                       activeImage === img ? styles.activeThumbnail : ''
                     }`}
@@ -190,12 +201,12 @@ export default function ProductDetails() {
               {activeImage && (
                 <img
                   src={activeImage}
-                  alt={product.name || 'Product Image'}
+                  alt={currentProduct.name || 'Product Image'}
                   className={styles.mainImage}
                   data-testid="main-image"
                 />
               )}
-              {!product.in_stock && (
+              {!currentProduct.in_stock && (
                 <div className={styles.outOfStock} data-testid="out-of-stock">
                   OUT OF STOCK
                 </div>
@@ -206,11 +217,11 @@ export default function ProductDetails() {
           <div className={styles.info}>
             <div className={styles.productHeader}>
               <h1 className={styles.productName} data-testid="pdp-title">
-                {product.name}
+                {currentProduct.name}
               </h1>
-              {product.brand && (
+              {currentProduct.brand && (
                 <p className={styles.brand} data-testid="product-brand">
-                  by {product.brand}
+                  by {currentProduct.brand}
                 </p>
               )}
             </div>
@@ -218,57 +229,51 @@ export default function ProductDetails() {
             <div className={styles.priceSection} data-testid="price-section">
               <span className={styles.priceLabel}>Price:</span>
               <p className={styles.price} data-testid="product-price">
-                ${product.price.toFixed(2)}
+                ${currentProduct.price.toFixed(2)}
               </p>
             </div>
 
-{Object.entries(groupedAttributes).map(([name, attr]) => (
-  <div
-    key={name}
-    className={styles.attributeGroup}
-    data-testid={
-      attr.type === 'color'
-        ? 'product-attribute-color'
-        : attr.type === 'text'
-        ? 'product-attribute-capacity'
-        : `attribute-group-${toKebabCase(name)}`
-    }
-  >
-    <h3 className={styles.attributeName}>{name}:</h3>
-    <div className={styles.attributeOptions}>
-      {attr.values.map((value) => {
-        const displayVal = getDisplayValue(attr.type, value);
-        const testId =
-          attr.type === 'color'
-            ? `product-attribute-color-${value}`
-            : attr.type === 'text'
-            ? `product-attribute-capacity-${value}`
-            : undefined;
+            {Object.entries(groupedAttributes).map(([name, attr]) => (
+              <div
+                key={name}
+                className={styles.attributeGroup}
+                data-testid={`attribute-group-${toKebabCase(name)}`}
+              >
+                <h3 className={styles.attributeName}>{name}:</h3>
+                <div className={styles.attributeOptions}>
+                  {attr.values.map((value) => {
+                    const displayVal = getDisplayValue(attr.type, value);
+                    const testId =
+                      attr.type === 'color'
+                        ? `product-attribute-color-${normalizeColorValue(value)}`
+                        : attr.type === 'text'
+                        ? `product-attribute-capacity-${value}`
+                        : undefined;
 
-        return (
-          <button
-            key={value}
-            onClick={() => handleAttributeChange(name, value)}
-            data-testid={testId}
-            className={`${styles.attributeOption} ${
-              selectedAttributes[name] === value ? styles.selected : ''
-            } ${attr.type === 'color' ? styles.colorOption : ''}`}
-            aria-label={`Select ${name} ${displayVal || value}`}
-          >
-            {attr.type === 'color' ? (
-              <span
-                className={styles.colorSwatch}
-                style={{ backgroundColor: value }}
-              />
-            ) : (
-              <span className={styles.textValue}>{displayVal}</span>
-            )}
-          </button>
-        );
-      })}
-    </div>
-  </div>
-))}
+                    return (
+                      <button
+                        key={value}
+                        onClick={() => handleAttributeChange(name, value)}
+                        data-testid={testId}
+                        className={`${styles.attributeOption} ${
+                          selectedAttributes[name] === value ? styles.selected : ''
+                        } ${attr.type === 'color' ? styles.colorOption : ''}`}
+                        aria-label={`Select ${name} ${displayVal || value}`}
+                      >
+                        {attr.type === 'color' ? (
+                          <span
+                            className={styles.colorSwatch}
+                            style={{ backgroundColor: value }}
+                          />
+                        ) : (
+                          <span className={styles.textValue}>{displayVal}</span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
 
             <div className={styles.quantitySection}>
               <h3 className={styles.quantityLabel}>Quantity:</h3>
@@ -296,12 +301,12 @@ export default function ProductDetails() {
 
             <button
               onClick={handleAddToCart}
-              disabled={!product.in_stock}
-              className={`${styles.addToCart} ${!product.in_stock ? styles.disabled : ''}`}
+              disabled={!currentProduct.in_stock}
+              className={`${styles.addToCart} ${!currentProduct.in_stock ? styles.disabled : ''}`}
               data-testid="add-to-cart-btn"
-              aria-disabled={!product.in_stock}
+              aria-disabled={!currentProduct.in_stock}
             >
-              {product.in_stock ? 'ADD TO CART' : 'OUT OF STOCK'}
+              {currentProduct.in_stock ? 'ADD TO CART' : 'OUT OF STOCK'}
             </button>
 
             <div className={styles.descriptionSection}>
