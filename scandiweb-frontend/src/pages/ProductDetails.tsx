@@ -147,10 +147,7 @@ export default function ProductDetails() {
   if (error) return <p className={styles.error}>Error: {error.message}</p>;
   if (!product) return <p className={styles.notFound}>Product not found</p>;
 
-  const isAddToCartDisabled =
-  !product.in_stock ||
-  Object.keys(selectedAttributes).length < product.attributes.length;
-
+  
   return (
     <>
       <Header
@@ -249,7 +246,7 @@ export default function ProductDetails() {
                       const displayVal = getDisplayValue(attr.type, value);
 
                       const testId = isColor
-                        ? `product-attribute-color-${value.replace('#', '').toUpperCase()}`
+                        ? `product-attribute-color-${value.toUpperCase()}`
                         : attr.type === 'text'
                         ? `product-attribute-capacity-${value}`
                         : undefined;
@@ -304,16 +301,15 @@ export default function ProductDetails() {
               </div>
             </div>
 
-<button
-  onClick={handleAddToCart}
-  disabled={isAddToCartDisabled}
-  className={`${styles.addToCart} ${isAddToCartDisabled ? styles.disabled : ''}`}
-  data-testid="add-to-cart"
-  aria-disabled={isAddToCartDisabled}
->
-  {product.in_stock ? 'ADD TO CART' : 'OUT OF STOCK'}
-</button>
-
+            <button
+              onClick={handleAddToCart}
+              disabled={!product.in_stock}
+              className={`${styles.addToCart} ${!product.in_stock ? styles.disabled : ''}`}
+              data-testid="add-to-cart"
+              aria-disabled={!product.in_stock}
+            >
+              {product.in_stock ? 'ADD TO CART' : 'OUT OF STOCK'}
+            </button>
 
             <div className={styles.descriptionSection}>
               <h3 className={styles.sectionTitle}>Product Description</h3>

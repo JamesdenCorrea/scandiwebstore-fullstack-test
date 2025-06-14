@@ -4,7 +4,7 @@ import { defineConfig } from '@playwright/test';
 const isLocal = process.env.USE_REMOTE !== 'true';
 
 export default defineConfig({
-  testDir: './src/tests',
+  testDir: './tests',
   use: {
     baseURL: isLocal
       ? 'http://localhost:5173'
