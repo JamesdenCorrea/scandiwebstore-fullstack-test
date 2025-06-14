@@ -37,7 +37,8 @@ test('has product details', async ({ page }) => {
   } else {
     // Proceed with selecting attributes and adding to cart
     await page.locator('[data-testid="product-attribute-capacity-512GB"]').click();
-    await page.locator('[data-testid="product-attribute-color-#44FF03"]').click();
+    await page.locator('[data-testid="product-attribute-color-44FF03"]').click();
+
 
     await page.locator('[data-testid="increase-quantity"]').click();
     await expect(page.locator('[data-testid="quantity-value"]')).toHaveText('2');

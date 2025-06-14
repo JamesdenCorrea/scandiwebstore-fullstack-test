@@ -249,7 +249,7 @@ export default function ProductDetails() {
                       const displayVal = getDisplayValue(attr.type, value);
 
                       const testId = isColor
-                        ? `product-attribute-color-${value.toUpperCase()}`
+                        ? `product-attribute-color-${value.replace('#', '').toUpperCase()}`
                         : attr.type === 'text'
                         ? `product-attribute-capacity-${value}`
                         : undefined;
