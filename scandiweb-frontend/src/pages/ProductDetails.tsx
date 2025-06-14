@@ -147,6 +147,7 @@ export default function ProductDetails() {
   if (error) return <p className={styles.error}>Error: {error.message}</p>;
   if (!product) return <p className={styles.notFound}>Product not found</p>;
 
+  
   return (
     <>
       <Header

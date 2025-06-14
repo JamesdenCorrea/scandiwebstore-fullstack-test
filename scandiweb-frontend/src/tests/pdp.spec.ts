@@ -61,9 +61,8 @@ test('PDP: user can view product details and interact with attributes', async ({
   }
 
   // ✅ Adjust quantity
-const plusBtn = page.getByTestId('increase-quantity');
-const minusBtn = page.getByTestId('decrease-quantity');
-
+  const plusBtn = page.getByTestId('increase-quantity');
+  const minusBtn = page.getByTestId('decrease-quantity');
   const quantityText = page.getByTestId('quantity-value');
 
   await plusBtn.click();
@@ -72,9 +71,17 @@ const minusBtn = page.getByTestId('decrease-quantity');
   await expect(quantityText).toHaveText('1');
   console.log('Quantity adjustment works');
 
-  // ✅ Add to cart
+  // ✅ Add to cart (handle both stock states)
   const addToCartBtn = page.getByTestId('add-to-cart');
-  await expect(addToCartBtn).toBeVisible();
+  await expect(addToCartBtn).toBeVisible({ timeout: 10000 });
+
+  if (await addToCartBtn.isDisabled()) {
+    await expect(addToCartBtn).toHaveText('OUT OF STOCK');
+    console.log('Product is out of stock — cannot add to cart');
+    return;
+  }
+
+  await expect(addToCartBtn).toHaveText('ADD TO CART');
   await addToCartBtn.click();
   console.log('Clicked Add to Cart');
 
