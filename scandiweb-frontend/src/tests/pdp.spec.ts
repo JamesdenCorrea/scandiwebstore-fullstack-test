@@ -72,7 +72,7 @@ test('PDP: user can view product details and interact with attributes', async ({
   console.log('Quantity adjustment works');
 
   // ✅ Add to cart
-  const addToCartBtn = page.getByTestId('add-to-cart-btn');
+  const addToCartBtn = page.getByTestId('add-to-cart');
   await expect(addToCartBtn).toBeVisible();
   await addToCartBtn.click();
   console.log('Clicked Add to Cart');
