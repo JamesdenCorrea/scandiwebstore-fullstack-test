@@ -36,7 +36,11 @@ test('PDP: user can view product details and interact with attributes', async ({
 
   if (count === 0) throw new Error('No products found');
 
-  await productCards.first().getByTestId('product-card-image').click();
+  // ✅ Click the correct product ID
+  await page.locator('[data-testid="product-apple-iphone-12-pro"]')
+    .getByTestId('product-card-image')
+    .click();
+
   await expect(page.getByTestId('pdp-title')).toBeVisible({ timeout: 10000 });
   console.log('Navigated to PDP');
 
