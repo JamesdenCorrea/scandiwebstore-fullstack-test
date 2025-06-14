@@ -138,13 +138,12 @@ export default function ProductDetails() {
     return parse(cleanHtml);
   };
 
-  if (loading)
-    return (
-      <div className={styles.loadingContainer}>
-        <div className={styles.spinner}></div>
-        <p>Loading product details...</p>
-      </div>
-    );
+  if (loading) return (
+    <div className={styles.loadingContainer}>
+      <div className={styles.spinner}></div>
+      <p>Loading product details...</p>
+    </div>
+  );
   if (error) return <p className={styles.error}>Error: {error.message}</p>;
   if (!product) return <p className={styles.notFound}>Product not found</p>;
 
@@ -180,9 +179,7 @@ export default function ProductDetails() {
                     key={i}
                     src={img}
                     alt={`${product.name || 'Product'} ${i}`}
-                    className={`${styles.thumbnail} ${
-                      activeImage === img ? styles.activeThumbnail : ''
-                    }`}
+                    className={`${styles.thumbnail} ${activeImage === img ? styles.activeThumbnail : ''}`}
                     onClick={() => setActiveImage(img)}
                     data-testid={`thumbnail-${i}`}
                   />
@@ -246,26 +243,18 @@ export default function ProductDetails() {
                   >
                     {attr.values.map((value) => {
                       const displayVal = getDisplayValue(attr.type, value);
-                      const valueTestId =
-  isColor
-    ? `product-attribute-color-${value.toUpperCase()}`
-    : attr.type === 'text'
-    ? `product-attribute-capacity-${value}`
-    : undefined;
 
+                      const testId = isColor
+                        ? `product-attribute-color-${value.toUpperCase()}`
+                        : attr.type === 'text'
+                        ? `product-attribute-capacity-${value}`
+                        : undefined;
 
                       return (
                         <button
                           key={value}
                           onClick={() => handleAttributeChange(name, value)}
-                          data-testid={
-  isColor
-    ? `product-attribute-color-${value.toUpperCase()}`
-    : attr.type === 'text'
-    ? `product-attribute-capacity-${value}`
-    : undefined
-}
-
+                          data-testid={testId}
                           className={`${styles.attributeOption} ${
                             selectedAttributes[name] === value ? styles.selected : ''
                           } ${isColor ? styles.colorOption : ''}`}
