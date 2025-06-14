@@ -72,7 +72,21 @@ export default function ProductDetails() {
   const [activeImage, setActiveImage] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
 
-  const product: Product | undefined = data?.products?.find((p) => p.id === id);
+ const rawProduct = data?.products?.find((p) => p.id === id);
+
+const product: Product | undefined = rawProduct
+  ? {
+      ...rawProduct,
+      attributes: rawProduct.attributes.flatMap((attrSet: any) =>
+        attrSet.items.map((item: any) => ({
+          name: attrSet.name,
+          type: attrSet.type === 'swatch' ? 'color' : 'text',
+          value: item.value,
+        }))
+      ),
+    }
+  : undefined;
+
 
   const uniqueImages = useMemo(() => {
     if (!product) return [];
