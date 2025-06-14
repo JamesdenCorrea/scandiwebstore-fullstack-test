@@ -226,7 +226,7 @@ export default function ProductDetails() {
             </div>
 
             {Object.entries(groupedAttributes).map(([name, attr]) => {
-              const isColor = attr.type === 'color';
+              const isColor = attr.type === 'color' || attr.type === 'swatch';
               const groupTestId = isColor
                 ? 'product-attribute-color'
                 : attr.type === 'text'
@@ -265,7 +265,7 @@ export default function ProductDetails() {
     ? `product-attribute-capacity-${value}`
     : undefined
 }
-  
+
                           className={`${styles.attributeOption} ${
                             selectedAttributes[name] === value ? styles.selected : ''
                           } ${isColor ? styles.colorOption : ''}`}
