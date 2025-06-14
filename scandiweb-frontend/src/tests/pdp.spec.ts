@@ -1,3 +1,4 @@
+// scandiweb-frontend/src/tests/pdp.spec.ts
 import { test, expect } from '@playwright/test';
 
 test('should display product details page and allow adding to cart', async ({ page }) => {
@@ -9,40 +10,40 @@ test('should display product details page and allow adding to cart', async ({ pa
   // Wait for the PDP title to be visible
   await expect(page.getByTestId('pdp-title')).toBeVisible();
 
-  // Wait for attributes to render (optional based on your product)
+  // Wait for price section and other info to load
   await expect(page.getByTestId('price-section')).toBeVisible();
 
   // Check if the Add to Cart button is visible
   const addToCartBtn = page.getByTestId('add-to-cart');
   await expect(addToCartBtn).toBeVisible();
 
-  // OPTIONAL: Check whether it is disabled
+  // Check whether it's disabled (i.e., out of stock)
   const isDisabled = await addToCartBtn.isDisabled();
 
   if (isDisabled) {
     console.log('Product is out of stock – skipping Add to Cart flow.');
-    // Optionally assert it's correctly disabled
     await expect(addToCartBtn).toBeDisabled();
   } else {
-    // Select attribute options if necessary (color, capacity, etc.)
+    // Select capacity attribute if present
     const capacityOption = page.locator('[data-testid^="product-attribute-capacity-"]').first();
     if (await capacityOption.isVisible()) {
       await capacityOption.click();
     }
 
+    // Select color attribute if present
     const colorOption = page.locator('[data-testid^="product-attribute-color-"]').first();
     if (await colorOption.isVisible()) {
       await colorOption.click();
     }
 
-    // Adjust quantity
+    // Increase quantity
     await page.getByTestId('increase-quantity').click();
     await expect(page.getByTestId('quantity-value')).toHaveText('2');
 
     // Click Add to Cart
     await addToCartBtn.click();
 
-    // Assert that the CartOverlay opened
+    // Assert CartOverlay becomes visible
     await expect(page.getByTestId('cart-overlay')).toBeVisible();
   }
 });
