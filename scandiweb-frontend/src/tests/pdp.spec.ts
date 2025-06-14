@@ -36,7 +36,7 @@ test('PDP: user can view product details and interact with attributes', async ({
 
   if (count === 0) throw new Error('No products found');
 
-  // ✅ Click the correct product ID
+  // ✅ Click the specific product
   await page.locator('[data-testid="product-apple-iphone-12-pro"]')
     .getByTestId('product-card-image')
     .click();
@@ -71,21 +71,21 @@ test('PDP: user can view product details and interact with attributes', async ({
   await expect(quantityText).toHaveText('1');
   console.log('Quantity adjustment works');
 
-  // ✅ Add to cart (handle both stock states)
+  // ✅ Add to cart if available
   const addToCartBtn = page.getByTestId('add-to-cart');
   await expect(addToCartBtn).toBeVisible({ timeout: 10000 });
 
   if (await addToCartBtn.isDisabled()) {
     await expect(addToCartBtn).toHaveText('OUT OF STOCK');
     console.log('Product is out of stock — cannot add to cart');
-    return;
+    return; // Skip rest of test
   }
 
   await expect(addToCartBtn).toHaveText('ADD TO CART');
   await addToCartBtn.click();
   console.log('Clicked Add to Cart');
 
-  // ✅ Optional: open cart and verify product shows up
+  // ✅ Open cart and verify product is added
   await page.getByTestId('cart-btn').click();
   await expect(page.getByTestId('cart-overlay')).toBeVisible();
   const itemsInCart = await page.locator('[data-testid="cart-overlay"] .cartItem').count();
