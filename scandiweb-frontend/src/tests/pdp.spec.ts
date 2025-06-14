@@ -1,72 +1,82 @@
 import { test, expect } from '@playwright/test';
 
-const BASE_URL = process.env.BASE_URL || 'http://localhost:5173';
+test.describe.configure({ mode: 'serial' });
 
-test('product detail page shows correct info and allows adding to cart', async ({ page }) => {
-  // Navigate to product listing page using BASE_URL
-  await page.goto(`${BASE_URL}/all`);
+test('PDP: user can view product details and interact with attributes', async ({ page }) => {
+  page.on('console', msg => console.log(`[Browser Console] ${msg.text()}`));
+  page.on('response', res => console.log(`[Response] ${res.status()} ${res.url()}`));
+  page.on('request', req => console.log(`[Request] ${req.method()} ${req.url()}`));
 
-  // Wait for products or error message
-  await Promise.race([
-    page.waitForSelector('[data-testid="product-card"]', { state: 'attached', timeout: 15000 }),
-    page.waitForSelector('[data-testid="error-message"]', { state: 'visible', timeout: 15000 })
-  ]);
+  await page.goto('/', { waitUntil: 'networkidle', timeout: 30000 });
+  console.log('Navigated to home page');
 
-  const productCards = page.locator('[data-testid="product-card"]');
+  try {
+    await Promise.race([
+      page.waitForSelector('[data-testid="product-card"]', { state: 'attached', timeout: 15000 }),
+      page.waitForSelector('[data-testid="no-products-message"]', { state: 'visible', timeout: 15000 }),
+      page.waitForSelector('[data-testid="error-message"]', { state: 'visible', timeout: 15000 }),
+    ]);
+  } catch (error) {
+    console.error('Failed to find products or status messages');
+    throw error;
+  }
+
+  if (await page.getByTestId('error-message').isVisible()) {
+    const errorText = await page.getByTestId('error-message').textContent();
+    throw new Error(`Product loading error: ${errorText}`);
+  }
+
+  if (await page.getByTestId('no-products-message').isVisible()) {
+    throw new Error('No products available in the store');
+  }
+
+  const productCards = page.getByTestId('product-card');
   const count = await productCards.count();
+  console.log(`Found ${count} product cards`);
 
-  if (count === 0) {
-    const errorVisible = await page.locator('[data-testid="error-message"]').isVisible();
-    if (errorVisible) {
-      const errorText = await page.locator('[data-testid="error-message"]').textContent();
-      throw new Error(`Products failed to load: ${errorText}`);
-    }
-    throw new Error('No products found and no error message displayed');
-  }
+  if (count === 0) throw new Error('No products found');
 
-  expect(count).toBeGreaterThan(0);
+  await productCards.first().getByTestId('product-card-image').click();
+  await expect(page.getByTestId('pdp-title')).toBeVisible({ timeout: 10000 });
+  console.log('Navigated to PDP');
 
-  // Find and click first in-stock product
-  let productClicked = false;
-  for (let i = 0; i < count; i++) {
-    const card = productCards.nth(i);
-    const outOfStockText = await card.locator('[data-testid="add-to-cart-btn"]').textContent();
-    const isOutOfStock = outOfStockText?.trim().toLowerCase() === 'out of stock';
+  // ✅ Ensure gallery is present
+  await expect(page.getByTestId('image-gallery')).toBeVisible();
 
-    if (!isOutOfStock) {
-      await card.locator('[data-testid="product-card-image"]').click();
-      productClicked = true;
-      break;
-    }
-  }
-
-  if (!productClicked) {
-    throw new Error('No in-stock product found to test PDP functionality.');
-  }
-
-  // Wait for PDP to load
-  await page.waitForSelector('[data-testid="pdp-title"]', { state: 'visible', timeout: 10000 });
-
-  // Check add to cart button
-  const addToCartButton = page.locator('[data-testid="add-to-cart-btn"]');
-  await expect(addToCartButton).toBeVisible();
-  await expect(addToCartButton).toBeEnabled();
-
-  // Select attribute options if present
+  // ✅ Select swatch or text attributes
   const attributeSections = page.locator('[data-testid^="attribute-"]');
-  const sectionCount = await attributeSections.count();
+  const attrCount = await attributeSections.count();
 
-  for (let i = 0; i < sectionCount; i++) {
-    const firstOption = attributeSections.nth(i).locator('[data-testid="attribute-item"]').first();
-    if (await firstOption.isVisible()) {
-      await firstOption.click();
+  for (let i = 0; i < attrCount; i++) {
+    const attributeItems = attributeSections.nth(i).locator('[data-testid="attribute-item"]');
+    const itemCount = await attributeItems.count();
+    if (itemCount > 0) {
+      await attributeItems.first().click();
+      console.log(`Selected attribute ${i + 1}`);
     }
   }
 
-  // Add to cart
-  await addToCartButton.click();
+  // ✅ Adjust quantity
+  const plusBtn = page.getByTestId('quantity-plus');
+  const minusBtn = page.getByTestId('quantity-minus');
+  const quantityText = page.getByTestId('quantity-value');
 
-  // Verify cart overlay
-  await page.waitForSelector('[data-testid="cart-overlay"]', { state: 'visible', timeout: 5000 });
-  await expect(page.locator('[data-testid="cart-overlay"]')).toBeVisible();
+  await plusBtn.click();
+  await expect(quantityText).toHaveText('2');
+  await minusBtn.click();
+  await expect(quantityText).toHaveText('1');
+  console.log('Quantity adjustment works');
+
+  // ✅ Add to cart
+  const addToCartBtn = page.getByTestId('add-to-cart-btn');
+  await expect(addToCartBtn).toBeVisible();
+  await addToCartBtn.click();
+  console.log('Clicked Add to Cart');
+
+  // ✅ Optional: open cart and verify product shows up
+  await page.getByTestId('cart-btn').click();
+  await expect(page.getByTestId('cart-overlay')).toBeVisible();
+  const itemsInCart = await page.locator('[data-testid="cart-overlay"] .cartItem').count();
+  expect(itemsInCart).toBeGreaterThan(0);
+  console.log(`Product added to cart: ${itemsInCart} item(s) found`);
 });

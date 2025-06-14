@@ -1,4 +1,3 @@
-// scandiweb-frontend/src/pages/ProductDetails.tsx
 import React, { useEffect, useState, useMemo } from 'react';
 import { gql, useQuery } from '@apollo/client';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -26,9 +25,9 @@ type Product = {
   in_stock: boolean;
 };
 
-const PRODUCTS_QUERY = gql`
-  query {
-    products {
+const PRODUCT_BY_ID_QUERY = gql`
+  query GetProductById($id: String!) {
+    product(id: $id) {
       id
       name
       brand
@@ -65,28 +64,18 @@ export default function ProductDetails() {
   const navigate = useNavigate();
   const { addToCart, cartItems } = useCart();
 
-  const { loading, error, data } = useQuery(PRODUCTS_QUERY);
+  const { loading, error, data } = useQuery(PRODUCT_BY_ID_QUERY, {
+    variables: { id },
+    skip: !id,
+  });
+
+  const product: Product | undefined = data?.product;
+
   const [selectedAttributes, setSelectedAttributes] = useState<Record<string, string>>({});
   const [quantity, setQuantity] = useState(1);
   const [showCart, setShowCart] = useState(false);
   const [activeImage, setActiveImage] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
-
- const rawProduct = data?.products?.find((p) => p.id === id);
-
-const product: Product | undefined = rawProduct
-  ? {
-      ...rawProduct,
-      attributes: rawProduct.attributes.flatMap((attrSet: any) =>
-        attrSet.items.map((item: any) => ({
-          name: attrSet.name,
-          type: attrSet.type === 'swatch' ? 'color' : 'text',
-          value: item.value,
-        }))
-      ),
-    }
-  : undefined;
-
 
   const uniqueImages = useMemo(() => {
     if (!product) return [];
@@ -236,60 +225,59 @@ const product: Product | undefined = rawProduct
               </p>
             </div>
 
-{Object.entries(groupedAttributes).map(([name, attr]) => {
-  const isColor = attr.type === 'color';
-  const groupTestId = isColor
-    ? 'product-attribute-color'
-    : attr.type === 'text'
-    ? 'product-attribute-capacity'
-    : undefined;
+            {Object.entries(groupedAttributes).map(([name, attr]) => {
+              const isColor = attr.type === 'color';
+              const groupTestId = isColor
+                ? 'product-attribute-color'
+                : attr.type === 'text'
+                ? 'product-attribute-capacity'
+                : undefined;
 
-  return (
-    <div
-      key={name}
-      className={styles.attributeGroup}
-      data-testid={`attribute-group-${toKebabCase(name)}`}
-    >
-      <h3 className={styles.attributeName}>{name}:</h3>
-      <div
-        className={styles.attributeOptions}
-        {...(groupTestId ? { 'data-testid': groupTestId } : {})}
-      >
-        {attr.values.map((value) => {
-          const displayVal = getDisplayValue(attr.type, value);
-          const valueTestId =
-            isColor
-              ? `product-attribute-color-${value}`
-              : attr.type === 'text'
-              ? `product-attribute-capacity-${value}`
-              : undefined;
+              return (
+                <div
+                  key={name}
+                  className={styles.attributeGroup}
+                  data-testid={`attribute-group-${toKebabCase(name)}`}
+                >
+                  <h3 className={styles.attributeName}>{name}:</h3>
+                  <div
+                    className={styles.attributeOptions}
+                    {...(groupTestId ? { 'data-testid': groupTestId } : {})}
+                  >
+                    {attr.values.map((value) => {
+                      const displayVal = getDisplayValue(attr.type, value);
+                      const valueTestId =
+                        isColor
+                          ? `product-attribute-color-${value}`
+                          : attr.type === 'text'
+                          ? `product-attribute-capacity-${value}`
+                          : undefined;
 
-          return (
-            <button
-              key={value}
-              onClick={() => handleAttributeChange(name, value)}
-              data-testid={valueTestId}
-              className={`${styles.attributeOption} ${
-                selectedAttributes[name] === value ? styles.selected : ''
-              } ${isColor ? styles.colorOption : ''}`}
-              aria-label={`Select ${name} ${displayVal || value}`}
-            >
-              {isColor ? (
-                <span
-                  className={styles.colorSwatch}
-                  style={{ backgroundColor: value }}
-                />
-              ) : (
-                <span className={styles.textValue}>{displayVal}</span>
-              )}
-            </button>
-          );
-        })}
-      </div>
-    </div>
-  );
-})}
-
+                      return (
+                        <button
+                          key={value}
+                          onClick={() => handleAttributeChange(name, value)}
+                          data-testid={valueTestId}
+                          className={`${styles.attributeOption} ${
+                            selectedAttributes[name] === value ? styles.selected : ''
+                          } ${isColor ? styles.colorOption : ''}`}
+                          aria-label={`Select ${name} ${displayVal || value}`}
+                        >
+                          {isColor ? (
+                            <span
+                              className={styles.colorSwatch}
+                              style={{ backgroundColor: value }}
+                            />
+                          ) : (
+                            <span className={styles.textValue}>{displayVal}</span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
 
             <div className={styles.quantitySection}>
               <h3 className={styles.quantityLabel}>Quantity:</h3>

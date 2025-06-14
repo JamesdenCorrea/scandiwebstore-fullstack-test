@@ -173,9 +173,13 @@ setTimeout(() => {
                         className={styles.quantityButton}>
                         −
                       </button>
-                      <span className={styles.quantityValue}>
-                        {item.quantity}
-                      </span>
+<span
+  className={styles.quantityValue}
+  data-testid="cart-item-quantity"
+>
+  {item.quantity}
+</span>
+
                       <button
                         onClick={() =>
                           updateQuantity(

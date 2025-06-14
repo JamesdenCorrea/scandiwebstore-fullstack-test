@@ -1,3 +1,5 @@
+import { useNavigate } from 'react-router-dom';
+
 type Attribute = {
   name: string;
   value: string;
@@ -21,32 +23,35 @@ type Product = {
 type ProductCardProps = {
   product: Product;
   onAddToCart?: () => void;
-  onClickImage?: () => void;
   'data-testid'?: string;
 };
 
 export default function ProductCard({
   product,
   onAddToCart,
-  onClickImage,
   'data-testid': testId,
 }: ProductCardProps) {
-  const { name, image, price, inStock, attributes, brand } = product;
+  const navigate = useNavigate();
+  const { id, name, image, price, inStock, attributes, brand } = product;
 
   const hasAttributes = attributes && attributes.length > 0;
 
   const handleAddToCart = () => {
     if (!inStock) return;
     if (hasAttributes) {
-      onClickImage?.();
+      navigate(`/product/${id}`);
     } else {
       onAddToCart?.();
     }
   };
 
+  const handleNavigateToPDP = () => {
+    navigate(`/product/${id}`);
+  };
+
   return (
     <div
-      data-testid={testId ?? `product-${product.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9\-]/g, '')}`}
+      data-testid={testId ?? `product-${id}`}
       style={{
         border: '1px solid #ddd',
         boxShadow: '0 4px 12px rgba(106, 13, 173, 0.15)',
@@ -80,7 +85,7 @@ export default function ProductCard({
       <img
         src={image}
         alt={name}
-        onClick={onClickImage}
+        onClick={handleNavigateToPDP}
         data-testid="product-card-image"
         style={{
           width: '100%',

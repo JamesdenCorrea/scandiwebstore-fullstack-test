@@ -77,7 +77,8 @@ test('user can add item to cart and place an order', async ({ page }) => {
 
       if (!(await addToCartBtn.isDisabled())) {
         await addToCartBtn.click();
-        console.log('Added product to cart');
+        await addToCartBtn.click(); // Add twice to make quantity 2
+        console.log('Added product to cart twice');
         productFound = true;
         break;
       } else {
@@ -112,20 +113,22 @@ test('user can add item to cart and place an order', async ({ page }) => {
   await expect(cartOverlay).toBeVisible({ timeout: 5000 });
   console.log('Cart overlay opened');
 
+  // ✅ Assert that quantity is 2
+  const quantityText = await page.getByTestId('cart-item-quantity').textContent();
+  expect(quantityText?.trim()).toBe('2');
+  console.log('Verified cart item quantity is 2');
+
   await page.getByTestId('place-order-btn').click();
 
-  // ✅ Updated wait and assertion for success message
-const orderSuccess = page.getByTestId('order-success');
+  const orderSuccess = page.getByTestId('order-success');
 
-// 🔄 Wait longer because toast might appear slightly delayed and disappears after 3s
-await expect(orderSuccess).toHaveText(/order placed successfully/i, {
-  timeout: 8000,
-});
+  await expect(orderSuccess).toHaveText(/order placed successfully/i, {
+    timeout: 8000,
+  });
 
-await expect(orderSuccess).toBeVisible(); // Ensure it's not skipped due to fast timeout
-console.log('Order success message shown');
+  await expect(orderSuccess).toBeVisible();
+  console.log('Order success message shown');
 
-
-  // ✅ Optional: Confirm toast disappears after 3s
+  // Optional: Verify toast disappears
   // await expect(orderSuccess).toBeHidden({ timeout: 4000 });
 });
