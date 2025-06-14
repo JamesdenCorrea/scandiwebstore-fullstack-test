@@ -1,4 +1,3 @@
-// full-stack/pdp.spec.ts
 import { test, expect } from '@playwright/test';
 
 test('has product details', async ({ page }) => {
@@ -14,6 +13,10 @@ test('has product details', async ({ page }) => {
 
   await page.locator('[data-testid="product-iphone-12-pro"]').click();
 
+  // Wait for loading to appear and disappear
+  await page.waitForSelector('[data-testid="loading-indicator"]', { state: 'visible' });
+  await page.waitForSelector('[data-testid="loading-indicator"]', { state: 'hidden' });
+
   await expect(page.locator('[data-testid="pdp-title"]')).toBeVisible();
   await expect(page.locator('[data-testid="product-attribute-capacity-512GB"]')).toBeVisible();
   await expect(page.locator('[data-testid="product-attribute-color-#44FF03"]')).toBeVisible();
@@ -22,9 +25,10 @@ test('has product details', async ({ page }) => {
   const addToCart = page.locator('[data-testid="add-to-cart"]');
   await expect(addToCart).toBeVisible();
 
-  const isDisabled = await addToCart.isDisabled();
+  // Check if product is out of stock using the visual indicator
+  const isOutOfStock = await page.locator('[data-testid="out-of-stock"]').isVisible();
 
-  if (isDisabled) {
+  if (isOutOfStock) {
     console.log('Product is out of stock — button is disabled.');
     await expect(addToCart).toBeDisabled();
   } else {

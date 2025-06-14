@@ -139,7 +139,7 @@ export default function ProductDetails() {
   };
 
   if (loading) return (
-    <div className={styles.loadingContainer}>
+    <div className={styles.loadingContainer} data-testid="loading-indicator">
       <div className={styles.spinner}></div>
       <p>Loading product details...</p>
     </div>
