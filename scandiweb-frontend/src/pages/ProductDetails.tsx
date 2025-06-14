@@ -247,17 +247,25 @@ export default function ProductDetails() {
                     {attr.values.map((value) => {
                       const displayVal = getDisplayValue(attr.type, value);
                       const valueTestId =
-                        isColor
-                          ? `product-attribute-color-${value}`
-                          : attr.type === 'text'
-                          ? `product-attribute-capacity-${value}`
-                          : undefined;
+  isColor
+    ? `product-attribute-color-${value.toUpperCase()}`
+    : attr.type === 'text'
+    ? `product-attribute-capacity-${value}`
+    : undefined;
+
 
                       return (
                         <button
                           key={value}
                           onClick={() => handleAttributeChange(name, value)}
-                          data-testid={valueTestId}
+                          data-testid={
+  isColor
+    ? `product-attribute-color-${value.toUpperCase()}`
+    : attr.type === 'text'
+    ? `product-attribute-capacity-${value}`
+    : undefined
+}
+  
                           className={`${styles.attributeOption} ${
                             selectedAttributes[name] === value ? styles.selected : ''
                           } ${isColor ? styles.colorOption : ''}`}
