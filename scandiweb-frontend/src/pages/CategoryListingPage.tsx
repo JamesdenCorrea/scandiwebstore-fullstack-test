@@ -1,3 +1,4 @@
+// scandiweb-frontend/src/pages/CategoryListingPage.tsx
 import React, { useState, useMemo } from 'react';
 import { gql, useQuery } from '@apollo/client';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -6,37 +7,21 @@ import ProductCard from '../components/ProductCard';
 import CartOverlay from '../components/CartOverlay';
 import { useCart } from '../context/CartContext';
 import './CategoryListingPage.css';
+import type { Product, CartItem, Attribute } from '../types'; // ✅ Use shared types
 
 const DESIRED_CATEGORIES = ['All', 'Clothes', 'Tech'];
 
-export type AttributeItem = {
+type AttributeItem = {
   id: string;
   displayValue: string;
   value: string;
 };
 
-export type Attribute = {
+type RawAttribute = {
   id: string;
   name: string;
   type: string;
   items: AttributeItem[];
-  value: string; // ✅ Added to match types.ts expectations
-};
-
-export type Product = {
-  id: string;
-  sku: string;
-  name: string;
-  price: number;
-  type: string;
-  attributes: Attribute[];
-  category: string;
-  brand: string;
-  image_url: string;
-  image: string;
-  inStock: boolean;
-  description?: string;
-  gallery: string[];
 };
 
 type RawProduct = {
@@ -50,7 +35,7 @@ type RawProduct = {
   image_url: string;
   in_stock: number;
   description?: string;
-  attributes: Omit<Attribute, 'value'>[]; // Raw from API doesn't include 'value'
+  attributes: RawAttribute[];
   gallery: string[];
 };
 
@@ -107,10 +92,16 @@ export default function CategoryListingPage() {
       return [];
     }
 
-    return data.products.map((p: RawProduct) => {
+    return data.products.map((p: RawProduct): Product => {
       const fallbackImage = 'https://via.placeholder.com/300';
       const gallery = p.gallery && p.gallery.length > 0 ? p.gallery : [p.image_url || fallbackImage];
       const uniqueGallery = Array.from(new Set([p.image_url, ...gallery]));
+
+      const parsedAttributes: Attribute[] = (p.attributes || []).map(attr => ({
+        name: attr.name,
+        type: attr.type,
+        value: '', // ✅ Required by shared `Attribute` type
+      }));
 
       return {
         id: p.id,
@@ -118,17 +109,10 @@ export default function CategoryListingPage() {
         name: p.name,
         price: p.price,
         type: p.type,
+        attributes: parsedAttributes,
         category: p.category,
-        brand: p.brand ?? '',
-        image_url: p.image_url || fallbackImage,
         image: p.image_url || fallbackImage,
         inStock: p.in_stock > 0,
-        description: p.description,
-        attributes: (p.attributes || []).map(attr => ({
-          ...attr,
-          value: '', // ✅ Add default value for compatibility
-        })),
-        gallery: uniqueGallery,
       };
     });
   }, [data]);
@@ -156,19 +140,15 @@ export default function CategoryListingPage() {
     }
 
     if (product.attributes.length === 0) {
-      addToCart({
+      const cartItem: CartItem = {
         ...product,
         quantity: 1,
         selectedAttributes: {},
-        image: product.image_url,
-      });
+      };
+      addToCart(cartItem);
     } else {
       navigate(`/product/${product.id}`);
     }
-  };
-
-  const handleImageClick = (productId: string) => {
-    navigate(`/product/${productId}`);
   };
 
   const handleOrderPlaced = () => {
