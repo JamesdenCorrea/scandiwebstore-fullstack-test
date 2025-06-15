@@ -1,4 +1,3 @@
-// scandiweb-frontend/src/pages/CategoryListingPage.tsx
 import React, { useState, useMemo } from 'react';
 import { gql, useQuery } from '@apollo/client';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -10,10 +9,18 @@ import './CategoryListingPage.css';
 
 const DESIRED_CATEGORIES = ['All', 'Clothes', 'Tech'];
 
-export type Attribute = {
-  name: string;
+export type AttributeItem = {
+  id: string;
+  displayValue: string;
   value: string;
+};
+
+export type Attribute = {
+  id: string;
+  name: string;
   type: string;
+  items: AttributeItem[];
+  value: string; // ✅ Added to match types.ts expectations
 };
 
 export type Product = {
@@ -43,7 +50,7 @@ type RawProduct = {
   image_url: string;
   in_stock: number;
   description?: string;
-  attributes: Attribute[];
+  attributes: Omit<Attribute, 'value'>[]; // Raw from API doesn't include 'value'
   gallery: string[];
 };
 
@@ -75,8 +82,6 @@ const PRODUCTS_QUERY = gql`
   }
 `;
 
-
-
 export default function CategoryListingPage() {
   const { cartItems, addToCart } = useCart();
   const location = useLocation();
@@ -93,7 +98,7 @@ export default function CategoryListingPage() {
       : currentCategory.charAt(0).toUpperCase() + currentCategory.slice(1);
 
   const { loading, error, data } = useQuery(PRODUCTS_QUERY, {
-    fetchPolicy: "cache-and-network",
+    fetchPolicy: 'cache-and-network',
   });
 
   const products: Product[] = useMemo(() => {
@@ -119,28 +124,30 @@ export default function CategoryListingPage() {
         image: p.image_url || fallbackImage,
         inStock: p.in_stock > 0,
         description: p.description,
-        attributes: p.attributes || [],
+        attributes: (p.attributes || []).map(attr => ({
+          ...attr,
+          value: '', // ✅ Add default value for compatibility
+        })),
         gallery: uniqueGallery,
       };
     });
   }, [data]);
 
-const filteredProducts = useMemo(() => {
-  if (selectedCategory === 'All') return products;
+  const filteredProducts = useMemo(() => {
+    if (selectedCategory === 'All') return products;
 
-  const categoryMap: Record<string, string[]> = {
-    tech: ['tech', 'phones', 'mobiles', 'electronics', 'gadgets'],
-    clothes: ['clothes', 'apparel', 'wearables'],
-  };
+    const categoryMap: Record<string, string[]> = {
+      tech: ['tech', 'phones', 'mobiles', 'electronics', 'gadgets'],
+      clothes: ['clothes', 'apparel', 'wearables'],
+    };
 
-  const normalizedSelected = selectedCategory.toLowerCase();
-  const validCategories = categoryMap[normalizedSelected] || [normalizedSelected];
+    const normalizedSelected = selectedCategory.toLowerCase();
+    const validCategories = categoryMap[normalizedSelected] || [normalizedSelected];
 
-  return products.filter((p) =>
-    validCategories.includes(p.category.toLowerCase())
-  );
-}, [products, selectedCategory]);
-
+    return products.filter((p) =>
+      validCategories.includes(p.category.toLowerCase())
+    );
+  }, [products, selectedCategory]);
 
   const handleAddToCart = (product: Product) => {
     if (!product.inStock) {
@@ -173,7 +180,7 @@ const filteredProducts = useMemo(() => {
   return (
     <div className="category-listing-page">
       <Header
-        onCartClick={() => setShowCart(prev => !prev)}
+        onCartClick={() => setShowCart((prev) => !prev)}
         cartItemCount={cartItems.length}
         title="Scandiweb Store"
         categories={DESIRED_CATEGORIES}
@@ -193,7 +200,7 @@ const filteredProducts = useMemo(() => {
           </div>
         )}
 
-       {loading && !data?.products && (
+        {loading && !data?.products && (
           <p data-testid="loading-indicator" className="status-message">
             Loading products...
           </p>
@@ -208,8 +215,8 @@ const filteredProducts = useMemo(() => {
           {selectedCategory}
         </h1>
 
-        <main 
-          data-testid="products-grid" 
+        <main
+          data-testid="products-grid"
           className="products-grid"
           aria-busy={loading}
         >
@@ -220,13 +227,15 @@ const filteredProducts = useMemo(() => {
           )}
 
           {filteredProducts.map((product) => (
-<ProductCard
-  key={product.id}
-  product={product}
-  onAddToCart={() => handleAddToCart(product)}
-  data-testid={`product-${product.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9\-]/g, '')}`}
-/>
-
+            <ProductCard
+              key={product.id}
+              product={product}
+              onAddToCart={() => handleAddToCart(product)}
+              data-testid={`product-${product.name
+                .toLowerCase()
+                .replace(/\s+/g, '-')
+                .replace(/[^a-z0-9\-]/g, '')}`}
+            />
           ))}
         </main>
 
