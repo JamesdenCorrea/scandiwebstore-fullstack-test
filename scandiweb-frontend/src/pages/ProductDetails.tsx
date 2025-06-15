@@ -143,13 +143,13 @@ export default function ProductDetails() {
     return parse(cleanHtml);
   };
 
-const isAddToCartDisabled =
-  !product?.in_stock ||
-  product.attributes.some(
-    (attr) =>
-      !selectedAttributes[attr.name] ||
-      !groupedAttributes[attr.name]?.values.includes(selectedAttributes[attr.name])
-  );
+  const isAddToCartDisabled =
+    !product?.in_stock ||
+    product.attributes.some(
+      (attr) =>
+        !selectedAttributes[attr.name] ||
+        !groupedAttributes[attr.name]?.values.includes(selectedAttributes[attr.name])
+    );
 
   if (loading) {
     return (
@@ -195,7 +195,9 @@ const isAddToCartDisabled =
                     key={i}
                     src={img}
                     alt={`${product.name || 'Product'} ${i}`}
-                    className={`${styles.thumbnail} ${activeImage === img ? styles.activeThumbnail : ''}`}
+                    className={`${styles.thumbnail} ${
+                      activeImage === img ? styles.activeThumbnail : ''
+                    }`}
                     onClick={() => setActiveImage(img)}
                     data-testid={`thumbnail-${i}`}
                   />
@@ -253,15 +255,21 @@ const isAddToCartDisabled =
                     {attr.values.map((value) => {
                       const displayVal = getDisplayValue(attr.type, value);
                       const testId = isColor
-                        ? `product-attribute-color-${displayVal}`
+                        ? `product-attribute-color-${value}`
                         : `product-attribute-${attributeType}-${value}`;
+                      const testIdAlias = isColor
+                        ? `product-attribute-color-${displayVal}`
+                        : undefined;
 
                       return (
                         <button
                           key={value}
                           onClick={() => handleAttributeChange(name, value)}
                           data-testid={testId}
-                          className={`${styles.attributeOption} ${selectedAttributes[name] === value ? styles.selected : ''} ${isColor ? styles.colorOption : ''}`}
+                          {...(testIdAlias ? { 'data-testid-alias': testIdAlias } : {})}
+                          className={`${styles.attributeOption} ${
+                            selectedAttributes[name] === value ? styles.selected : ''
+                          } ${isColor ? styles.colorOption : ''}`}
                         >
                           {isColor ? (
                             <span
