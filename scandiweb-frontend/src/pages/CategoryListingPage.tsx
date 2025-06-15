@@ -62,12 +62,19 @@ const PRODUCTS_QUERY = gql`
       description
       gallery
       attributes {
+        id
         name
         type
+        items {
+          id
+          displayValue
+          value
+        }
       }
     }
   }
 `;
+
 
 
 export default function CategoryListingPage() {
