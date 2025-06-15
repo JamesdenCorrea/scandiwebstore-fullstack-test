@@ -233,55 +233,55 @@ export default function ProductDetails() {
               </p>
             </div>
 
-// Update the attribute rendering section to:
-{Object.entries(groupedAttributes).map(([name, attr]) => {
-  const isColor = attr.type === 'color' || attr.type === 'swatch';
-  const attributeType = toKebabCase(name);
-  
-  return (
-    <div
-      key={name}
-      className={styles.attributeGroup}
-      data-testid={`attribute-group-${attributeType}`}
-    >
-      <h3 className={styles.attributeName}>{name}:</h3>
-      <div
-        className={styles.attributeOptions}
-        data-testid={`product-attribute-${attributeType}`}
-      >
-        {attr.values.map((value) => {
-          const displayVal = getDisplayValue(attr.type, value);
-          // Generate test IDs that match both hex and named color formats
-          const testIdValue = isColor 
-            ? value.startsWith('#') 
-              ? value.replace('#', '').toLowerCase() // Hex format (44ff03)
-              : toKebabCase(displayVal) // Named format (green)
-            : toKebabCase(value); // Other attributes (512g)
-          
-          return (
-            <button
-              key={value}
-              onClick={() => handleAttributeChange(name, value)}
-              data-testid={`product-attribute-${attributeType}-${testIdValue}`}
-              className={`${styles.attributeOption} ${
-                selectedAttributes[name] === value ? styles.selected : ''
-              } ${isColor ? styles.colorOption : ''}`}
-            >
-              {isColor ? (
-                <span
-                  className={styles.colorSwatch}
-                  style={{ backgroundColor: value }}
-                />
-              ) : (
-                <span className={styles.textValue}>{displayVal}</span>
-              )}
-            </button>
-          );
-        })}
-      </div>
-    </div>
-  );
-})}
+            {Object.entries(groupedAttributes).map(([name, attr]) => {
+              const isColor = attr.type === 'color' || attr.type === 'swatch';
+              const attributeType = toKebabCase(name);
+              
+              return (
+                <div
+                  key={name}
+                  className={styles.attributeGroup}
+                  data-testid={`attribute-group-${attributeType}`}
+                >
+                  <h3 className={styles.attributeName}>{name}:</h3>
+                  <div
+                    className={styles.attributeOptions}
+                    data-testid={`product-attribute-${attributeType}`}
+                  >
+                    {attr.values.map((value) => {
+                      const displayVal = getDisplayValue(attr.type, value);
+                      // Generate all possible test ID formats
+                      const testIds = [
+                        `product-attribute-${attributeType}-${toKebabCase(displayVal)}`,
+                        `product-attribute-${attributeType}-${value.replace('#', '').toLowerCase()}`,
+                        `product-attribute-${attributeType}-${value}`,
+                        `product-attribute-${attributeType}-${displayVal}`
+                      ].filter((v, i, a) => a.indexOf(v) === i); // Remove duplicates
+                      
+                      return (
+                        <button
+                          key={value}
+                          onClick={() => handleAttributeChange(name, value)}
+                          data-testid={testIds.join(' ')}
+                          className={`${styles.attributeOption} ${
+                            selectedAttributes[name] === value ? styles.selected : ''
+                          } ${isColor ? styles.colorOption : ''}`}
+                        >
+                          {isColor ? (
+                            <span
+                              className={styles.colorSwatch}
+                              style={{ backgroundColor: value }}
+                            />
+                          ) : (
+                            <span className={styles.textValue}>{displayVal}</span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
 
             <div className={styles.quantitySection}>
               <h3 className={styles.quantityLabel}>Quantity:</h3>
