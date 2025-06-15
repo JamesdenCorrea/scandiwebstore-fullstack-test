@@ -66,12 +66,19 @@ test('user can add item to cart and place an order', async ({ page }) => {
       await expect(addToCartBtn).toBeVisible({ timeout: 5000 });
       console.log('Add to cart button visible');
 
-      const attributeSections = page.locator('[data-testid^="attribute-"]');
+      // Updated attribute selection logic
+      const attributeSections = page.locator('[data-testid^="product-attribute-"]');
       const attrCount = await attributeSections.count();
       console.log(`Found ${attrCount} attribute sections`);
 
+      // Debug: Log available attributes
+      const attributeElements = await page.locator('[data-testid^="product-attribute-"]').all();
+      console.log('Available attributes:', await Promise.all(attributeElements.map(el => el.getAttribute('data-testid'))));
+
+      // Select first option for each attribute
       for (let j = 0; j < attrCount; j++) {
-        await attributeSections.nth(j).locator('[data-testid="attribute-item"]').first().click();
+        const attribute = attributeSections.nth(j);
+        await attribute.locator('[data-testid^="product-attribute-"]').first().click();
         console.log(`Selected attribute ${j + 1}`);
       }
 
@@ -83,6 +90,9 @@ test('user can add item to cart and place an order', async ({ page }) => {
         break;
       } else {
         console.log('Add to cart button disabled');
+        // Debug why button is disabled
+        const disabledReason = await addToCartBtn.getAttribute('aria-disabled');
+        console.log('Add to cart button disabled reason:', disabledReason);
       }
     } catch (error) {
       console.error(`Error with product ${i + 1}:`, error instanceof Error ? error.message : error);
@@ -128,7 +138,4 @@ test('user can add item to cart and place an order', async ({ page }) => {
 
   await expect(orderSuccess).toBeVisible();
   console.log('Order success message shown');
-
-  // Optional: Verify toast disappears
-  // await expect(orderSuccess).toBeHidden({ timeout: 4000 });
 });
