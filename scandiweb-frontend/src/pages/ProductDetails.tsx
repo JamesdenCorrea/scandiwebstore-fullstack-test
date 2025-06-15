@@ -34,6 +34,7 @@ const PRODUCT_BY_ID_QUERY = gql`
       price
       attributes {
         name
+        value
         type
       }
       category
