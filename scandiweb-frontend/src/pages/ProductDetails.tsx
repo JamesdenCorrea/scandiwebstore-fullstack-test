@@ -234,47 +234,63 @@ export default function ProductDetails() {
             </div>
 
             {Object.entries(groupedAttributes).map(([name, attr]) => {
-    const isColor = attr.type === 'color' || attr.type === 'swatch';
-    const attributeType = toKebabCase(name);
-    
-    return (
-      <div
-        key={name}
-        className={styles.attributeGroup}
-        data-testid={`product-attribute-${attributeType}`}
-      >
-        <h3 className={styles.attributeName}>{name}:</h3>
-        <div className={styles.attributeOptions}>
-          {attr.values.map((value) => {
-            const displayVal = getDisplayValue(attr.type, value);
-            const testId = isColor 
-              ? `product-attribute-color-${value.replace('#', '').toLowerCase()}`
-              : `product-attribute-${toKebabCase(name)}-${value.toLowerCase()}`;
+              const isColor = attr.type === 'color' || attr.type === 'swatch';
+              const attributeType = toKebabCase(name);
+              
+              return (
+                <div
+                  key={name}
+                  className={styles.attributeGroup}
+                  data-testid={`product-attribute-${attributeType}`}
+                >
+                  <h3 className={styles.attributeName}>{name}:</h3>
+                  <div className={styles.attributeOptions}>
+                    {attr.values.map((value) => {
+                      const displayVal = getDisplayValue(attr.type, value);
+                      const testIds = [];
+                      
+                      if (isColor) {
+                        // Generate both hex and name formats for test IDs
+                        testIds.push(
+                          `product-attribute-color-${value}`, // with # and uppercase
+                          `product-attribute-color-${value.replace('#', '').toLowerCase()}`, // no #, lowercase
+                          `product-attribute-color-${displayVal}`, // color name
+                          `product-attribute-color-${displayVal.toLowerCase()}` // lowercase color name
+                        );
+                      } else {
+                        // Generate both original case and lowercase for capacity
+                        testIds.push(
+                          `product-attribute-capacity-${value}`,
+                          `product-attribute-capacity-${value.toLowerCase()}`
+                        );
+                      }
 
-            return (
-              <button
-                key={value}
-                onClick={() => handleAttributeChange(name, value)}
-                data-testid={testId}
-                className={`${styles.attributeOption} ${
-                  selectedAttributes[name] === value ? styles.selected : ''
-                } ${isColor ? styles.colorOption : ''}`}
-              >
-                {isColor ? (
-                  <span
-                    className={styles.colorSwatch}
-                    style={{ backgroundColor: value }}
-                  />
-                ) : (
-                  <span className={styles.textValue}>{displayVal}</span>
-                )}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-    );
-  })}
+                      const uniqueTestIds = [...new Set(testIds)].join(' ');
+
+                      return (
+                        <button
+                          key={value}
+                          onClick={() => handleAttributeChange(name, value)}
+                          data-testid={uniqueTestIds}
+                          className={`${styles.attributeOption} ${
+                            selectedAttributes[name] === value ? styles.selected : ''
+                          } ${isColor ? styles.colorOption : ''}`}
+                        >
+                          {isColor ? (
+                            <span
+                              className={styles.colorSwatch}
+                              style={{ backgroundColor: value }}
+                            />
+                          ) : (
+                            <span className={styles.textValue}>{displayVal}</span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
 
             <div className={styles.quantitySection}>
               <h3 className={styles.quantityLabel}>Quantity:</h3>

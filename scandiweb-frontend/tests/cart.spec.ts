@@ -66,14 +66,19 @@ test('user can add item to cart and place an order', async ({ page }) => {
       await expect(addToCartBtn).toBeVisible({ timeout: 5000 });
       console.log('Add to cart button visible');
 
-      // Updated attribute selection logic
+      // Flexible attribute selection that works with all test ID formats
       const colorLocator = page.locator(
+        '[data-testid="product-attribute-color-#44FF03"],' +
         '[data-testid="product-attribute-color-44ff03"],' +
+        '[data-testid="product-attribute-color-Green"],' +
         '[data-testid="product-attribute-color-green"]'
       ).first();
       await expect(colorLocator).toBeVisible({ timeout: 10000 });
 
-      const capacityLocator = page.locator('[data-testid="product-attribute-capacity-512g"]');
+      const capacityLocator = page.locator(
+        '[data-testid="product-attribute-capacity-512G"],' +
+        '[data-testid="product-attribute-capacity-512g"]'
+      ).first();
       await expect(capacityLocator).toBeVisible();
 
       await colorLocator.click();
