@@ -144,15 +144,9 @@ export default function ProductDetails() {
     return parse(cleanHtml);
   };
 
-  if (loading)
-    return (
-      <div className={styles.loadingContainer} data-testid="loading-indicator">
-        <div className={styles.spinner}></div>
-        <p>Loading product details...</p>
-      </div>
-    );
-  if (error) return <p className={styles.error}>Error: {error.message}</p>;
-  if (!product) return <p className={styles.notFound}>Product not found</p>;
+  if (loading) return <div data-testid="loading-indicator">Loading product details...</div>;
+  if (error) return <p>Error: {error.message}</p>;
+  if (!product) return <p>Product not found</p>;
 
   const isAddToCartDisabled =
     !product.in_stock || Object.keys(selectedAttributes).length < product.attributes.length;
@@ -172,39 +166,29 @@ export default function ProductDetails() {
       )}
 
       <div className={styles.container}>
-        <button
-          onClick={() => navigate(-1)}
-          className={styles.backButton}
-          data-testid="back-button"
-        >
-          &larr; Back to Products
-        </button>
-
         <div className={styles.content}>
-          <div className={styles.gallery} data-testid="product-gallery">
+          <div className={styles.gallery}>
             <div className={styles.thumbnails}>
-              {uniqueImages.map((img, i) =>
-                img ? (
-                  <img
-                    key={i}
-                    src={img}
-                    alt={`${product.name || 'Product'} ${i}`}
-                    className={`${styles.thumbnail} ${activeImage === img ? styles.activeThumbnail : ''}`}
-                    onClick={() => setActiveImage(img)}
-                    data-testid={`thumbnail-${i}`}
-                  />
-                ) : null
-              )}
+              {uniqueImages.map((img, i) => (
+                <img
+                  key={i}
+                  src={img}
+                  alt={`Thumb ${i}`}
+                  onClick={() => setActiveImage(img)}
+                  className={`${styles.thumbnail} ${
+                    activeImage === img ? styles.activeThumbnail : ''
+                  }`}
+                  data-testid={`thumbnail-${i}`}
+                />
+              ))}
             </div>
             <div className={styles.mainImageContainer}>
-              {activeImage && (
-                <img
-                  src={activeImage}
-                  alt={product.name || 'Product Image'}
-                  className={styles.mainImage}
-                  data-testid="main-image"
-                />
-              )}
+              <img
+                src={activeImage}
+                alt="Main product"
+                className={styles.mainImage}
+                data-testid="main-image"
+              />
               {!product.in_stock && (
                 <div className={styles.outOfStock} data-testid="out-of-stock">
                   OUT OF STOCK
@@ -214,22 +198,11 @@ export default function ProductDetails() {
           </div>
 
           <div className={styles.info}>
-            <div className={styles.productHeader}>
-              <h1 className={styles.productName} data-testid="product-title">
-                {product.name}
-              </h1>
-              {product.brand && (
-                <p className={styles.brand} data-testid="product-brand">
-                  by {product.brand}
-                </p>
-              )}
-            </div>
-
-            <div className={styles.priceSection} data-testid="price-section">
-              <span className={styles.priceLabel}>Price:</span>
-              <p className={styles.price} data-testid="product-price">
-                ${product.price.toFixed(2)}
-              </p>
+            <h1 data-testid="product-title">{product.name}</h1>
+            <p data-testid="product-brand">by {product.brand}</p>
+            <div data-testid="price-section">
+              <strong>Price:</strong>
+              <div data-testid="product-price">${product.price.toFixed(2)}</div>
             </div>
 
             {Object.entries(groupedAttributes).map(([name, attr]) => {
@@ -237,13 +210,9 @@ export default function ProductDetails() {
               const attributeType = toKebabCase(name);
 
               return (
-                <div
-                  key={name}
-                  className={styles.attributeGroup}
-                  data-testid={`product-attribute-${attributeType}`}
-                >
-                  <h3 className={styles.attributeName}>{name}:</h3>
-                  <div className={styles.attributeOptions}>
+                <div key={name} data-testid={`product-attribute-${attributeType}`}>
+                  <strong>{name}</strong>
+                  <div>
                     {attr.values.map((value) => {
                       const displayVal = getDisplayValue(attr.type, value);
                       const testId = isColor
@@ -253,6 +222,8 @@ export default function ProductDetails() {
                       return (
                         <button
                           key={value}
+                          type="button"
+                          role="button"
                           onClick={() => handleAttributeChange(name, value)}
                           data-testid={testId}
                           className={`${styles.attributeOption} ${
@@ -265,7 +236,7 @@ export default function ProductDetails() {
                               style={{ backgroundColor: value }}
                             />
                           ) : (
-                            <span className={styles.textValue}>{displayVal}</span>
+                            displayVal
                           )}
                         </button>
                       );
@@ -275,46 +246,29 @@ export default function ProductDetails() {
               );
             })}
 
-            <div className={styles.quantitySection}>
-              <h3 className={styles.quantityLabel}>Quantity:</h3>
-              <div className={styles.quantityControls}>
-                <button
-                  onClick={() => handleQuantityChange(-1)}
-                  disabled={quantity <= 1}
-                  className={styles.quantityButton}
-                  data-testid="decrease-quantity"
-                >
-                  -
-                </button>
-                <span className={styles.quantityValue} data-testid="quantity-value">
-                  {quantity}
-                </span>
-                <button
-                  onClick={() => handleQuantityChange(1)}
-                  className={styles.quantityButton}
-                  data-testid="increase-quantity"
-                >
-                  +
-                </button>
-              </div>
+            <div>
+              <strong>Quantity:</strong>
+              <button onClick={() => handleQuantityChange(-1)} data-testid="decrease-quantity">
+                -
+              </button>
+              <span data-testid="quantity-value">{quantity}</span>
+              <button onClick={() => handleQuantityChange(1)} data-testid="increase-quantity">
+                +
+              </button>
             </div>
 
             <button
+              type="button"
+              role="button"
               onClick={handleAddToCart}
               disabled={isAddToCartDisabled}
               data-testid="add-to-cart"
-              aria-disabled={isAddToCartDisabled}
               className={`${styles.addToCart} ${isAddToCartDisabled ? styles.disabled : ''}`}
             >
-              {product.in_stock ? 'ADD TO CART' : 'OUT OF STOCK'}
+              ADD TO CART
             </button>
 
-            <div className={styles.descriptionSection}>
-              <h3 className={styles.sectionTitle}>Product Description</h3>
-              <div className={styles.description} data-testid="product-description">
-                {renderDescription()}
-              </div>
-            </div>
+            <div data-testid="product-description">{renderDescription()}</div>
           </div>
         </div>
       </div>
