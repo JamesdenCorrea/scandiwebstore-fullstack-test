@@ -247,10 +247,11 @@ export default function ProductDetails() {
                   <h3 className={styles.attributeName}>{name}:</h3>
                   <div className={styles.attributeOptions}>
                     {attr.values.map((value) => {
-                      const displayVal = getDisplayValue(attr.type, value);
+                     const displayVal = getDisplayValue(attr.type, value);
 const testId = isColor
-  ? `product-attribute-color-${value}`
+  ? `product-attribute-color-${displayVal}`
   : `product-attribute-${attributeType}-${value}`;
+
 
                       return (
                         <button
