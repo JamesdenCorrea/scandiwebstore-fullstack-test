@@ -7,21 +7,29 @@ import ProductCard from '../components/ProductCard';
 import CartOverlay from '../components/CartOverlay';
 import { useCart } from '../context/CartContext';
 import './CategoryListingPage.css';
-import type { Product, CartItem, Attribute } from '../types'; // ✅ Use shared types
 
 const DESIRED_CATEGORIES = ['All', 'Clothes', 'Tech'];
 
-type AttributeItem = {
-  id: string;
-  displayValue: string;
+export type Attribute = {
+  name: string;
   value: string;
+  type: string;
 };
 
-type RawAttribute = {
+export type Product = {
   id: string;
+  sku: string;
   name: string;
+  price: number;
   type: string;
-  items: AttributeItem[];
+  attributes: Attribute[];
+  category: string;
+  brand: string;
+  image_url: string;
+  image: string;
+  inStock: boolean;
+  description?: string;
+  gallery: string[];
 };
 
 type RawProduct = {
@@ -35,7 +43,7 @@ type RawProduct = {
   image_url: string;
   in_stock: number;
   description?: string;
-  attributes: RawAttribute[];
+  attributes: Attribute[];
   gallery: string[];
 };
 
@@ -54,14 +62,9 @@ const PRODUCTS_QUERY = gql`
       description
       gallery
       attributes {
-        id
         name
+        value
         type
-        items {
-          id
-          displayValue
-          value
-        }
       }
     }
   }
@@ -83,7 +86,7 @@ export default function CategoryListingPage() {
       : currentCategory.charAt(0).toUpperCase() + currentCategory.slice(1);
 
   const { loading, error, data } = useQuery(PRODUCTS_QUERY, {
-    fetchPolicy: 'cache-and-network',
+    fetchPolicy: "cache-and-network",
   });
 
   const products: Product[] = useMemo(() => {
@@ -92,16 +95,10 @@ export default function CategoryListingPage() {
       return [];
     }
 
-    return data.products.map((p: RawProduct): Product => {
+    return data.products.map((p: RawProduct) => {
       const fallbackImage = 'https://via.placeholder.com/300';
       const gallery = p.gallery && p.gallery.length > 0 ? p.gallery : [p.image_url || fallbackImage];
       const uniqueGallery = Array.from(new Set([p.image_url, ...gallery]));
-
-      const parsedAttributes: Attribute[] = (p.attributes || []).map(attr => ({
-        name: attr.name,
-        type: attr.type,
-        value: '', // ✅ Required by shared `Attribute` type
-      }));
 
       return {
         id: p.id,
@@ -109,29 +106,34 @@ export default function CategoryListingPage() {
         name: p.name,
         price: p.price,
         type: p.type,
-        attributes: parsedAttributes,
         category: p.category,
+        brand: p.brand ?? '',
+        image_url: p.image_url || fallbackImage,
         image: p.image_url || fallbackImage,
         inStock: p.in_stock > 0,
+        description: p.description,
+        attributes: p.attributes || [],
+        gallery: uniqueGallery,
       };
     });
   }, [data]);
 
-  const filteredProducts = useMemo(() => {
-    if (selectedCategory === 'All') return products;
+const filteredProducts = useMemo(() => {
+  if (selectedCategory === 'All') return products;
 
-    const categoryMap: Record<string, string[]> = {
-      tech: ['tech', 'phones', 'mobiles', 'electronics', 'gadgets'],
-      clothes: ['clothes', 'apparel', 'wearables'],
-    };
+  const categoryMap: Record<string, string[]> = {
+    tech: ['tech', 'phones', 'mobiles', 'electronics', 'gadgets'],
+    clothes: ['clothes', 'apparel', 'wearables'],
+  };
 
-    const normalizedSelected = selectedCategory.toLowerCase();
-    const validCategories = categoryMap[normalizedSelected] || [normalizedSelected];
+  const normalizedSelected = selectedCategory.toLowerCase();
+  const validCategories = categoryMap[normalizedSelected] || [normalizedSelected];
 
-    return products.filter((p) =>
-      validCategories.includes(p.category.toLowerCase())
-    );
-  }, [products, selectedCategory]);
+  return products.filter((p) =>
+    validCategories.includes(p.category.toLowerCase())
+  );
+}, [products, selectedCategory]);
+
 
   const handleAddToCart = (product: Product) => {
     if (!product.inStock) {
@@ -140,15 +142,19 @@ export default function CategoryListingPage() {
     }
 
     if (product.attributes.length === 0) {
-      const cartItem: CartItem = {
+      addToCart({
         ...product,
         quantity: 1,
         selectedAttributes: {},
-      };
-      addToCart(cartItem);
+        image: product.image_url,
+      });
     } else {
       navigate(`/product/${product.id}`);
     }
+  };
+
+  const handleImageClick = (productId: string) => {
+    navigate(`/product/${productId}`);
   };
 
   const handleOrderPlaced = () => {
@@ -160,7 +166,7 @@ export default function CategoryListingPage() {
   return (
     <div className="category-listing-page">
       <Header
-        onCartClick={() => setShowCart((prev) => !prev)}
+        onCartClick={() => setShowCart(prev => !prev)}
         cartItemCount={cartItems.length}
         title="Scandiweb Store"
         categories={DESIRED_CATEGORIES}
@@ -180,7 +186,7 @@ export default function CategoryListingPage() {
           </div>
         )}
 
-        {loading && !data?.products && (
+       {loading && !data?.products && (
           <p data-testid="loading-indicator" className="status-message">
             Loading products...
           </p>
@@ -195,8 +201,8 @@ export default function CategoryListingPage() {
           {selectedCategory}
         </h1>
 
-        <main
-          data-testid="products-grid"
+        <main 
+          data-testid="products-grid" 
           className="products-grid"
           aria-busy={loading}
         >
@@ -207,15 +213,13 @@ export default function CategoryListingPage() {
           )}
 
           {filteredProducts.map((product) => (
-            <ProductCard
-              key={product.id}
-              product={product}
-              onAddToCart={() => handleAddToCart(product)}
-              data-testid={`product-${product.name
-                .toLowerCase()
-                .replace(/\s+/g, '-')
-                .replace(/[^a-z0-9\-]/g, '')}`}
-            />
+<ProductCard
+  key={product.id}
+  product={product}
+  onAddToCart={() => handleAddToCart(product)}
+  data-testid={`product-${product.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9\-]/g, '')}`}
+/>
+
           ))}
         </main>
 
