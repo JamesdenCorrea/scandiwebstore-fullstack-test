@@ -252,32 +252,57 @@ export default function ProductDetails() {
                 >
                   <h3 className={styles.attributeName}>{name}:</h3>
                   <div className={styles.attributeOptions}>
-                    {attr.values.map((value) => {
-                      const displayVal = getDisplayValue(attr.type, value);
-                      const testId = isColor
-                        ? `product-attribute-color-${displayVal}`
-                        : `product-attribute-${attributeType}-${value}`;
+{attr.values.map((value) => {
+  const displayVal = getDisplayValue(attr.type, value);
+  const hexTestId = `product-attribute-color-${value}`;
+  const displayTestId = `product-attribute-color-${displayVal}`;
+  const nonColorTestId = `product-attribute-${attributeType}-${value}`;
 
-                      return (
-                        <button
-                          key={value}
-                          onClick={() => handleAttributeChange(name, value)}
-                          data-testid={testId}
-                          className={`${styles.attributeOption} ${
-                            selectedAttributes[name] === value ? styles.selected : ''
-                          } ${isColor ? styles.colorOption : ''}`}
-                        >
-                          {isColor ? (
-                            <span
-                              className={styles.colorSwatch}
-                              style={{ backgroundColor: value }}
-                            />
-                          ) : (
-                            <span className={styles.textValue}>{displayVal}</span>
-                          )}
-                        </button>
-                      );
-                    })}
+  if (isColor && displayVal !== value) {
+    // Render two buttons with different testIDs (hex and display name)
+    return (
+      <React.Fragment key={value}>
+        <button
+          onClick={() => handleAttributeChange(name, value)}
+          data-testid={hexTestId}
+          className={`${styles.attributeOption} ${
+            selectedAttributes[name] === value ? styles.selected : ''
+          } ${styles.colorOption}`}
+        >
+          <span className={styles.colorSwatch} style={{ backgroundColor: value }} />
+        </button>
+        <button
+          onClick={() => handleAttributeChange(name, value)}
+          data-testid={displayTestId}
+          className={`${styles.attributeOption} ${
+            selectedAttributes[name] === value ? styles.selected : ''
+          } ${styles.colorOption}`}
+        >
+          <span className={styles.colorSwatch} style={{ backgroundColor: value }} />
+        </button>
+      </React.Fragment>
+    );
+  }
+
+  // Default case: one button per value
+  return (
+    <button
+      key={value}
+      onClick={() => handleAttributeChange(name, value)}
+      data-testid={isColor ? hexTestId : nonColorTestId}
+      className={`${styles.attributeOption} ${
+        selectedAttributes[name] === value ? styles.selected : ''
+      } ${isColor ? styles.colorOption : ''}`}
+    >
+      {isColor ? (
+        <span className={styles.colorSwatch} style={{ backgroundColor: value }} />
+      ) : (
+        <span className={styles.textValue}>{displayVal}</span>
+      )}
+    </button>
+  );
+})}
+
                   </div>
                 </div>
               );
