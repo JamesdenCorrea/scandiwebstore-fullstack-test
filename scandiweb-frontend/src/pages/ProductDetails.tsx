@@ -233,59 +233,61 @@ export default function ProductDetails() {
               </p>
             </div>
 
-            {Object.entries(groupedAttributes).map(([name, attr]) => {
-              const isColor = attr.type === 'color' || attr.type === 'swatch';
-              const groupTestId =
-                isColor
-                  ? 'product-attribute-color'
-                  : attr.type === 'text'
-                  ? 'product-attribute-capacity'
-                  : undefined;
+{Object.entries(groupedAttributes).map(([name, attr]) => {
+    const isColor = attr.type === 'color' || attr.type === 'swatch';
+    const groupTestId =
+      isColor
+        ? 'product-attribute-color'
+        : attr.type === 'text'
+        ? 'product-attribute-capacity'
+        : undefined;
 
-              return (
-                <div
-                  key={name}
-                  className={styles.attributeGroup}
-                  data-testid={`attribute-group-${toKebabCase(name)}`}
-                >
-                  <h3 className={styles.attributeName}>{name}:</h3>
-                  <div
-                    className={styles.attributeOptions}
-                    {...(groupTestId ? { 'data-testid': groupTestId } : {})}
-                  >
-                    {attr.values.map((value) => {
-                      const displayVal = getDisplayValue(attr.type, value);
-                      const testId = isColor
-                        ? `product-attribute-color-${displayVal}`
-                        : attr.type === 'text'
-                        ? `product-attribute-capacity-${value}`
-                        : undefined;
+    return (
+      <div
+        key={name}
+        className={styles.attributeGroup}
+        data-testid={`attribute-group-${toKebabCase(name)}`}
+      >
+        <h3 className={styles.attributeName}>{name}:</h3>
+        <div
+          className={styles.attributeOptions}
+          {...(groupTestId ? { 'data-testid': groupTestId } : {})}
+        >
+          {attr.values.map((value) => {
+            const displayVal = getDisplayValue(attr.type, value);
+            
+            // FIX: Use ONLY color name for test IDs
+            const testId = isColor
+              ? `product-attribute-color-${displayVal}`
+              : attr.type === 'text'
+              ? `product-attribute-capacity-${value}`
+              : undefined;
 
-                      return (
-                        <button
-                          key={value}
-                          onClick={() => handleAttributeChange(name, value)}
-                          data-testid={testId}
-                          className={`${styles.attributeOption} ${
-                            selectedAttributes[name] === value ? styles.selected : ''
-                          } ${isColor ? styles.colorOption : ''}`}
-                          aria-label={`Select ${name} ${displayVal || value}`}
-                        >
-                          {isColor ? (
-                            <span
-                              className={styles.colorSwatch}
-                              style={{ backgroundColor: value }}
-                            />
-                          ) : (
-                            <span className={styles.textValue}>{displayVal}</span>
-                          )}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              );
-            })}
+            return (
+              <button
+                key={value}
+                onClick={() => handleAttributeChange(name, value)}
+                data-testid={testId}
+                className={`${styles.attributeOption} ${
+                  selectedAttributes[name] === value ? styles.selected : ''
+                } ${isColor ? styles.colorOption : ''}`}
+                aria-label={`Select ${name} ${displayVal || value}`}
+              >
+                {isColor ? (
+                  <span
+                    className={styles.colorSwatch}
+                    style={{ backgroundColor: value }}
+                  />
+                ) : (
+                  <span className={styles.textValue}>{displayVal}</span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    );
+  })}
 
             <div className={styles.quantitySection}>
               <h3 className={styles.quantityLabel}>Quantity:</h3>

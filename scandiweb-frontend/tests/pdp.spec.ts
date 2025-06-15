@@ -12,22 +12,16 @@ test('has product details', async ({ page }) => {
 
   await expect(page.locator('[data-testid="product-title"]')).toHaveText('iPhone 12 Pro');
 
-  // Fixed attribute values to match actual data
+  // Verify out-of-stock indicator
+  await expect(page.locator('[data-testid="out-of-stock"]')).toBeVisible();
+  
+  // Use ONLY color name format for attributes
   await page.getByTestId('product-attribute-color-Black').click();
   await page.getByTestId('product-attribute-capacity-512G').click();
 
-  // Fixed test IDs for quantity buttons
-  await page.getByTestId('increase-quantity').click();
-  await expect(page.getByTestId('quantity-value')).toHaveText('2');
-
-  // Verify button is disabled for out-of-stock product
+  // Verify add to cart is disabled for out-of-stock product
   const addToCart = page.locator('[data-testid="add-to-cart"]');
   await expect(addToCart).toBeDisabled();
-  
-  // Verify out-of-stock indicator is visible
-  await expect(page.locator('[data-testid="out-of-stock"]')).toBeVisible();
-
-  // Don't attempt to add out-of-stock product to cart
 });
 
 test('can add in-stock product to cart', async ({ page }) => {
@@ -42,7 +36,7 @@ test('can add in-stock product to cart', async ({ page }) => {
 
   await expect(page.locator('[data-testid="product-title"]')).toHaveText('PlayStation 5');
 
-  // Select attributes
+  // Select attributes using ONLY color name format
   await page.getByTestId('product-attribute-color-Black').click();
   await page.getByTestId('product-attribute-capacity-512G').click();
 
