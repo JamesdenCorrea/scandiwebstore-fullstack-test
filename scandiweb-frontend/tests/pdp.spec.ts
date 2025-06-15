@@ -16,20 +16,16 @@ test('has product details', async ({ page }) => {
   await expect(page.locator('[data-testid="product-title"]')).toHaveText('iPhone 12 Pro');
   await expect(page.locator('[data-testid="out-of-stock"]')).toBeVisible();
 
-  // Flexible color selector that works with all test ID formats
-  const colorLocator = page.locator(
-    '[data-testid="product-attribute-color-#44FF03"],' +
-    '[data-testid="product-attribute-color-44ff03"],' +
-    '[data-testid="product-attribute-color-Green"],' +
-    '[data-testid="product-attribute-color-green"]'
-  ).first();
-  await expect(colorLocator).toBeVisible({ timeout: 15000 });
-  
-  // Flexible capacity selector that works with both uppercase and lowercase
-  const capacityLocator = page.locator(
-    '[data-testid="product-attribute-capacity-512G"],' +
-    '[data-testid="product-attribute-capacity-512g"]'
-  ).first();
+  // Match exact color from backend
+  const colorLocator = page
+    .locator('[data-testid="product-attribute-color-#44FF03"]')
+    .first();
+  await expect(colorLocator).toBeVisible({ timeout: 10000 });
+
+  // Match exact capacity from backend
+  const capacityLocator = page
+    .locator('[data-testid="product-attribute-capacity-512G"]')
+    .first();
   await expect(capacityLocator).toBeVisible();
 
   // Select attributes
