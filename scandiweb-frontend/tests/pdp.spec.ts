@@ -13,12 +13,12 @@ test('has product details', async ({ page }) => {
   await expect(page.locator('[data-testid="product-title"]')).toHaveText('iPhone 12 Pro');
   await expect(page.locator('[data-testid="out-of-stock"]')).toBeVisible();
 
-  // ✅ Dynamically find the first swatch option
+  // ✅ Dynamically find the first swatch color attribute
   const colorOption = page.locator('[data-testid^="product-attribute-color-"]').first();
   await expect(colorOption).toBeVisible({ timeout: 10000 });
   await colorOption.click();
 
-  // ✅ Dynamically find the first capacity option
+  // ✅ Dynamically find the first capacity attribute
   const capacityOption = page.locator('[data-testid^="product-attribute-capacity-"]').first();
   await expect(capacityOption).toBeVisible({ timeout: 10000 });
   await capacityOption.click();
