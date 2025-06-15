@@ -189,9 +189,7 @@ export default function ProductDetails() {
                     key={i}
                     src={img}
                     alt={`${product.name || 'Product'} ${i}`}
-                    className={`${styles.thumbnail} ${
-                      activeImage === img ? styles.activeThumbnail : ''
-                    }`}
+                    className={`${styles.thumbnail} ${activeImage === img ? styles.activeThumbnail : ''}`}
                     onClick={() => setActiveImage(img)}
                     data-testid={`thumbnail-${i}`}
                   />
@@ -234,49 +232,48 @@ export default function ProductDetails() {
               </p>
             </div>
 
-{Object.entries(groupedAttributes).map(([name, attr]) => {
-  const isColor = attr.type === 'color' || attr.type === 'swatch';
-  const attributeType = toKebabCase(name);
+            {Object.entries(groupedAttributes).map(([name, attr]) => {
+              const isColor = attr.type === 'color' || attr.type === 'swatch';
+              const attributeType = toKebabCase(name);
 
-  return (
-    <div
-      key={name}
-      className={styles.attributeGroup}
-      data-testid={`product-attribute-${attributeType}`}
-    >
-      <h3 className={styles.attributeName}>{name}:</h3>
-      <div className={styles.attributeOptions}>
-        {attr.values.map((value) => {
-          const displayVal = getDisplayValue(attr.type, value);
-          const testId = isColor
-            ? `product-attribute-color-${displayVal}`
-            : `product-attribute-${attributeType}-${value}`;
+              return (
+                <div
+                  key={name}
+                  className={styles.attributeGroup}
+                  data-testid={`product-attribute-${attributeType}`}
+                >
+                  <h3 className={styles.attributeName}>{name}:</h3>
+                  <div className={styles.attributeOptions}>
+                    {attr.values.map((value) => {
+                      const displayVal = getDisplayValue(attr.type, value);
+                      const testId = isColor
+                        ? `product-attribute-color-${displayVal}`
+                        : `product-attribute-${attributeType}-${value}`;
 
-          return (
-            <button
-              key={value}
-              onClick={() => handleAttributeChange(name, value)}
-              data-testid={testId}
-              className={`${styles.attributeOption} ${
-                selectedAttributes[name] === value ? styles.selected : ''
-              } ${isColor ? styles.colorOption : ''}`}
-            >
-              {isColor ? (
-                <span
-                  className={styles.colorSwatch}
-                  style={{ backgroundColor: value }}
-                />
-              ) : (
-                <span className={styles.textValue}>{displayVal}</span>
-              )}
-            </button>
-          );
-        })}
-      </div>
-    </div>
-  );
-})}
-
+                      return (
+                        <button
+                          key={value}
+                          onClick={() => handleAttributeChange(name, value)}
+                          data-testid={testId}
+                          className={`${styles.attributeOption} ${
+                            selectedAttributes[name] === value ? styles.selected : ''
+                          } ${isColor ? styles.colorOption : ''}`}
+                        >
+                          {isColor ? (
+                            <span
+                              className={styles.colorSwatch}
+                              style={{ backgroundColor: value }}
+                            />
+                          ) : (
+                            <span className={styles.textValue}>{displayVal}</span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
 
             <div className={styles.quantitySection}>
               <h3 className={styles.quantityLabel}>Quantity:</h3>
@@ -305,9 +302,9 @@ export default function ProductDetails() {
             <button
               onClick={handleAddToCart}
               disabled={isAddToCartDisabled}
-              className={`${styles.addToCart} ${isAddToCartDisabled ? styles.disabled : ''}`}
               data-testid="add-to-cart"
               aria-disabled={isAddToCartDisabled}
+              className={`${styles.addToCart} ${isAddToCartDisabled ? styles.disabled : ''}`}
             >
               {product.in_stock ? 'ADD TO CART' : 'OUT OF STOCK'}
             </button>
