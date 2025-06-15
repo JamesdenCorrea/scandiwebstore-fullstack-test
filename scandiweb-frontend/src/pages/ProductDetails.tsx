@@ -254,23 +254,24 @@ export default function ProductDetails() {
                         : `product-attribute-${attributeType}-${value}`;
 
                       return (
-                        <button
-                          key={value}
-                          onClick={() => handleAttributeChange(name, value)}
-                          data-testid={testId}
-                          className={`${styles.attributeOption} ${
-                            selectedAttributes[name] === value ? styles.selected : ''
-                          } ${isColor ? styles.colorOption : ''}`}
-                        >
-                          {isColor ? (
-                            <span
-                              className={styles.colorSwatch}
-                              style={{ backgroundColor: value }}
-                            />
-                          ) : (
-                            <span className={styles.textValue}>{displayVal}</span>
-                          )}
-                        </button>
+<button
+  key={value}
+  onClick={() => handleAttributeChange(name, value)}
+  data-testid={testId}
+  className={`${styles.attributeOption} ${
+    selectedAttributes[name] === value ? styles.selected : ''
+  } ${isColor ? styles.colorOption : ''}`}
+>
+  {isColor ? (
+    <span
+      className={styles.colorSwatch}
+      style={{ backgroundColor: value }}
+    />
+  ) : (
+    <span className={styles.textValue}>{displayVal}</span>
+  )}
+</button>
+
                       );
                     })}
                   </div>
