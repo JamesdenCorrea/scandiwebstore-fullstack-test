@@ -54,6 +54,7 @@ export default function ProductCard({
       data-testid={testId ?? `product-${id}`}
       className="product-card"
       style={{
+        position: 'relative',
         border: '1px solid #ddd',
         boxShadow: '0 4px 12px rgba(106, 13, 173, 0.15)',
         borderRadius: '12px',
@@ -83,6 +84,26 @@ export default function ProductCard({
         }
       }}
     >
+      {/* Out of stock indicator */}
+      {!inStock && (
+        <div 
+          style={{ 
+            position: 'absolute', 
+            top: '10px', 
+            left: '10px', 
+            background: 'rgba(0,0,0,0.7)', 
+            color: 'white', 
+            padding: '5px 10px',
+            borderRadius: '4px',
+            fontWeight: 'bold',
+            zIndex: 10
+          }}
+          data-testid="product-card-out-of-stock"
+        >
+          OUT OF STOCK
+        </div>
+      )}
+      
       <img
         src={image}
         alt={name}
