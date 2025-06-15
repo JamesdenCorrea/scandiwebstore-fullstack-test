@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-test.describe.configure({ mode: 'serial' }); // Run tests sequentially
+test.describe.configure({ mode: 'serial' });
 
 test('user can add item to cart and place an order', async ({ page }) => {
   page.on('console', msg => console.log(`[Browser Console] ${msg.text()}`));
@@ -67,30 +67,26 @@ test('user can add item to cart and place an order', async ({ page }) => {
       console.log('Add to cart button visible');
 
       // Updated attribute selection logic
-      const attributeSections = page.locator('[data-testid^="product-attribute-"]');
-      const attrCount = await attributeSections.count();
-      console.log(`Found ${attrCount} attribute sections`);
+      const colorLocator = page.locator(
+        '[data-testid="product-attribute-color-44ff03"],' +
+        '[data-testid="product-attribute-color-green"]'
+      ).first();
+      await expect(colorLocator).toBeVisible({ timeout: 10000 });
 
-      // Debug: Log available attributes
-      const attributeElements = await page.locator('[data-testid^="product-attribute-"]').all();
-      console.log('Available attributes:', await Promise.all(attributeElements.map(el => el.getAttribute('data-testid'))));
+      const capacityLocator = page.locator('[data-testid="product-attribute-capacity-512g"]');
+      await expect(capacityLocator).toBeVisible();
 
-      // Select first option for each attribute
-      for (let j = 0; j < attrCount; j++) {
-        const attribute = attributeSections.nth(j);
-        await attribute.locator('[data-testid^="product-attribute-"]').first().click();
-        console.log(`Selected attribute ${j + 1}`);
-      }
+      await colorLocator.click();
+      await capacityLocator.click();
 
       if (!(await addToCartBtn.isDisabled())) {
         await addToCartBtn.click();
-        await addToCartBtn.click(); // Add twice to make quantity 2
+        await addToCartBtn.click();
         console.log('Added product to cart twice');
         productFound = true;
         break;
       } else {
         console.log('Add to cart button disabled');
-        // Debug why button is disabled
         const disabledReason = await addToCartBtn.getAttribute('aria-disabled');
         console.log('Add to cart button disabled reason:', disabledReason);
       }
@@ -123,7 +119,6 @@ test('user can add item to cart and place an order', async ({ page }) => {
   await expect(cartOverlay).toBeVisible({ timeout: 5000 });
   console.log('Cart overlay opened');
 
-  // ✅ Assert that quantity is 2
   const quantityText = await page.getByTestId('cart-item-quantity').textContent();
   expect(quantityText?.trim()).toBe('2');
   console.log('Verified cart item quantity is 2');
@@ -131,11 +126,7 @@ test('user can add item to cart and place an order', async ({ page }) => {
   await page.getByTestId('place-order-btn').click();
 
   const orderSuccess = page.getByTestId('order-success');
-
-  await expect(orderSuccess).toHaveText(/order placed successfully/i, {
-    timeout: 8000,
-  });
-
+  await expect(orderSuccess).toHaveText(/order placed successfully/i, { timeout: 8000 });
   await expect(orderSuccess).toBeVisible();
   console.log('Order success message shown');
 });
