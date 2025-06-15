@@ -2,99 +2,33 @@ import { test, expect } from '@playwright/test';
 
 test.describe.configure({ mode: 'serial' });
 
-test('user can add item to cart and place an order', async ({ page }) => {
-  page.on('console', msg => console.log(`[Browser Console] ${msg.text()}`));
-  page.on('response', response => console.log(`[Response] ${response.status()} ${response.url()}`));
-  page.on('request', request => console.log(`[Request] ${request.method()} ${request.url()}`));
-
-  await page.goto('/', { waitUntil: 'networkidle', timeout: 30000 });
-  console.log('Navigation complete');
-
+test('has cart overlay working', async ({ page }) => {
+  await page.goto('/');
   await expect(page.getByTestId('category-title')).toBeVisible();
-  console.log('Category title visible');
 
-  try {
-    await Promise.race([
-      page.waitForSelector('[data-testid="product-card"]', { state: 'attached', timeout: 15000 }),
-      page.waitForSelector('[data-testid="no-products-message"]', { state: 'visible', timeout: 15000 }),
-      page.waitForSelector('[data-testid="error-message"]', { state: 'visible', timeout: 15000 })
-    ]);
-  } catch (error) {
-    console.error('Failed to find products or status messages');
-    const pageContent = await page.content();
-    console.log('Current page content:', pageContent);
-    throw error;
-  }
+  const productCard = page.locator('[data-testid="product-iphone-12-pro"]');
+  await expect(productCard).toBeVisible();
+  await productCard.getByTestId('product-card-image').click();
 
-  if (await page.getByTestId('error-message').isVisible()) {
-    const errorText = await page.getByTestId('error-message').textContent();
-    console.error('Error loading products:', errorText);
-    throw new Error(`Product loading error: ${errorText}`);
-  }
+  await expect(page.getByTestId('product-title')).toHaveText('iPhone 12 Pro');
 
-  if (await page.getByTestId('no-products-message').isVisible()) {
-    console.log('No products available message shown');
-    throw new Error('No products available in the store');
-  }
+  const colorOption = page.locator('[data-testid^="product-attribute-color-"]').first();
+  const capacityOption = page.locator('[data-testid^="product-attribute-capacity-"]').first();
 
-  const productCards = page.getByTestId('product-card');
-  const count = await productCards.count();
-  console.log(`Found ${count} product cards`);
+  await expect(colorOption).toBeVisible({ timeout: 10000 });
+  await colorOption.click();
 
-  let productFound = false;
-  const maxAttempts = Math.min(count, 3);
+  await expect(capacityOption).toBeVisible({ timeout: 10000 });
+  await capacityOption.click();
 
-  for (let i = 0; i < maxAttempts && !productFound; i++) {
-    console.log(`Attempting with product ${i + 1}/${maxAttempts}`);
-
-    try {
-      await productCards.nth(i).getByTestId('product-card-image').click();
-      console.log('Clicked product image');
-
-      await expect(page.getByTestId('pdp-title')).toBeVisible({ timeout: 10000 });
-
-      const addToCartBtn = page.getByTestId('add-to-cart');
-      await expect(addToCartBtn).toBeVisible({ timeout: 5000 });
-
-      const colorOption = page.locator('[data-testid^="product-attribute-color-"]').first();
-      const capacityOption = page.locator('[data-testid^="product-attribute-capacity-"]').first();
-
-      await expect(colorOption).toBeVisible({ timeout: 10000 });
-      await colorOption.click();
-
-      await expect(capacityOption).toBeVisible({ timeout: 10000 });
-      await capacityOption.click();
-
-      if (!(await addToCartBtn.isDisabled())) {
-        await addToCartBtn.click();
-        await addToCartBtn.click();
-        console.log('Added product to cart twice');
-        productFound = true;
-      }
-    } catch (error) {
-      console.error(`Error with product ${i + 1}:`, error instanceof Error ? error.message : error);
-    } finally {
-      if (!productFound) {
-        await page.goBack();
-        await page.waitForSelector('[data-testid="products-grid"]');
-      }
-    }
-  }
-
-  if (!productFound) {
-    throw new Error('Failed to find an addable product after multiple attempts');
-  }
-
-  const cartOverlay = page.getByTestId('cart-overlay');
-  const overlayBackdrop = page.getByTestId('cart-overlay-backdrop');
-
-  if (await cartOverlay.isVisible()) {
-    await overlayBackdrop.click();
-    await expect(cartOverlay).toBeHidden({ timeout: 5000 });
-  }
+  const addToCart = page.getByTestId('add-to-cart');
+  await expect(addToCart).toBeEnabled();
+  await addToCart.click();
+  await addToCart.click();
 
   await page.getByTestId('cart-btn').click();
-  await expect(cartOverlay).toBeVisible({ timeout: 5000 });
+  const cartOverlay = page.getByTestId('cart-overlay');
+  await expect(cartOverlay).toBeVisible();
 
   const quantityText = await page.getByTestId('cart-item-quantity').textContent();
   expect(quantityText?.trim()).toBe('2');
@@ -102,6 +36,6 @@ test('user can add item to cart and place an order', async ({ page }) => {
   await page.getByTestId('place-order-btn').click();
 
   const orderSuccess = page.getByTestId('order-success');
-  await expect(orderSuccess).toHaveText(/order placed successfully/i, { timeout: 8000 });
   await expect(orderSuccess).toBeVisible();
+  await expect(orderSuccess).toHaveText(/order placed successfully/i);
 });
