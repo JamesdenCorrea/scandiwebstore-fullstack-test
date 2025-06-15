@@ -255,18 +255,14 @@ export default function ProductDetails() {
                     {attr.values.map((value) => {
                       const displayVal = getDisplayValue(attr.type, value);
                       const testId = isColor
-                        ? `product-attribute-color-${value}`
-                        : `product-attribute-${attributeType}-${value}`;
-                      const testIdAlias = isColor
                         ? `product-attribute-color-${displayVal}`
-                        : undefined;
+                        : `product-attribute-${attributeType}-${value}`;
 
                       return (
                         <button
                           key={value}
                           onClick={() => handleAttributeChange(name, value)}
                           data-testid={testId}
-                          {...(testIdAlias ? { 'data-testid-alias': testIdAlias } : {})}
                           className={`${styles.attributeOption} ${
                             selectedAttributes[name] === value ? styles.selected : ''
                           } ${isColor ? styles.colorOption : ''}`}
