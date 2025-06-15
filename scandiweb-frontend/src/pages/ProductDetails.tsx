@@ -58,7 +58,7 @@ const COLOR_NAMES: Record<string, string> = {
 };
 
 const getDisplayValue = (type: string, value?: string): string => {
-  if (type === 'color' && value) {
+  if ((type === 'color' || type === 'swatch') && value) {
     const hex = value.toUpperCase();
     return COLOR_NAMES[hex] || hex;
   }
