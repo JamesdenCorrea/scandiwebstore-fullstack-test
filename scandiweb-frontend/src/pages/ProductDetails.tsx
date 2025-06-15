@@ -90,9 +90,13 @@ export default function ProductDetails() {
   const groupedAttributes = useMemo(() => {
     if (!product) return {};
     const result: Record<string, { type: string; values: string[] }> = {};
-    product.attributes.forEach(({ name, value, type }) => {
-      if (!result[name]) result[name] = { type, values: [] };
-      if (!result[name].values.includes(value)) result[name].values.push(value);
+    product.attributes.forEach((attr) => {
+      if (!result[attr.name]) {
+        result[attr.name] = { type: attr.type, values: [] };
+      }
+      if (!result[attr.name].values.includes(attr.value)) {
+        result[attr.name].values.push(attr.value);
+      }
     });
     return result;
   }, [product]);
@@ -113,12 +117,8 @@ export default function ProductDetails() {
   const handleAttributeChange = (name: string, value: string) =>
     setSelectedAttributes((prev) => ({ ...prev, [name]: value }));
 
-  const isAddToCartDisabled =
-    !product?.in_stock ||
-    product.attributes.some((a) => selectedAttributes[a.name] !== a.value && !selectedAttributes[a.name]);
-
   const handleAddToCart = () => {
-    if (!product || isAddToCartDisabled) return;
+    if (!product || !product.in_stock) return;
     addToCart({
       id: product.id,
       sku: product.id,
@@ -134,16 +134,27 @@ export default function ProductDetails() {
     setShowCart(true);
   };
 
-  const renderDescription = () =>
-    product?.description ? parse(DOMPurify.sanitize(product.description)) : null;
+  const handleQuantityChange = (delta: number) =>
+    setQuantity((prev) => Math.max(1, prev + delta));
 
-  if (loading)
+  const renderDescription = () => {
+    if (!product?.description) return null;
+    const cleanHtml = DOMPurify.sanitize(product.description);
+    return parse(cleanHtml);
+  };
+
+  const isAddToCartDisabled =
+    !product?.in_stock || Object.keys(selectedAttributes).length < product.attributes.length;
+
+  if (loading) {
     return (
       <div className={styles.loadingContainer} data-testid="loading-indicator">
         <div className={styles.spinner}></div>
         <p>Loading product details...</p>
       </div>
     );
+  }
+
   if (error) return <p className={styles.error}>Error: {error.message}</p>;
   if (!product) return <p className={styles.notFound}>Product not found</p>;
 
@@ -156,13 +167,20 @@ export default function ProductDetails() {
         cartItemCount={cartItems.length}
         onCartClick={() => setShowCart(true)}
       />
+
       {showCart && (
         <CartOverlay onClose={() => setShowCart(false)} onPlaceOrder={() => setShowCart(false)} />
       )}
+
       <div className={styles.container}>
-        <button onClick={() => navigate(-1)} className={styles.backButton} data-testid="back-button">
+        <button
+          onClick={() => navigate(-1)}
+          className={styles.backButton}
+          data-testid="back-button"
+        >
           &larr; Back to Products
         </button>
+
         <div className={styles.content}>
           <div className={styles.gallery} data-testid="product-gallery">
             <div className={styles.thumbnails}>
@@ -171,7 +189,7 @@ export default function ProductDetails() {
                   <img
                     key={i}
                     src={img}
-                    alt={`${product.name} ${i}`}
+                    alt={`${product.name || 'Product'} ${i}`}
                     className={`${styles.thumbnail} ${activeImage === img ? styles.activeThumbnail : ''}`}
                     onClick={() => setActiveImage(img)}
                     data-testid={`thumbnail-${i}`}
@@ -183,7 +201,7 @@ export default function ProductDetails() {
               {activeImage && (
                 <img
                   src={activeImage}
-                  alt={product.name}
+                  alt={product.name || 'Product Image'}
                   className={styles.mainImage}
                   data-testid="main-image"
                 />
@@ -195,13 +213,19 @@ export default function ProductDetails() {
               )}
             </div>
           </div>
+
           <div className={styles.info}>
             <div className={styles.productHeader}>
-              <h1 className={styles.productName} data-testid="product-title">{product.name}</h1>
+              <h1 className={styles.productName} data-testid="product-title">
+                {product.name}
+              </h1>
               {product.brand && (
-                <p className={styles.brand} data-testid="product-brand">by {product.brand}</p>
+                <p className={styles.brand} data-testid="product-brand">
+                  by {product.brand}
+                </p>
               )}
             </div>
+
             <div className={styles.priceSection} data-testid="price-section">
               <span className={styles.priceLabel}>Price:</span>
               <p className={styles.price} data-testid="product-price">
@@ -212,8 +236,13 @@ export default function ProductDetails() {
             {Object.entries(groupedAttributes).map(([name, attr]) => {
               const isColor = attr.type === 'color' || attr.type === 'swatch';
               const attributeType = toKebabCase(name);
+
               return (
-                <div key={name} className={styles.attributeGroup} data-testid={`product-attribute-${attributeType}`}>
+                <div
+                  key={name}
+                  className={styles.attributeGroup}
+                  data-testid={`product-attribute-${attributeType}`}
+                >
                   <h3 className={styles.attributeName}>{name}:</h3>
                   <div className={styles.attributeOptions}>
                     {attr.values.map((value) => {
@@ -221,17 +250,19 @@ export default function ProductDetails() {
                       const testId = isColor
                         ? `product-attribute-color-${displayVal}`
                         : `product-attribute-${attributeType}-${value}`;
+
                       return (
                         <button
                           key={value}
                           onClick={() => handleAttributeChange(name, value)}
                           data-testid={testId}
-                          className={`${styles.attributeOption} ${
-                            selectedAttributes[name] === value ? styles.selected : ''
-                          } ${isColor ? styles.colorOption : ''}`}
+                          className={`${styles.attributeOption} ${selectedAttributes[name] === value ? styles.selected : ''} ${isColor ? styles.colorOption : ''}`}
                         >
                           {isColor ? (
-                            <span className={styles.colorSwatch} style={{ backgroundColor: value }} />
+                            <span
+                              className={styles.colorSwatch}
+                              style={{ backgroundColor: value }}
+                            />
                           ) : (
                             <span className={styles.textValue}>{displayVal}</span>
                           )}
@@ -247,16 +278,18 @@ export default function ProductDetails() {
               <h3 className={styles.quantityLabel}>Quantity:</h3>
               <div className={styles.quantityControls}>
                 <button
-                  onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                  onClick={() => handleQuantityChange(-1)}
                   disabled={quantity <= 1}
                   className={styles.quantityButton}
                   data-testid="decrease-quantity"
                 >
                   -
                 </button>
-                <span className={styles.quantityValue} data-testid="quantity-value">{quantity}</span>
+                <span className={styles.quantityValue} data-testid="quantity-value">
+                  {quantity}
+                </span>
                 <button
-                  onClick={() => setQuantity((q) => q + 1)}
+                  onClick={() => handleQuantityChange(1)}
                   className={styles.quantityButton}
                   data-testid="increase-quantity"
                 >
