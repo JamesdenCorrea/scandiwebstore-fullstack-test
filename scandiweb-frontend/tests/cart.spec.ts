@@ -67,15 +67,20 @@ test('user can add item to cart and place an order', async ({ page }) => {
       console.log('Add to cart button visible');
 
       // ✅ Updated test ID to use only 'Green' as mapped by getDisplayValue
-      const colorLocator = page.locator('[data-testid="product-attribute-color-Green"]').first();
-      await expect(colorLocator).toBeVisible({ timeout: 10000 });
+// ✅ NEW: dynamically pick the first swatch attribute
+const colorOption = page.locator('[data-testid^="product-attribute-color-"]').first();
+await expect(colorOption).toBeVisible({ timeout: 10000 });
+await colorOption.click();
+
+
 
       const capacityLocator = page
         .locator('[data-testid="product-attribute-capacity-512G"], [data-testid="product-attribute-capacity-512g"]')
         .first();
       await expect(capacityLocator).toBeVisible();
 
-      await colorLocator.click();
+     await colorOption.click();
+
       await capacityLocator.click();
 
       if (!(await addToCartBtn.isDisabled())) {
