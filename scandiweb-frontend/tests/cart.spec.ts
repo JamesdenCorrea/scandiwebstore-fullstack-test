@@ -67,12 +67,11 @@ test('user can add item to cart and place an order', async ({ page }) => {
       console.log('Add to cart button visible');
 
       // Flexible attribute selection that works with all test ID formats
-      const colorLocator = page.locator(
-        '[data-testid="product-attribute-color-#44FF03"],' +
-        '[data-testid="product-attribute-color-44ff03"],' +
-        '[data-testid="product-attribute-color-Green"],' +
-        '[data-testid="product-attribute-color-green"]'
-      ).first();
+const colorLocator = page.locator(
+  '[data-testid="product-attribute-color-44ff03"],' +
+  '[data-testid="product-attribute-color-green"]'
+).first();
+
       await expect(colorLocator).toBeVisible({ timeout: 10000 });
 
       const capacityLocator = page.locator(
