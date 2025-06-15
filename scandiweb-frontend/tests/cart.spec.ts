@@ -41,14 +41,6 @@ test('user can add item to cart and place an order', async ({ page }) => {
   const count = await productCards.count();
   console.log(`Found ${count} product cards`);
 
-  if (count === 0) {
-    const productsGrid = await page.getByTestId('products-grid').innerHTML();
-    console.log('Products grid content:', productsGrid);
-    const loadingState = await page.getByTestId('loading-indicator').isVisible();
-    console.log('Loading indicator visible:', loadingState);
-    throw new Error('No product cards found in the products grid');
-  }
-
   let productFound = false;
   const maxAttempts = Math.min(count, 3);
 
@@ -60,39 +52,24 @@ test('user can add item to cart and place an order', async ({ page }) => {
       console.log('Clicked product image');
 
       await expect(page.getByTestId('pdp-title')).toBeVisible({ timeout: 10000 });
-      console.log('PDP title visible');
 
-      const addToCartBtn = page.getByTestId('add-to-cart-btn');
+      const addToCartBtn = page.getByTestId('add-to-cart');
       await expect(addToCartBtn).toBeVisible({ timeout: 5000 });
-      console.log('Add to cart button visible');
 
-      // ✅ Updated test ID to use only 'Green' as mapped by getDisplayValue
-// ✅ NEW: dynamically pick the first swatch attribute
-const colorOption = page.locator('[data-testid^="product-attribute-color-"]').first();
-await expect(colorOption).toBeVisible({ timeout: 10000 });
-await colorOption.click();
+      const colorOption = page.locator('[data-testid^="product-attribute-color-"]').first();
+      const capacityOption = page.locator('[data-testid^="product-attribute-capacity-"]').first();
 
+      await expect(colorOption).toBeVisible({ timeout: 10000 });
+      await colorOption.click();
 
-
-      const capacityLocator = page
-        .locator('[data-testid="product-attribute-capacity-512G"], [data-testid="product-attribute-capacity-512g"]')
-        .first();
-      await expect(capacityLocator).toBeVisible();
-
-     await colorOption.click();
-
-      await capacityLocator.click();
+      await expect(capacityOption).toBeVisible({ timeout: 10000 });
+      await capacityOption.click();
 
       if (!(await addToCartBtn.isDisabled())) {
         await addToCartBtn.click();
         await addToCartBtn.click();
         console.log('Added product to cart twice');
         productFound = true;
-        break;
-      } else {
-        console.log('Add to cart button disabled');
-        const disabledReason = await addToCartBtn.getAttribute('aria-disabled');
-        console.log('Add to cart button disabled reason:', disabledReason);
       }
     } catch (error) {
       console.error(`Error with product ${i + 1}:`, error instanceof Error ? error.message : error);
@@ -100,7 +77,6 @@ await colorOption.click();
       if (!productFound) {
         await page.goBack();
         await page.waitForSelector('[data-testid="products-grid"]');
-        console.log('Returned to product listing');
       }
     }
   }
@@ -113,24 +89,19 @@ await colorOption.click();
   const overlayBackdrop = page.getByTestId('cart-overlay-backdrop');
 
   if (await cartOverlay.isVisible()) {
-    console.log('Cart overlay already open, closing first...');
     await overlayBackdrop.click();
     await expect(cartOverlay).toBeHidden({ timeout: 5000 });
-    console.log('Cart overlay closed');
   }
 
   await page.getByTestId('cart-btn').click();
   await expect(cartOverlay).toBeVisible({ timeout: 5000 });
-  console.log('Cart overlay opened');
 
   const quantityText = await page.getByTestId('cart-item-quantity').textContent();
   expect(quantityText?.trim()).toBe('2');
-  console.log('Verified cart item quantity is 2');
 
   await page.getByTestId('place-order-btn').click();
 
   const orderSuccess = page.getByTestId('order-success');
   await expect(orderSuccess).toHaveText(/order placed successfully/i, { timeout: 8000 });
   await expect(orderSuccess).toBeVisible();
-  console.log('Order success message shown');
 });
