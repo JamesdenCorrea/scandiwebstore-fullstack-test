@@ -254,10 +254,9 @@ export default function ProductDetails() {
                   <div className={styles.attributeOptions}>
                     {attr.values.map((value) => {
                       const displayVal = getDisplayValue(attr.type, value);
-const testId = isColor
-  ? `product-attribute-color-${value} product-attribute-color-${displayVal}`
-  : `product-attribute-${attributeType}-${value}`;
-
+                      const testId = isColor
+                        ? `product-attribute-color-${displayVal}`
+                        : `product-attribute-${attributeType}-${value}`;
 
                       return (
                         <button
