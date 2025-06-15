@@ -63,12 +63,12 @@ const PRODUCTS_QUERY = gql`
       gallery
       attributes {
         name
-        value
         type
       }
     }
   }
 `;
+
 
 export default function CategoryListingPage() {
   const { cartItems, addToCart } = useCart();

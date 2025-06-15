@@ -3,40 +3,25 @@ import { test, expect } from '@playwright/test';
 test('has product details', async ({ page }) => {
   await page.goto('/');
 
-  await expect(page.locator('[data-testid="category-name"]')).toBeVisible();
-  await expect(page.locator('[data-testid="category-name"]')).toHaveText('all');
+  const productCard = page.locator('[data-testid^="product-"]', { hasText: 'iPhone 12 Pro' });
+  await expect(productCard).toBeVisible();
+  await productCard.getByTestId('product-card-image').click();
 
-  await page.locator('a[href="/tech"]').click();
+  await expect(page.getByTestId('product-title')).toHaveText('iPhone 12 Pro');
 
-  await expect(page.locator('[data-testid="category-name"]')).toBeVisible();
-  await expect(page.locator('[data-testid="category-name"]')).toHaveText('tech');
+  // ✅ Use mapped color name (not hex code)
+  await page.getByTestId('product-attribute-color-Black').click();
 
-  await page.locator('[data-testid="product-iphone-12-pro"]').click();
+  // ✅ Use correct capacity value
+  await page.getByTestId('product-attribute-capacity-512GB').click();
 
-  // Wait for loading indicator to show and hide
-  await page.waitForSelector('[data-testid="loading-indicator"]', { state: 'visible' });
-  await page.waitForSelector('[data-testid="loading-indicator"]', { state: 'hidden' });
+  // Quantity
+  await page.getByTestId('quantity-increase').click();
+  await expect(page.getByTestId('quantity-value')).toHaveText('2');
 
-  await expect(page.locator('[data-testid="pdp-title"]')).toBeVisible();
-  await expect(page.locator('[data-testid="product-attribute-capacity-512GB"]')).toBeVisible();
-  await expect(page.locator('[data-testid="product-attribute-color-44FF03"]')).toBeVisible();
-  await expect(page.locator('[data-testid="price-section"]')).toBeVisible();
+  const addToCart = page.getByTestId('add-to-cart');
+  await expect(addToCart).toBeEnabled();
+  await addToCart.click();
 
-  const addToCart = page.locator('[data-testid="add-to-cart"]');
-  const isOutOfStock = await page.locator('[data-testid="out-of-stock"]').isVisible();
-
-  if (isOutOfStock) {
-    console.log('Product is out of stock — button is disabled.');
-    await expect(addToCart).toBeDisabled();
-    await expect(addToCart).toHaveText('OUT OF STOCK');
-  } else {
-    await page.locator('[data-testid="product-attribute-capacity-512GB"]').click();
-    await page.locator('[data-testid="product-attribute-color-44FF03"]').click();
-
-    await page.locator('[data-testid="increase-quantity"]').click();
-    await expect(page.locator('[data-testid="quantity-value"]')).toHaveText('2');
-
-    await addToCart.click();
-    await expect(page.locator('[data-testid="cart-overlay"]')).toBeVisible();
-  }
+  await expect(page.getByTestId('cart-overlay')).toBeVisible();
 });

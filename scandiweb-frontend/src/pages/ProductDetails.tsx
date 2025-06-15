@@ -34,7 +34,6 @@ const PRODUCT_BY_ID_QUERY = gql`
       price
       attributes {
         name
-        value
         type
       }
       category
@@ -56,8 +55,13 @@ const COLOR_NAMES: Record<string, string> = {
   '#FFFFFF': 'White',
 };
 
-const getDisplayValue = (type: string, value?: string): string =>
-  type === 'color' && value ? COLOR_NAMES[value.toUpperCase()] || '' : value || '';
+const getDisplayValue = (type: string, value?: string): string => {
+  if (type === 'color' && value) {
+    const hex = value.toUpperCase();
+    return COLOR_NAMES[hex] || hex;
+  }
+  return value || '';
+};
 
 export default function ProductDetails() {
   const { id } = useParams<{ id: string }>();
@@ -138,16 +142,19 @@ export default function ProductDetails() {
     return parse(cleanHtml);
   };
 
-  if (loading) return (
-    <div className={styles.loadingContainer} data-testid="loading-indicator">
-      <div className={styles.spinner}></div>
-      <p>Loading product details...</p>
-    </div>
-  );
+  if (loading)
+    return (
+      <div className={styles.loadingContainer} data-testid="loading-indicator">
+        <div className={styles.spinner}></div>
+        <p>Loading product details...</p>
+      </div>
+    );
   if (error) return <p className={styles.error}>Error: {error.message}</p>;
   if (!product) return <p className={styles.notFound}>Product not found</p>;
 
-  
+  const isAddToCartDisabled =
+    !product.in_stock || Object.keys(selectedAttributes).length < product.attributes.length;
+
   return (
     <>
       <Header
@@ -180,7 +187,9 @@ export default function ProductDetails() {
                     key={i}
                     src={img}
                     alt={`${product.name || 'Product'} ${i}`}
-                    className={`${styles.thumbnail} ${activeImage === img ? styles.activeThumbnail : ''}`}
+                    className={`${styles.thumbnail} ${
+                      activeImage === img ? styles.activeThumbnail : ''
+                    }`}
                     onClick={() => setActiveImage(img)}
                     data-testid={`thumbnail-${i}`}
                   />
@@ -206,7 +215,7 @@ export default function ProductDetails() {
 
           <div className={styles.info}>
             <div className={styles.productHeader}>
-              <h1 className={styles.productName} data-testid="pdp-title">
+              <h1 className={styles.productName} data-testid="product-title">
                 {product.name}
               </h1>
               {product.brand && (
@@ -225,11 +234,12 @@ export default function ProductDetails() {
 
             {Object.entries(groupedAttributes).map(([name, attr]) => {
               const isColor = attr.type === 'color' || attr.type === 'swatch';
-              const groupTestId = isColor
-                ? 'product-attribute-color'
-                : attr.type === 'text'
-                ? 'product-attribute-capacity'
-                : undefined;
+              const groupTestId =
+                isColor
+                  ? 'product-attribute-color'
+                  : attr.type === 'text'
+                  ? 'product-attribute-capacity'
+                  : undefined;
 
               return (
                 <div
@@ -244,9 +254,8 @@ export default function ProductDetails() {
                   >
                     {attr.values.map((value) => {
                       const displayVal = getDisplayValue(attr.type, value);
-
                       const testId = isColor
-                        ? `product-attribute-color-${value.toUpperCase()}`
+                        ? `product-attribute-color-${displayVal}`
                         : attr.type === 'text'
                         ? `product-attribute-capacity-${value}`
                         : undefined;
@@ -303,10 +312,10 @@ export default function ProductDetails() {
 
             <button
               onClick={handleAddToCart}
-              disabled={!product.in_stock}
-              className={`${styles.addToCart} ${!product.in_stock ? styles.disabled : ''}`}
+              disabled={isAddToCartDisabled}
+              className={`${styles.addToCart} ${isAddToCartDisabled ? styles.disabled : ''}`}
               data-testid="add-to-cart"
-              aria-disabled={!product.in_stock}
+              aria-disabled={isAddToCartDisabled}
             >
               {product.in_stock ? 'ADD TO CART' : 'OUT OF STOCK'}
             </button>

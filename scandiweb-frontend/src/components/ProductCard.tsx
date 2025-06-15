@@ -52,6 +52,7 @@ export default function ProductCard({
   return (
     <div
       data-testid={testId ?? `product-${id}`}
+      className="product-card"
       style={{
         border: '1px solid #ddd',
         boxShadow: '0 4px 12px rgba(106, 13, 173, 0.15)',
