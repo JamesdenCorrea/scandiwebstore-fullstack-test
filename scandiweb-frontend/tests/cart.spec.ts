@@ -66,9 +66,8 @@ test('user can add item to cart and place an order', async ({ page }) => {
       await expect(addToCartBtn).toBeVisible({ timeout: 5000 });
       console.log('Add to cart button visible');
 
-      const colorLocator = page
-        .locator('[data-testid="product-attribute-color-44FF03"], [data-testid="product-attribute-color-Green"]')
-        .first();
+      // ✅ Updated test ID to use only 'Green' as mapped by getDisplayValue
+      const colorLocator = page.locator('[data-testid="product-attribute-color-Green"]').first();
       await expect(colorLocator).toBeVisible({ timeout: 10000 });
 
       const capacityLocator = page
