@@ -143,8 +143,13 @@ export default function ProductDetails() {
     return parse(cleanHtml);
   };
 
-  const isAddToCartDisabled =
-    !product?.in_stock || Object.keys(selectedAttributes).length < product.attributes.length;
+const isAddToCartDisabled =
+  !product?.in_stock ||
+  product.attributes.some(
+    (attr) =>
+      !selectedAttributes[attr.name] ||
+      !groupedAttributes[attr.name]?.values.includes(selectedAttributes[attr.name])
+  );
 
   if (loading) {
     return (
