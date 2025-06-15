@@ -1,3 +1,4 @@
+// scandiweb-frontend/src/pages/ProductDetails.tsx
 import React, { useEffect, useState, useMemo } from 'react';
 import { gql, useQuery } from '@apollo/client';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -233,63 +234,48 @@ export default function ProductDetails() {
               </p>
             </div>
 
-{/* In the attribute rendering section of ProductDetails.tsx: */}
-{Object.entries(groupedAttributes).map(([name, attr]) => {
+            {Object.entries(groupedAttributes).map(([name, attr]) => {
+              const isColor = attr.type === 'color' || attr.type === 'swatch';
+              const attributeType = toKebabCase(name);
 
-  const isColor = attr.type === 'color' || attr.type === 'swatch';
-  const attributeType = toKebabCase(name);
-  
-  return (
-    <div
-      key={name}
-      className={styles.attributeGroup}
-      data-testid={`product-attribute-${attributeType}`}
-    >
-      <h3 className={styles.attributeName}>{name}:</h3>
-      <div className={styles.attributeOptions}>
-        {attr.values.map((value) => {
-          const displayVal = getDisplayValue(attr.type, value);
-          
-          // Generate test IDs that exactly match what the tests expect
-          let testIds = [];
-          
-          if (isColor && value === '#44FF03') {
-            // Special case for the exact color the test is looking for
-            testIds = [
-              'product-attribute-color-#44FF03',
-              'product-attribute-color-Green'
-            ];
-          } else if (name === 'Capacity' && value === '512G') {
-            testIds = ['product-attribute-capacity-512G'];
-          } else {
-            // Default case for other attributes
-            testIds = [`product-attribute-${toKebabCase(name)}-${value}`];
-          }
+              return (
+                <div
+                  key={name}
+                  className={styles.attributeGroup}
+                  data-testid={`product-attribute-${attributeType}`}
+                >
+                  <h3 className={styles.attributeName}>{name}:</h3>
+                  <div className={styles.attributeOptions}>
+                    {attr.values.map((value) => {
+                      const displayVal = getDisplayValue(attr.type, value);
+                      const testId = isColor
+                        ? `product-attribute-color-${displayVal}`
+                        : `product-attribute-${attributeType}-${value}`;
 
-          return (
-            <button
-              key={value}
-              onClick={() => handleAttributeChange(name, value)}
-              data-testid={testIds.join(' ')}
-              className={`${styles.attributeOption} ${
-                selectedAttributes[name] === value ? styles.selected : ''
-              } ${isColor ? styles.colorOption : ''}`}
-            >
-              {isColor ? (
-                <span
-                  className={styles.colorSwatch}
-                  style={{ backgroundColor: value }}
-                />
-              ) : (
-                <span className={styles.textValue}>{displayVal}</span>
-              )}
-            </button>
-          );
-        })}
-      </div>
-    </div>
-  );
-})}
+                      return (
+                        <button
+                          key={value}
+                          onClick={() => handleAttributeChange(name, value)}
+                          data-testid={testId}
+                          className={`${styles.attributeOption} ${
+                            selectedAttributes[name] === value ? styles.selected : ''
+                          } ${isColor ? styles.colorOption : ''}`}
+                        >
+                          {isColor ? (
+                            <span
+                              className={styles.colorSwatch}
+                              style={{ backgroundColor: value }}
+                            />
+                          ) : (
+                            <span className={styles.textValue}>{displayVal}</span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
 
             <div className={styles.quantitySection}>
               <h3 className={styles.quantityLabel}>Quantity:</h3>
