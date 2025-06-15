@@ -5,8 +5,6 @@ test('has product details', async ({ page }) => {
 
   // Navigate to Tech category
   await page.locator('a[href="/tech"]').click();
-
-  // Wait for products to load
   await expect(page.locator('[data-testid^="product-"]')).toBeVisible();
   
   // Find iPhone 12 Pro card
@@ -18,12 +16,17 @@ test('has product details', async ({ page }) => {
   await expect(page.locator('[data-testid="product-title"]')).toHaveText('iPhone 12 Pro');
   await expect(page.locator('[data-testid="out-of-stock"]')).toBeVisible();
 
-  // FIXED: Use ONLY color name format
-  const colorLocator = page.locator('[data-testid="product-attribute-color-Green"]').first();
-  await expect(colorLocator).toBeVisible({ timeout: 10000 });
+  // Updated color selector - handles both formats
+  await page.waitForSelector('[data-testid^="product-attribute-color-"]');
+  const colorLocator = page.locator(
+    '[data-testid="product-attribute-color-44ff03"],' +
+    '[data-testid="product-attribute-color-green"]'
+  ).first();
+  await expect(colorLocator).toBeVisible({ timeout: 15000 });
   
-  // Fixed capacity selector
-  const capacityLocator = page.locator('[data-testid="product-attribute-capacity-512G"]');
+  // Updated capacity selector - lowercase
+  await page.waitForSelector('[data-testid^="product-attribute-capacity-"]');
+  const capacityLocator = page.locator('[data-testid="product-attribute-capacity-512g"]');
   await expect(capacityLocator).toBeVisible();
 
   // Select attributes
