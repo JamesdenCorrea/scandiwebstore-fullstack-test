@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import AddProductForm from '../components/AddProductForm';
 import styles from './AdminPanel.module.css';
 
-// Mock product data
 const mockProducts = [
   { id: '1', sku: 'AIRTAG', name: 'Apple AirTag', price: 29.99, category: 'tech' },
   { id: '2', sku: 'IPHONE12', name: 'iPhone 12 Pro', price: 999.99, category: 'tech' },
@@ -16,12 +15,10 @@ export default function AdminPanel() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate API load
     const timer = setTimeout(() => {
       setProducts(mockProducts);
       setIsLoading(false);
     }, 500);
-    
     return () => clearTimeout(timer);
   }, []);
 
@@ -72,7 +69,8 @@ export default function AdminPanel() {
       {showForm && (
         <AddProductForm 
           onClose={() => setShowForm(false)} 
-          onSave={handleAddProduct} 
+          onSave={handleAddProduct}
+          formId="product_form"
         />
       )}
 

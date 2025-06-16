@@ -11,9 +11,10 @@ type Attribute = {
 type ProductFormProps = {
   onClose: () => void;
   onSave: (product: any) => void;
+  formId?: string;
 };
 
-export default function AddProductForm({ onClose, onSave }: ProductFormProps) {
+export default function AddProductForm({ onClose, onSave, formId = 'admin_product_form' }: ProductFormProps) {
   const [productData, setProductData] = useState({
     sku: '',
     name: '',
@@ -79,7 +80,7 @@ export default function AddProductForm({ onClose, onSave }: ProductFormProps) {
         <h2>Add New Product</h2>
         
         <form 
-        id="admin_product_form"
+          id={formId}
           onSubmit={handleSubmit}
           data-testid="product-form"
         >

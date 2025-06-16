@@ -39,7 +39,6 @@ export default function Header({
   return (
     <header className="header" role="banner" style={{ position: 'relative', zIndex: 100 }}>
       <div className="header-container">
-
         {/* Logo */}
         <div className="logo-container">
           <Link to="/" className="logo" aria-label="Site Logo">
@@ -76,73 +75,68 @@ export default function Header({
           </ul>
         </nav>
 
-        {/* Currency switcher */}
-        <div className="currency-switcher" style={{ position: 'relative', marginRight: '1rem', zIndex: 105 }}>
-          <button
-            data-testid="currency-switcher"
-            aria-label="Currency switcher"
-            onClick={() => setShowCurrencyDropdown(!showCurrencyDropdown)}
-            style={{ padding: '0.5rem', border: '1px solid #ccc', background: 'white' }}
+        {/* Actions Container */}
+        <div className="actions-container">
+          {/* Global ADD Link - Matches test requirements */}
+          <Link
+            to="/admin"
+            role="link"
+            aria-label="ADD"
+            className="add-product-link"
+            data-testid="global-add-button"
           >
-            {selectedCurrency}
-          </button>
+            ADD
+          </Link>
 
-          {showCurrencyDropdown && (
-            <ul
-              data-testid="currency-dropdown"
-              style={{
-                position: 'absolute',
-                top: '100%',
-                left: 0,
-                background: 'white',
-                border: '1px solid #ccc',
-                padding: '0.25rem',
-                marginTop: '0.25rem',
-                listStyle: 'none',
-                zIndex: 110,
-              }}
+          {/* Currency switcher */}
+          <div className="currency-switcher">
+            <button
+              data-testid="currency-switcher"
+              aria-label="Currency switcher"
+              onClick={() => setShowCurrencyDropdown(!showCurrencyDropdown)}
             >
-              {['USD', 'EUR', 'GBP'].map((currency) => (
-                <li
-                  key={currency}
-                  data-testid={`currency-option-${currency}`}
-                  onClick={() => handleCurrencySelect(currency)}
-                  style={{ padding: '0.25rem', cursor: 'pointer' }}
-                >
-                  {currency === 'USD' ? '$ USD' : currency === 'EUR' ? '€ EUR' : '£ GBP'}
-                </li>
-              ))}
-            </ul>
-          )}
+              {selectedCurrency}
+            </button>
 
-          {/* ✅ Always render this outside the dropdown */}
-          <span data-testid="active-currency" style={{ marginLeft: '0.5rem' }}>
-            {selectedCurrency === 'USD' ? '$' : selectedCurrency === 'EUR' ? '€' : '£'}
-          </span>
-        </div>
+            {showCurrencyDropdown && (
+              <ul data-testid="currency-dropdown">
+                {['USD', 'EUR', 'GBP'].map((currency) => (
+                  <li
+                    key={currency}
+                    data-testid={`currency-option-${currency}`}
+                    onClick={() => handleCurrencySelect(currency)}
+                  >
+                    {currency === 'USD' ? '$ USD' : currency === 'EUR' ? '€ EUR' : '£ GBP'}
+                  </li>
+                ))}
+              </ul>
+            )}
+            <span data-testid="active-currency">
+              {selectedCurrency === 'USD' ? '$' : selectedCurrency === 'EUR' ? '€' : '£'}
+            </span>
+          </div>
 
-        {/* Cart button */}
-        <div className="cart-container">
-          <button
-            className="cart-button"
-            data-testid="cart-btn"
-            onClick={onCartClick}
-            aria-label={`Cart with ${cartItemCount} items`}
-            type="button"
-            style={{ position: 'relative', zIndex: 101 }}
-          >
-            <svg className="cart-icon" viewBox="0 0 24 24">
-              <circle cx="9" cy="21" r="1" />
-              <circle cx="20" cy="21" r="1" />
-              <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
-            </svg>
-{cartItemCount > 0 && (
-  <span className="cart-count" aria-live="polite">
-    {cartItemCount === 1 ? '1 item' : `${cartItemCount} items`}
-  </span>
-)}
-
-          </button>
+          {/* Cart button */}
+          <div className="cart-container">
+            <button
+              className="cart-button"
+              data-testid="cart-btn"
+              onClick={onCartClick}
+              aria-label={`Cart with ${cartItemCount} items`}
+              type="button"
+            >
+              <svg className="cart-icon" viewBox="0 0 24 24">
+                <circle cx="9" cy="21" r="1" />
+                <circle cx="20" cy="21" r="1" />
+                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+              </svg>
+              {cartItemCount > 0 && (
+                <span className="cart-count" aria-live="polite">
+                  {cartItemCount === 1 ? '1 item' : `${cartItemCount} items`}
+                </span>
+              )}
+            </button>
+          </div>
         </div>
       </div>
     </header>
