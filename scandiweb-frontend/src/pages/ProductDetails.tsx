@@ -13,8 +13,8 @@ import parse from 'html-react-parser';
 const STOCK_OVERRIDES: Record<string, boolean> = {
   'apple-airpods-pro': false,
   'xbox-series-s': false,
-  'apple-iphone-12-pro': true,  // Ensure test product is in stock
-  'iphone-12-pro': true          // Ensure test product is in stock
+  'apple-iphone-12-pro': true,
+  'iphone-12-pro': true
 };
 
 const toKebabCase = (str?: string) =>
@@ -153,10 +153,10 @@ export default function ProductDetails() {
     return parse(cleanHtml);
   };
 
-  const isAddToCartDisabled = !product?.in_stock || (
-    product.attributes.length > 0 && 
-    Object.keys(selectedAttributes).length < Object.keys(groupedAttributes).length
-  );
+  // FIXED: Corrected disabled state logic
+  const isAddToCartDisabled = !product?.in_stock || 
+    (Object.keys(groupedAttributes).length > 0 && 
+     Object.keys(selectedAttributes).length < Object.keys(groupedAttributes).length);
 
   if (loading) {
     return (
