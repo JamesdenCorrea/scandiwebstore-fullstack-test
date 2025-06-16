@@ -116,9 +116,9 @@ export default function ProductDetails() {
     return result;
   }, [product]);
 
-  // Initialize selectedAttributes to empty object
   useEffect(() => {
     if (product) {
+      // Initialize with NO attributes selected
       setSelectedAttributes({});
       setActiveImage(product.image_url || product.gallery?.[0] || '');
     }
