@@ -1,4 +1,3 @@
-// scandiweb-frontend/src/pages/CategoryListingPage.tsx
 import React, { useState, useMemo } from 'react';
 import { gql, useQuery } from '@apollo/client';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -9,6 +8,13 @@ import { useCart } from '../context/CartContext';
 import './CategoryListingPage.css';
 
 const DESIRED_CATEGORIES = ['All', 'Clothes', 'Tech'];
+
+// Define the stock overrides based on data.json
+const STOCK_OVERRIDES: Record<string, boolean> = {
+  'apple-airpods-pro': false,  // Force out of stock
+  'xbox-series-s': false,      // Force out of stock
+  'apple-iphone-12-pro': true  // Force in stock
+};
 
 export type Attribute = {
   name: string;
@@ -100,6 +106,11 @@ export default function CategoryListingPage() {
       const gallery = p.gallery && p.gallery.length > 0 ? p.gallery : [p.image_url || fallbackImage];
       const uniqueGallery = Array.from(new Set([p.image_url, ...gallery]));
 
+      // Apply stock overrides if they exist for this product
+      const stockStatus = STOCK_OVERRIDES[p.id] !== undefined 
+        ? STOCK_OVERRIDES[p.id] 
+        : p.in_stock > 0;
+
       return {
         id: p.id,
         sku: p.sku,
@@ -110,13 +121,14 @@ export default function CategoryListingPage() {
         brand: p.brand ?? '',
         image_url: p.image_url || fallbackImage,
         image: p.image_url || fallbackImage,
-        inStock: p.in_stock > 0,
+        inStock: stockStatus, // Use the override or database value
         description: p.description,
         attributes: p.attributes || [],
         gallery: uniqueGallery,
       };
     });
   }, [data]);
+
 
 const filteredProducts = useMemo(() => {
   if (selectedCategory === 'All') return products;

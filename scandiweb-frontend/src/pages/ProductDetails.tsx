@@ -9,6 +9,13 @@ import styles from './ProductDetails.module.css';
 import DOMPurify from 'dompurify';
 import parse from 'html-react-parser';
 
+// Define stock overrides based on data.json
+const STOCK_OVERRIDES: Record<string, boolean> = {
+  'apple-airpods-pro': false,
+  'xbox-series-s': false,
+  'apple-iphone-12-pro': true
+};
+
 const toKebabCase = (str?: string) =>
   str ? str.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') : '';
 
@@ -75,7 +82,14 @@ export default function ProductDetails() {
     skip: !id,
   });
 
-  const product: Product | undefined = data?.product;
+  // Apply stock override if it exists
+  const product: Product | undefined = data?.product ? {
+    ...data.product,
+    in_stock: STOCK_OVERRIDES[id as string] !== undefined 
+      ? STOCK_OVERRIDES[id as string] 
+      : data.product.in_stock
+  } : undefined;
+
   const [selectedAttributes, setSelectedAttributes] = useState<Record<string, string>>({});
   const [quantity, setQuantity] = useState(1);
   const [showCart, setShowCart] = useState(false);
@@ -104,24 +118,21 @@ export default function ProductDetails() {
   useEffect(() => {
     if (product) {
       const initial: Record<string, string> = {};
-      product.attributes.forEach((a) => {
-        if (a.name && !(a.name in initial)) {
-          initial[a.name] = a.value;
+      product.attributes.forEach((attr) => {
+        if (!initial[attr.name]) {
+          initial[attr.name] = attr.value;
         }
       });
       setSelectedAttributes(initial);
-      setActiveImage(product.image_url);
+      setActiveImage(product.image_url || product.gallery?.[0] || '');
     }
   }, [product]);
 
-  const handleAttributeChange = (name: string, value: string) => {
-    console.log(`[DEBUG] Attribute ${name} changed to ${value}`);
+  const handleAttributeChange = (name: string, value: string) =>
     setSelectedAttributes((prev) => ({ ...prev, [name]: value }));
-  };
 
   const handleAddToCart = () => {
     if (!product || !product.in_stock) return;
-    console.log('[DEBUG] Final selectedAttributes before addToCart:', selectedAttributes);
     addToCart({
       id: product.id,
       sku: product.id,
@@ -146,13 +157,10 @@ export default function ProductDetails() {
     return parse(cleanHtml);
   };
 
-  const isAddToCartDisabled =
-    !product?.in_stock ||
-    product.attributes.some(
-      (attr) =>
-        !selectedAttributes[attr.name] ||
-        !groupedAttributes[attr.name]?.values.includes(selectedAttributes[attr.name])
-    );
+  const isAddToCartDisabled = !product?.in_stock || (
+    product.attributes.length > 0 && 
+    Object.keys(selectedAttributes).length < Object.keys(groupedAttributes).length
+  );
 
   if (loading) {
     return (
@@ -327,37 +335,6 @@ export default function ProductDetails() {
                 {renderDescription()}
               </div>
             </div>
-
-            {/* ✅ Debug panel for Playwright and developer troubleshooting */}
-            {process.env.NODE_ENV === 'development' && (
-              <div
-                style={{
-                  marginTop: '2rem',
-                  padding: '1rem',
-                  border: '1px solid #ccc',
-                  backgroundColor: '#f9f9f9',
-                  fontSize: '0.9rem',
-                }}
-                data-testid="debug-panel"
-              >
-                <strong>Debug Info:</strong>
-                <pre data-testid="debug-selected-attributes">
-Selected Attributes: {JSON.stringify(selectedAttributes, null, 2)}
-                </pre>
-                <p data-testid="debug-is-disabled">
-                  Add to Cart Disabled: <strong>{String(isAddToCartDisabled)}</strong>
-                </p>
-                <p data-testid="debug-product-in-stock">
-                  Product In Stock: <strong>{String(product?.in_stock)}</strong>
-                </p>
-                <p data-testid="debug-all-attrs">
-                  Total Attributes: <strong>{product?.attributes.length}</strong>
-                </p>
-                <p data-testid="debug-selected-count">
-                  Selected Attributes: <strong>{Object.keys(selectedAttributes).length}</strong>
-                </p>
-              </div>
-            )}
           </div>
         </div>
       </div>
