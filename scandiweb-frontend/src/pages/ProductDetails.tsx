@@ -116,16 +116,13 @@ export default function ProductDetails() {
     return result;
   }, [product]);
 
+  // Initialize selectedAttributes to empty object
   useEffect(() => {
     if (product) {
-      const initial: Record<string, string> = {};
-      Object.keys(groupedAttributes).forEach(name => {
-        initial[name] = groupedAttributes[name].values[0];
-      });
-      setSelectedAttributes(initial);
+      setSelectedAttributes({});
       setActiveImage(product.image_url || product.gallery?.[0] || '');
     }
-  }, [product, groupedAttributes]);
+  }, [product]);
 
   const handleAttributeChange = (name: string, value: string) =>
     setSelectedAttributes((prev) => ({ ...prev, [name]: value }));
@@ -264,7 +261,6 @@ export default function ProductDetails() {
                   <div className={styles.attributeOptions}>
                     {attr.values.map((value) => {
                       const displayVal = getDisplayValue(attr.type, value);
-                      // Standardize test IDs for color attributes
                       const testId = isColor 
                         ? `product-attribute-color-${displayVal}`
                         : `product-attribute-${attributeType}-${value}`;
