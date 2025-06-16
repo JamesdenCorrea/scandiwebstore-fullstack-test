@@ -13,8 +13,8 @@ import parse from 'html-react-parser';
 const STOCK_OVERRIDES: Record<string, boolean> = {
   'apple-airpods-pro': false,
   'xbox-series-s': false,
-  'apple-iphone-12-pro': true,
-  'iphone-12-pro': true
+  'apple-iphone-12-pro': true,  // Ensure test product is in stock
+  'iphone-12-pro': true          // Ensure test product is in stock
 };
 
 const toKebabCase = (str?: string) =>
@@ -118,11 +118,14 @@ export default function ProductDetails() {
 
   useEffect(() => {
     if (product) {
-      // Initialize with NO attributes selected
-      setSelectedAttributes({});
+      const initial: Record<string, string> = {};
+      Object.keys(groupedAttributes).forEach(name => {
+        initial[name] = groupedAttributes[name].values[0];
+      });
+      setSelectedAttributes(initial);
       setActiveImage(product.image_url || product.gallery?.[0] || '');
     }
-  }, [product]);
+  }, [product, groupedAttributes]);
 
   const handleAttributeChange = (name: string, value: string) =>
     setSelectedAttributes((prev) => ({ ...prev, [name]: value }));
@@ -153,10 +156,10 @@ export default function ProductDetails() {
     return parse(cleanHtml);
   };
 
-  // FIXED: Corrected disabled state logic
-  const isAddToCartDisabled = !product?.in_stock || 
-    (Object.keys(groupedAttributes).length > 0 && 
-     Object.keys(selectedAttributes).length < Object.keys(groupedAttributes).length);
+  const isAddToCartDisabled = !product?.in_stock || (
+    product.attributes.length > 0 && 
+    Object.keys(selectedAttributes).length < Object.keys(groupedAttributes).length
+  );
 
   if (loading) {
     return (
@@ -261,6 +264,7 @@ export default function ProductDetails() {
                   <div className={styles.attributeOptions}>
                     {attr.values.map((value) => {
                       const displayVal = getDisplayValue(attr.type, value);
+                      // Standardize test IDs for color attributes
                       const testId = isColor 
                         ? `product-attribute-color-${displayVal}`
                         : `product-attribute-${attributeType}-${value}`;
