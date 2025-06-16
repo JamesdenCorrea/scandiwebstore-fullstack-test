@@ -114,11 +114,14 @@ export default function ProductDetails() {
     }
   }, [product]);
 
-  const handleAttributeChange = (name: string, value: string) =>
+  const handleAttributeChange = (name: string, value: string) => {
+    console.log(`[DEBUG] Attribute ${name} changed to ${value}`);
     setSelectedAttributes((prev) => ({ ...prev, [name]: value }));
+  };
 
   const handleAddToCart = () => {
     if (!product || !product.in_stock) return;
+    console.log('[DEBUG] Final selectedAttributes before addToCart:', selectedAttributes);
     addToCart({
       id: product.id,
       sku: product.id,
@@ -240,50 +243,48 @@ export default function ProductDetails() {
               </p>
             </div>
 
-{Object.entries(groupedAttributes).map(([name, attr]) => {
-  const isColor = attr.type === 'color' || attr.type === 'swatch';
-  const attributeType = toKebabCase(name);
+            {Object.entries(groupedAttributes).map(([name, attr]) => {
+              const isColor = attr.type === 'color' || attr.type === 'swatch';
+              const attributeType = toKebabCase(name);
 
-  return (
-    <div
-      key={name}
-      className={styles.attributeGroup}
-      data-testid={`product-attribute-${attributeType}`}
-    >
-      <h3 className={styles.attributeName}>{name}:</h3>
-      <div className={styles.attributeOptions}>
-        {attr.values.map((value) => {
-          const displayVal = getDisplayValue(attr.type, value);
-const testId = isColor
-  ? `product-attribute-color-${value.replace('#', '%23')} product-attribute-color-${displayVal}`
-  : `product-attribute-${attributeType}-${value}`;
+              return (
+                <div
+                  key={name}
+                  className={styles.attributeGroup}
+                  data-testid={`product-attribute-${attributeType}`}
+                >
+                  <h3 className={styles.attributeName}>{name}:</h3>
+                  <div className={styles.attributeOptions}>
+                    {attr.values.map((value) => {
+                      const displayVal = getDisplayValue(attr.type, value);
+                      const testId = isColor
+                        ? `product-attribute-color-${value.replace('#', '%23')} product-attribute-color-${displayVal}`
+                        : `product-attribute-${attributeType}-${value}`;
 
-
-          return (
-            <button
-              key={value}
-              onClick={() => handleAttributeChange(name, value)}
-              data-testid={testId}
-              className={`${styles.attributeOption} ${
-                selectedAttributes[name] === value ? styles.selected : ''
-              } ${isColor ? styles.colorOption : ''}`}
-            >
-              {isColor ? (
-                <span
-                  className={styles.colorSwatch}
-                  style={{ backgroundColor: value }}
-                />
-              ) : (
-                <span className={styles.textValue}>{displayVal}</span>
-              )}
-            </button>
-          );
-        })}
-      </div>
-    </div>
-  );
-})}
-
+                      return (
+                        <button
+                          key={value}
+                          onClick={() => handleAttributeChange(name, value)}
+                          data-testid={testId}
+                          className={`${styles.attributeOption} ${
+                            selectedAttributes[name] === value ? styles.selected : ''
+                          } ${isColor ? styles.colorOption : ''}`}
+                        >
+                          {isColor ? (
+                            <span
+                              className={styles.colorSwatch}
+                              style={{ backgroundColor: value }}
+                            />
+                          ) : (
+                            <span className={styles.textValue}>{displayVal}</span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
 
             <div className={styles.quantitySection}>
               <h3 className={styles.quantityLabel}>Quantity:</h3>
@@ -309,17 +310,16 @@ const testId = isColor
               </div>
             </div>
 
-<button
-  onClick={handleAddToCart}
-  disabled={isAddToCartDisabled}
-  data-testid="add-to-cart"
-  className={`${styles.addToCart} ${
-    isAddToCartDisabled ? styles.disabled : ''
-  }`}
->
-  {product.in_stock ? 'ADD TO CART' : 'OUT OF STOCK'}
-</button>
-
+            <button
+              onClick={handleAddToCart}
+              disabled={isAddToCartDisabled}
+              data-testid="add-to-cart"
+              className={`${styles.addToCart} ${
+                isAddToCartDisabled ? styles.disabled : ''
+              }`}
+            >
+              {product.in_stock ? 'ADD TO CART' : 'OUT OF STOCK'}
+            </button>
 
             <div className={styles.descriptionSection}>
               <h3 className={styles.sectionTitle}>Product Description</h3>
@@ -327,6 +327,37 @@ const testId = isColor
                 {renderDescription()}
               </div>
             </div>
+
+            {/* ✅ Debug panel for Playwright and developer troubleshooting */}
+            {process.env.NODE_ENV === 'development' && (
+              <div
+                style={{
+                  marginTop: '2rem',
+                  padding: '1rem',
+                  border: '1px solid #ccc',
+                  backgroundColor: '#f9f9f9',
+                  fontSize: '0.9rem',
+                }}
+                data-testid="debug-panel"
+              >
+                <strong>Debug Info:</strong>
+                <pre data-testid="debug-selected-attributes">
+Selected Attributes: {JSON.stringify(selectedAttributes, null, 2)}
+                </pre>
+                <p data-testid="debug-is-disabled">
+                  Add to Cart Disabled: <strong>{String(isAddToCartDisabled)}</strong>
+                </p>
+                <p data-testid="debug-product-in-stock">
+                  Product In Stock: <strong>{String(product?.in_stock)}</strong>
+                </p>
+                <p data-testid="debug-all-attrs">
+                  Total Attributes: <strong>{product?.attributes.length}</strong>
+                </p>
+                <p data-testid="debug-selected-count">
+                  Selected Attributes: <strong>{Object.keys(selectedAttributes).length}</strong>
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </div>
