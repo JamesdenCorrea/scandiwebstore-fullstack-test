@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import AddProductForm from '../components/AddProductForm';
 import styles from './AdminPanel.module.css';
-
+import { useFormContext } from '../context/FormContext';
 const mockProducts = [
   { id: '1', sku: 'AIRTAG', name: 'Apple AirTag', price: 29.99, category: 'tech' },
   { id: '2', sku: 'IPHONE12', name: 'iPhone 12 Pro', price: 999.99, category: 'tech' },
@@ -13,6 +13,7 @@ export default function AdminPanel() {
   const [products, setProducts] = useState<any[]>([]);
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { openForm } = useFormContext();
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -56,7 +57,7 @@ export default function AdminPanel() {
             Delete Selected ({selectedProducts.length})
           </button>
           <button
-            onClick={() => setShowForm(true)}
+            onClick={openForm} // Use context openForm
             className={styles.addButton}
             data-testid="admin-add-button"
             aria-label="ADD"
@@ -65,14 +66,6 @@ export default function AdminPanel() {
           </button>
         </div>
       </div>
-
-      {showForm && (
-        <AddProductForm 
-          onClose={() => setShowForm(false)} 
-          onSave={handleAddProduct}
-          formId="product_form"
-        />
-      )}
 
       <div className={styles.productList}>
         {products.map(product => (

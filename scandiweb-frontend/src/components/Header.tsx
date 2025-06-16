@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import './Header.css';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useFormContext } from '../context/FormContext'; // Add this
 
 type HeaderProps = {
   categories: string[];
@@ -35,6 +36,7 @@ export default function Header({
     setSelectedCurrency(currency);
     setShowCurrencyDropdown(false);
   };
+const { openForm } = useFormContext(); // Add this
 
   return (
     <header className="header" role="banner" style={{ position: 'relative', zIndex: 100 }}>
@@ -76,17 +78,16 @@ export default function Header({
         </nav>
 
         {/* Actions Container */}
-        <div className="actions-container">
-          {/* Global ADD Link - Matches test requirements */}
-          <Link
-            to="/admin"
-            role="link"
+         <div className="actions-container">
+          <button
+            onClick={openForm}
+            role="button"
             aria-label="ADD"
             className="add-product-link"
             data-testid="global-add-button"
           >
             ADD
-          </Link>
+          </button>
 
           {/* Currency switcher */}
           <div className="currency-switcher">
