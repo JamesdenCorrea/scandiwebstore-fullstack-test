@@ -13,8 +13,8 @@ import parse from 'html-react-parser';
 const STOCK_OVERRIDES: Record<string, boolean> = {
   'apple-airpods-pro': false,
   'xbox-series-s': false,
-  'apple-iphone-12-pro': false, // Changed to false for test environment
-  'iphone-12-pro': false, // Add missing test product ID
+  'apple-iphone-12-pro': true,  // Ensure test product is in stock
+  'iphone-12-pro': true          // Ensure test product is in stock
 };
 
 const toKebabCase = (str?: string) =>
@@ -255,7 +255,11 @@ export default function ProductDetails() {
               const attributeType = toKebabCase(name);
 
               return (
-                <div key={name} className={styles.attributeGroup}>
+                <div 
+                  key={name} 
+                  className={styles.attributeGroup}
+                  data-testid={`product-attribute-${attributeType}`}
+                >
                   <h3 className={styles.attributeName}>{name}:</h3>
                   <div className={styles.attributeOptions}>
                     {attr.values.map((value) => {
