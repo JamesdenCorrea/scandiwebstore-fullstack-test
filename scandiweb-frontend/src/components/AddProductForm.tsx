@@ -79,7 +79,7 @@ export default function AddProductForm({ onClose, onSave }: ProductFormProps) {
         <h2>Add New Product</h2>
         
         <form 
-          id="product_form" 
+        id="admin_product_form"
           onSubmit={handleSubmit}
           data-testid="product-form"
         >

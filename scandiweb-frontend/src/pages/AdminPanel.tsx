@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import AddProductForm from '../components/AddProductForm';
 import styles from './AdminPanel.module.css';
 
-// Mock product data - replace with real API calls
+// Mock product data
 const mockProducts = [
   { id: '1', sku: 'AIRTAG', name: 'Apple AirTag', price: 29.99, category: 'tech' },
   { id: '2', sku: 'IPHONE12', name: 'iPhone 12 Pro', price: 999.99, category: 'tech' },
@@ -11,13 +11,18 @@ const mockProducts = [
 
 export default function AdminPanel() {
   const [showForm, setShowForm] = useState(false);
-  const [products, setProducts] = useState<any[]>(mockProducts);
+  const [products, setProducts] = useState<any[]>([]);
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // In a real app, this would fetch from API
   useEffect(() => {
-    // Fetch products from API
-    // setProducts(response.data);
+    // Simulate API load
+    const timer = setTimeout(() => {
+      setProducts(mockProducts);
+      setIsLoading(false);
+    }, 500);
+    
+    return () => clearTimeout(timer);
   }, []);
 
   const handleAddProduct = (newProduct: any) => {
@@ -38,6 +43,8 @@ export default function AdminPanel() {
     setSelectedProducts([]);
   };
 
+  if (isLoading) return <div className={styles.loading}>Loading...</div>;
+
   return (
     <div className={styles.adminContainer}>
       <div className={styles.header}>
@@ -55,8 +62,9 @@ export default function AdminPanel() {
             onClick={() => setShowForm(true)}
             className={styles.addButton}
             data-testid="admin-add-button"
+            aria-label="ADD"
           >
-            ADD PRODUCT
+            ADD
           </button>
         </div>
       </div>

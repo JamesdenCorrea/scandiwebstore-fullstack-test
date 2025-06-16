@@ -170,6 +170,7 @@ export default function ProductCard({
             onClick={handleAddToCart}
             disabled={!inStock}
             title={!inStock ? 'Out of stock' : hasAttributes ? 'Select attributes' : 'Add to Cart'}
+            aria-label={`Add ${name} to cart`}
             style={{
               background: inStock ? '#6a0dad' : '#ccc',
               color: 'white',
