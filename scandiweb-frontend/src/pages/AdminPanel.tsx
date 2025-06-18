@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import AddProductForm from '../components/AddProductForm';
 import styles from './AdminPanel.module.css';
 import { useFormContext } from '../context/FormContext';
+
 const mockProducts = [
   { id: '1', sku: 'AIRTAG', name: 'Apple AirTag', price: 29.99, category: 'tech' },
   { id: '2', sku: 'IPHONE12', name: 'iPhone 12 Pro', price: 999.99, category: 'tech' },
-  { id: '3', sku: 'HUARACHE', name: 'Nike Air Huarache', price: 120.00, category: 'clothes' },
+  { id: '3', sku: 'HUARACHE', name: 'Nike Air Huarache', price: 120.0, category: 'clothes' },
 ];
 
 export default function AdminPanel() {
@@ -13,7 +14,7 @@ export default function AdminPanel() {
   const [products, setProducts] = useState<any[]>([]);
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const { openForm } = useFormContext();
+  const { openForm } = useFormContext(); // Use context form control
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -29,15 +30,13 @@ export default function AdminPanel() {
   };
 
   const toggleProductSelection = (id: string) => {
-    setSelectedProducts(prev => 
-      prev.includes(id) 
-        ? prev.filter(pId => pId !== id) 
-        : [...prev, id]
+    setSelectedProducts((prev) =>
+      prev.includes(id) ? prev.filter((pId) => pId !== id) : [...prev, id]
     );
   };
 
   const deleteSelectedProducts = () => {
-    setProducts(products.filter(p => !selectedProducts.includes(p.id)));
+    setProducts(products.filter((p) => !selectedProducts.includes(p.id)));
     setSelectedProducts([]);
   };
 
@@ -57,7 +56,7 @@ export default function AdminPanel() {
             Delete Selected ({selectedProducts.length})
           </button>
           <button
-            onClick={openForm} // Use context openForm
+            onClick={openForm} // Now uses global context openForm
             className={styles.addButton}
             data-testid="admin-add-button"
             aria-label="ADD"
@@ -68,9 +67,9 @@ export default function AdminPanel() {
       </div>
 
       <div className={styles.productList}>
-        {products.map(product => (
-          <div 
-            key={product.id} 
+        {products.map((product) => (
+          <div
+            key={product.id}
             className={styles.productItem}
             data-testid={`admin-product-${product.id}`}
           >

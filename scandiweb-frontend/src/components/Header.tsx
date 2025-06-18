@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './Header.css';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { useFormContext } from '../context/FormContext'; // Add this
+import { useFormContext } from '../context/FormContext'; // Added context for openForm
 
 type HeaderProps = {
   categories: string[];
@@ -22,6 +22,7 @@ export default function Header({
 }: HeaderProps) {
   const location = useLocation();
   const navigate = useNavigate();
+  const { openForm } = useFormContext(); // Access openForm
 
   const [selectedCurrency, setSelectedCurrency] = useState('USD');
   const [showCurrencyDropdown, setShowCurrencyDropdown] = useState(false);
@@ -36,7 +37,6 @@ export default function Header({
     setSelectedCurrency(currency);
     setShowCurrencyDropdown(false);
   };
-const { openForm } = useFormContext(); // Add this
 
   return (
     <header className="header" role="banner" style={{ position: 'relative', zIndex: 100 }}>
@@ -78,7 +78,7 @@ const { openForm } = useFormContext(); // Add this
         </nav>
 
         {/* Actions Container */}
-         <div className="actions-container">
+        <div className="actions-container">
           <button
             onClick={openForm}
             role="button"
