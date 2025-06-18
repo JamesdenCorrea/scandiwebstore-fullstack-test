@@ -14,7 +14,7 @@ type ProductFormProps = {
   formId?: string;
 };
 
-export default function AddProductForm({ onClose, onSave, formId = 'admin_product_form' }: ProductFormProps) {
+export default function AddProductForm({ onClose, onSave, formId = 'product_form' }: ProductFormProps) {
   const [productData, setProductData] = useState({
     sku: '',
     name: '',
