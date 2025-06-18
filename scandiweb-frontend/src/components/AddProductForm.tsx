@@ -79,8 +79,8 @@ export default function AddProductForm({ onClose, onSave, formId = 'admin_produc
         
         <h2>Add New Product</h2>
         
-        <form 
-          id={formId}
+<form id="product_form"
+
           onSubmit={handleSubmit}
           data-testid="product-form"
         >
