@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './Header.css';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { useFormContext } from '../context/FormContext'; // Added context for openForm
+import { useFormContext } from '../context/FormContext';
 
 type HeaderProps = {
   categories: string[];
@@ -22,7 +22,7 @@ export default function Header({
 }: HeaderProps) {
   const location = useLocation();
   const navigate = useNavigate();
-  const { openForm } = useFormContext(); // Access openForm
+  const { openForm } = useFormContext();
 
   const [selectedCurrency, setSelectedCurrency] = useState('USD');
   const [showCurrencyDropdown, setShowCurrencyDropdown] = useState(false);
@@ -38,8 +38,15 @@ export default function Header({
     setShowCurrencyDropdown(false);
   };
 
+  const handleAddClick = () => {
+    if (location.pathname !== '/admin') {
+      navigate('/admin');
+    }
+    openForm();
+  };
+
   return (
-    <header className="header" role="banner" style={{ position: 'relative', zIndex: 100 }}>
+    <header className="header" role="banner">
       <div className="header-container">
         {/* Logo */}
         <div className="logo-container">
@@ -52,7 +59,7 @@ export default function Header({
           </Link>
         </div>
 
-        {/* Categories nav */}
+        {/* Category navigation */}
         <nav className="nav-categories" aria-label="Product Categories" data-testid="category-nav">
           <ul className="category-list">
             {categories.map((category) => {
@@ -77,34 +84,38 @@ export default function Header({
           </ul>
         </nav>
 
-        {/* Actions Container */}
+        {/* Right-side actions */}
         <div className="actions-container">
+          {/* Add button */}
           <button
-            onClick={openForm}
+            onClick={handleAddClick}
             role="button"
             aria-label="ADD"
             className="add-product-link"
             data-testid="global-add-button"
           >
-            ADD
+          <span className="add-icon">➕</span> ADD
           </button>
 
           {/* Currency switcher */}
           <div className="currency-switcher">
             <button
               data-testid="currency-switcher"
+              className="currency-button"
               aria-label="Currency switcher"
-              onClick={() => setShowCurrencyDropdown(!showCurrencyDropdown)}
+              onClick={() => setShowCurrencyDropdown((prev) => !prev)}
             >
               {selectedCurrency}
+              <span className="chevron">{showCurrencyDropdown ? '▲' : '▼'}</span>
             </button>
 
             {showCurrencyDropdown && (
-              <ul data-testid="currency-dropdown">
+              <ul className="currency-dropdown" data-testid="currency-dropdown">
                 {['USD', 'EUR', 'GBP'].map((currency) => (
                   <li
                     key={currency}
                     data-testid={`currency-option-${currency}`}
+                    className="currency-option"
                     onClick={() => handleCurrencySelect(currency)}
                   >
                     {currency === 'USD' ? '$ USD' : currency === 'EUR' ? '€ EUR' : '£ GBP'}
@@ -112,9 +123,6 @@ export default function Header({
                 ))}
               </ul>
             )}
-            <span data-testid="active-currency">
-              {selectedCurrency === 'USD' ? '$' : selectedCurrency === 'EUR' ? '€' : '£'}
-            </span>
           </div>
 
           {/* Cart button */}

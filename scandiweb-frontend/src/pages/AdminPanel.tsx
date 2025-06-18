@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom'; // ✅ Added for navigation
 import AddProductForm from '../components/AddProductForm';
 import styles from './AdminPanel.module.css';
 import { useFormContext } from '../context/FormContext';
@@ -14,7 +15,6 @@ export default function AdminPanel() {
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // ✅ Use global form context
   const { isFormOpen, openForm, closeForm } = useFormContext();
 
   useEffect(() => {
@@ -27,7 +27,7 @@ export default function AdminPanel() {
 
   const handleAddProduct = (newProduct: any) => {
     setProducts([...products, { ...newProduct, id: `${products.length + 1}` }]);
-    closeForm(); // ✅ Close form after adding
+    closeForm();
   };
 
   const toggleProductSelection = (id: string) => {
@@ -67,6 +67,13 @@ export default function AdminPanel() {
         </div>
       </div>
 
+      {/* ✅ Back button to go to the storefront */}
+      <div className={styles.backWrapper}>
+        <Link to="/" className={styles.backButton}>
+          ← Back to Category Page
+        </Link>
+      </div>
+
       <div className={styles.productList}>
         {products.map((product) => (
           <div
@@ -90,7 +97,6 @@ export default function AdminPanel() {
         ))}
       </div>
 
-      {/* ✅ Render the form only when isFormOpen is true */}
       {isFormOpen && (
         <AddProductForm
           onSave={handleAddProduct}

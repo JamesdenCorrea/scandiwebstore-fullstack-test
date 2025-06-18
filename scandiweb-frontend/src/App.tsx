@@ -1,14 +1,14 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { CartProvider } from './context/CartContext';
+import { FormProvider } from './context/FormContext'; // ✅ Import FormProvider
 import Layout from './components/Layout';
 import CategoryListingPage from './pages/CategoryListingPage';
 import ProductDetails from './pages/ProductDetails';
 import AdminPanel from './pages/AdminPanel';
-import { FormProvider } from './context/FormContext'; // Add this
 
 function App() {
   return (
-    <FormProvider> {/* Wrap with FormProvider */}
+    <FormProvider> {/* ✅ Wrap the entire app with FormProvider */}
       <CartProvider>
         <Router>
           <Routes>

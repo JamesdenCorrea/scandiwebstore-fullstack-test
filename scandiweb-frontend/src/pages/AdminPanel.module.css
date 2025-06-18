@@ -1,4 +1,13 @@
 .adminContainer {
+  font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  min-height: 100vh;
+  background: radial-gradient(
+    ellipse at center,
+    #f0e6ff 0%,
+    #e0ccff 30%,
+    #f0e6ff 60%,
+    white 100%
+  );
   padding: 2rem;
   max-width: 1200px;
   margin: 0 auto;
@@ -9,27 +18,122 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.header h1 {
+  font-size: 2rem;
+  color: #4b0082;
+  margin: 0;
 }
 
 .addButton {
   background: #6a0dad;
   color: white;
   border: none;
-  padding: 10px 20px;
-  border-radius: 4px;
+  padding: 10px 24px;
+  border-radius: 8px;
   cursor: pointer;
-  font-weight: bold;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+
+.addButton:hover {
+  background: #5800a3;
+  transform: scale(1.05);
+}
+
+.deleteButton {
+  background: #aa00ff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1rem;
+  margin-right: 10px;
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+
+.deleteButton:disabled {
+  background: #cccccc;
+  cursor: not-allowed;
+}
+
+.deleteButton:hover:not(:disabled) {
+  background: #8a00cc;
+  transform: scale(1.05);
 }
 
 .productList {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   gap: 1.5rem;
 }
 
 .productItem {
-  border: 1px solid #ddd;
-  padding: 1rem;
-  border-radius: 8px;
-  position: relative;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+  padding: 1.25rem;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.productItem:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 20px rgba(0, 0, 0, 0.12);
+}
+
+.productItem input[type="checkbox"] {
+  margin-top: 6px;
+  transform: scale(1.2);
+  accent-color: #6a0dad;
+}
+
+.productItem h3 {
+  font-size: 1.1rem;
+  margin: 0 0 0.5rem 0;
+  color: #333;
+}
+
+.productItem p {
+  margin: 0.2rem 0;
+  font-size: 0.95rem;
+  color: #555;
+}
+
+.loading {
+  text-align: center;
+  font-size: 1.5rem;
+  color: #6a0dad;
+  padding: 3rem 0;
+}
+
+/* ✅ New: back button wrapper + style */
+.backWrapper {
+  margin-bottom: 2rem;
+}
+
+.backButton {
+  display: inline-block;
+  background: transparent;
+  color: #6a0dad;
+  font-weight: 600;
+  font-size: 1rem;
+  text-decoration: none;
+  border: 2px solid #6a0dad;
+  padding: 8px 16px;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+}
+
+.backButton:hover {
+  background: #6a0dad;
+  color: #fff;
 }

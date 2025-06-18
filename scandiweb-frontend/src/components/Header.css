@@ -239,3 +239,77 @@ html, body {
     height: 24px;
   }
 }
+.currency-switcher {
+  position: relative;
+  margin: 0 1rem;
+}
+
+.currency-button {
+  background: none;
+  border: 1px solid #dcd6f7;
+  padding: 0.4rem 0.75rem;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 0.9rem;
+  cursor: pointer;
+  color: #4c1d95;
+  background-color: #f3e8ff;
+  transition: background-color 0.3s ease;
+}
+
+.currency-button:hover {
+  background-color: #ede9fe;
+}
+
+.chevron {
+  margin-left: 0.5rem;
+  font-size: 0.75rem;
+}
+
+.currency-dropdown {
+  position: absolute;
+  top: 120%;
+  right: 0;
+  background-color: #ffffff;
+  border: 1px solid #dcd6f7;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(109, 40, 217, 0.1);
+  padding: 0.25rem 0;
+  min-width: 120px;
+  z-index: 10;
+}
+
+.currency-option {
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  color: #4a5568;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.currency-option:hover {
+  background-color: #f3e8ff;
+  color: #6d28d9;
+}
+.add-product-link {
+  background-color: #4c1d95; /* Deep purple */
+  color: #ffffff;
+  border: none;
+  padding: 0.4rem 0.75rem;
+  height: 36px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.add-product-link:hover {
+  background-color: #6d28d9; /* Slightly lighter purple */
+}
+
+.actions-container {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}

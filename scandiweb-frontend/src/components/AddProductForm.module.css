@@ -4,56 +4,157 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0,0,0,0.5);
+  background: rgba(0, 0, 0, 0.4);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
+  font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  padding: 1rem;
 }
 
 .formContainer {
-  background: white;
+  background: radial-gradient(
+    ellipse at center,
+    #f0e6ff 0%,
+    #e0ccff 30%,
+    #f0e6ff 60%,
+    white 100%
+  );
   padding: 2rem;
-  border-radius: 8px;
+  border-radius: 12px;
   width: 100%;
-  max-width: 500px;
+  max-width: 700px; /* Increased width */
+  max-height: 90vh;  /* Allow scrolling if too tall */
+  overflow-y: auto;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
   position: relative;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
 }
 
 .closeButton {
   position: absolute;
-  top: 10px;
-  right: 10px;
+  top: 12px;
+  right: 14px;
   background: none;
   border: none;
-  font-size: 1.5rem;
+  font-size: 2rem;
+  color: #6a0dad;
   cursor: pointer;
+  transition: color 0.2s ease, transform 0.2s ease;
+  line-height: 1;
+}
+
+.closeButton:hover {
+  color: #4b0082;
+  transform: scale(1.2);
 }
 
 .formGroup {
-  margin-bottom: 1rem;
+  margin-bottom: 1.2rem;
 }
 
 .formGroup label {
   display: block;
   margin-bottom: 0.5rem;
-  font-weight: bold;
+  font-weight: 600;
+  color: #333;
 }
 
 .formGroup input,
 .formGroup select,
 .formGroup textarea {
   width: 100%;
-  padding: 8px;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  background: white;
+  transition: border 0.2s ease;
+}
+
+.formGroup input:focus,
+.formGroup select:focus,
+.formGroup textarea:focus {
+  border-color: #6a0dad;
+  outline: none;
+}
+
+.attributeForm {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.attributeForm input,
+.attributeForm select {
+  flex: 1;
+  min-width: 100px;
+}
+
+.attributeForm button {
+  background: #6a0dad;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.2s ease;
+}
+
+.attributeForm button:hover {
+  background: #5a00b0;
+}
+
+.attributesList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.attributeItem {
+  background: #fff;
   border: 1px solid #ddd;
-  border-radius: 4px;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.95rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.attributeItem button {
+  background: transparent;
+  color: #d32f2f;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
 }
 
 .formActions {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
-  margin-top: 1rem;
+  margin-top: 2rem;
+}
+
+.cancelButton,
+.saveButton {
+  padding: 0.6rem 1.4rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.2s ease;
 }
 
 .cancelButton {
@@ -61,7 +162,21 @@
   color: #333;
 }
 
+.cancelButton:hover {
+  background: #b0b0b0;
+}
+
 .saveButton {
   background: #6a0dad;
   color: white;
+}
+
+.saveButton:hover {
+  background: #5a00b0;
+}
+
+h2 {
+  margin-bottom: 1.5rem;
+  color: #333;
+  text-align: center;
 }
