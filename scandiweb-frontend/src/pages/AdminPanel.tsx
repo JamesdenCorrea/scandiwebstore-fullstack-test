@@ -10,11 +10,12 @@ const mockProducts = [
 ];
 
 export default function AdminPanel() {
-  const [showForm, setShowForm] = useState(false);
   const [products, setProducts] = useState<any[]>([]);
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const { openForm } = useFormContext(); // Use context form control
+
+  // ✅ Use global form context
+  const { isFormOpen, openForm, closeForm } = useFormContext();
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -26,7 +27,7 @@ export default function AdminPanel() {
 
   const handleAddProduct = (newProduct: any) => {
     setProducts([...products, { ...newProduct, id: `${products.length + 1}` }]);
-    setShowForm(false);
+    closeForm(); // ✅ Close form after adding
   };
 
   const toggleProductSelection = (id: string) => {
@@ -56,7 +57,7 @@ export default function AdminPanel() {
             Delete Selected ({selectedProducts.length})
           </button>
           <button
-            onClick={openForm} // Now uses global context openForm
+            onClick={openForm}
             className={styles.addButton}
             data-testid="admin-add-button"
             aria-label="ADD"
@@ -88,6 +89,14 @@ export default function AdminPanel() {
           </div>
         ))}
       </div>
+
+      {/* ✅ Render the form only when isFormOpen is true */}
+      {isFormOpen && (
+        <AddProductForm
+          onSave={handleAddProduct}
+          onClose={closeForm}
+        />
+      )}
     </div>
   );
 }
