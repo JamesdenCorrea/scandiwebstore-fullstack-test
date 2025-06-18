@@ -64,11 +64,10 @@ export default function CartOverlay({ onClose, onPlaceOrder }: Props) {
     try {
       await request(GRAPHQL_ENDPOINT, mutation, { input: orderData });
       clearCart();
-setToast('Order placed successfully!');
-setTimeout(() => {
-  onPlaceOrder();
-}, 2000); // ✅ Delay navigation so the toast can appear and Playwright can see it
-
+      setToast('Order placed successfully!');
+      setTimeout(() => {
+        onPlaceOrder();
+      }, 2000);
     } catch (error) {
       console.error('Order failed:', error);
       setOrderError('Failed to place order. Please try again.');
@@ -79,7 +78,7 @@ setTimeout(() => {
   };
 
   return (
-    <div className={styles.overlayContainer}>
+    <div className={styles.overlayContainer} data-testid="cart-overlay-container">
       <div
         className={`${styles.overlayBackdrop} ${!cartItems.length ? styles.hidden : ''}`}
         onClick={onClose}
@@ -101,7 +100,7 @@ setTimeout(() => {
         </div>
 
         {cartItems.length === 0 ? (
-          <div className={styles.emptyCart}>
+          <div className={styles.emptyCart} data-testid="cart-empty-container">
             <svg className={styles.emptyCartIcon} viewBox="0 0 24 24">
               <path d="M7 18c-1.1 0-1.99.9-1.99 ..." />
             </svg>
@@ -110,27 +109,33 @@ setTimeout(() => {
             </p>
             <button
               onClick={onClose}
-              className={styles.continueShoppingBtn}>
+              className={styles.continueShoppingBtn}
+              data-testid="continue-shopping-btn">
               Continue Shopping
             </button>
           </div>
         ) : (
           <>
-            <div className={styles.cartList}>
+            <div className={styles.cartList} data-testid="cart-item-list">
               {cartItems.map((item, index) => (
-                <div key={`${item.id}-${index}`} className={styles.cartItem}>
+                <div
+                  key={`${item.id}-${index}`}
+                  className={styles.cartItem}
+                  data-testid={`cart-item-${index}`}>
+
                   {item.image && (
                     <img
                       src={item.image}
                       alt={item.name}
                       className={styles.productImage}
+                      data-testid="cart-item-image"
                     />
                   )}
 
                   <div className={styles.itemInfo}>
                     <div className={styles.itemHeader}>
-                      <h3 className={styles.itemName}>{item.name}</h3>
-                      <span className={styles.itemPrice}>
+                      <h3 className={styles.itemName} data-testid="cart-item-name">{item.name}</h3>
+                      <span className={styles.itemPrice} data-testid="cart-item-price">
                         ${(item.price * item.quantity).toFixed(2)}
                       </span>
                     </div>
@@ -144,13 +149,17 @@ setTimeout(() => {
                           : value;
 
                         return (
-                          <div key={key} className={styles.attribute}>
+                          <div
+                            key={key}
+                            className={styles.attribute}
+                            data-testid={`cart-item-attribute-${key}`}>
                             <span className={styles.attributeName}>{key}:</span>
                             <span className={styles.attributeValue}>
                               {isColor ? (
                                 <span
                                   className={styles.colorSwatchOnly}
                                   style={{ backgroundColor: value }}
+                                  data-testid={`cart-item-color-${value}`}
                                 />
                               ) : (
                                 displayName
@@ -170,16 +179,15 @@ setTimeout(() => {
                           )
                         }
                         disabled={item.quantity <= 1}
-                        className={styles.quantityButton}>
+                        className={styles.quantityButton}
+                        data-testid="decrease-qty-btn">
                         −
                       </button>
-<span
-  className={styles.quantityValue}
-  data-testid="cart-item-quantity"
->
-  {item.quantity}
-</span>
-
+                      <span
+                        className={styles.quantityValue}
+                        data-testid="cart-item-quantity">
+                        {item.quantity}
+                      </span>
                       <button
                         onClick={() =>
                           updateQuantity(
@@ -188,7 +196,8 @@ setTimeout(() => {
                             item.quantity + 1
                           )
                         }
-                        className={styles.quantityButton}>
+                        className={styles.quantityButton}
+                        data-testid="increase-qty-btn">
                         +
                       </button>
                     </div>
@@ -199,7 +208,8 @@ setTimeout(() => {
                       removeFromCart(item.id, item.selectedAttributes)
                     }
                     className={styles.removeButton}
-                    aria-label="Remove item">
+                    aria-label="Remove item"
+                    data-testid={`remove-from-cart-${index}`}>
                     &times;
                   </button>
                 </div>

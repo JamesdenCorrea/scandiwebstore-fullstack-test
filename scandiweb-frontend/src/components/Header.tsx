@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import './Header.css';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useFormContext } from '../context/FormContext';
+import { useCurrency } from '../context/CurrencyContext'; // ✅ import currency context
+
 
 type HeaderProps = {
   categories: string[];
@@ -24,7 +26,7 @@ export default function Header({
   const navigate = useNavigate();
   const { openForm } = useFormContext();
 
-  const [selectedCurrency, setSelectedCurrency] = useState('USD');
+  const { currency, setCurrency } = useCurrency(); // ✅ use currency context
   const [showCurrencyDropdown, setShowCurrencyDropdown] = useState(false);
 
   const handleCategoryClick = (category: string) => {
@@ -33,8 +35,8 @@ export default function Header({
     onCategoryChange(category);
   };
 
-  const handleCurrencySelect = (currency: string) => {
-    setSelectedCurrency(currency);
+  const handleCurrencySelect = (selected: string) => {
+    setCurrency(selected as 'USD' | 'EUR' | 'GBP');
     setShowCurrencyDropdown(false);
   };
 
@@ -87,15 +89,16 @@ export default function Header({
         {/* Right-side actions */}
         <div className="actions-container">
           {/* Add button */}
-          <button
-            onClick={handleAddClick}
-            role="button"
-            aria-label="ADD"
-            className="add-product-link"
-            data-testid="global-add-button"
-          >
-          <span className="add-icon">➕</span> ADD
-          </button>
+<button
+  onClick={handleAddClick}
+  role="link" // 👈 change from "button" to "link"
+  aria-label="ADD"
+  className="add-product-link"
+  data-testid="global-add-button"
+>
+  <span className="add-icon">➕</span> ADD
+</button>
+
 
           {/* Currency switcher */}
           <div className="currency-switcher">
@@ -103,22 +106,31 @@ export default function Header({
               data-testid="currency-switcher"
               className="currency-button"
               aria-label="Currency switcher"
+              aria-haspopup="listbox"
+              aria-expanded={showCurrencyDropdown}
               onClick={() => setShowCurrencyDropdown((prev) => !prev)}
             >
-              {selectedCurrency}
+              {currency}
               <span className="chevron">{showCurrencyDropdown ? '▲' : '▼'}</span>
             </button>
 
             {showCurrencyDropdown && (
-              <ul className="currency-dropdown" data-testid="currency-dropdown">
-                {['USD', 'EUR', 'GBP'].map((currency) => (
+              <ul
+                className="currency-dropdown"
+                data-testid="currency-dropdown"
+                role="listbox"
+                aria-label="Currency options"
+              >
+                {['USD', 'EUR', 'GBP'].map((cur) => (
                   <li
-                    key={currency}
-                    data-testid={`currency-option-${currency}`}
+                    key={cur}
+                    data-testid={`currency-option-${cur}`}
                     className="currency-option"
-                    onClick={() => handleCurrencySelect(currency)}
+                    role="option"
+                    aria-selected={currency === cur}
+                    onClick={() => handleCurrencySelect(cur)}
                   >
-                    {currency === 'USD' ? '$ USD' : currency === 'EUR' ? '€ EUR' : '£ GBP'}
+                    {cur === 'USD' ? '$ USD' : cur === 'EUR' ? '€ EUR' : '£ GBP'}
                   </li>
                 ))}
               </ul>

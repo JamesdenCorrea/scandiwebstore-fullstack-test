@@ -22,12 +22,14 @@ type Product = {
 
 type ProductCardProps = {
   product: Product;
+  currencySymbol?: string; // ✅ Added
   onAddToCart?: () => void;
   'data-testid'?: string;
 };
 
 export default function ProductCard({
   product,
+  currencySymbol = '$', // ✅ Default fallback
   onAddToCart,
   'data-testid': testId,
 }: ProductCardProps) {
@@ -84,7 +86,6 @@ export default function ProductCard({
         }
       }}
     >
-      {/* Out of stock indicator */}
       {!inStock && (
         <div 
           style={{ 
@@ -162,7 +163,7 @@ export default function ProductCard({
           }}
           data-testid="product-card-price"
         >
-          ${price.toFixed(2)}
+          {currencySymbol}{price.toFixed(2)} {/* ✅ Use dynamic symbol */}
         </p>
 
         <div style={{ marginTop: 'auto' }}>

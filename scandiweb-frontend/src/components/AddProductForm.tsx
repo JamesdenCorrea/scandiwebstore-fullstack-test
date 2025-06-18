@@ -46,10 +46,17 @@ export default function AddProductForm({ onClose, onSave, formId = 'admin_produc
 
   const addAttribute = () => {
     if (newAttribute.name && newAttribute.value) {
+      const sanitizedAttr = {
+        name: DOMPurify.sanitize(newAttribute.name),
+        value: DOMPurify.sanitize(newAttribute.value),
+        type: newAttribute.type
+      };
+
       setProductData(prev => ({
         ...prev,
-        attributes: [...prev.attributes, newAttribute]
+        attributes: [...prev.attributes, sanitizedAttr]
       }));
+
       setNewAttribute({ name: '', value: '', type: 'text' });
     }
   };
@@ -63,6 +70,15 @@ export default function AddProductForm({ onClose, onSave, formId = 'admin_produc
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (
+      (productData.productType === 'configurable' || productData.productType === 'grouped') &&
+      productData.attributes.length === 0
+    ) {
+      alert('Please add at least one attribute for configurable or grouped products.');
+      return;
+    }
+
     onSave(productData);
   };
 
@@ -79,11 +95,7 @@ export default function AddProductForm({ onClose, onSave, formId = 'admin_produc
         
         <h2>Add New Product</h2>
         
-<form id="product_form"
-
-          onSubmit={handleSubmit}
-          data-testid="product-form"
-        >
+        <form id={formId} onSubmit={handleSubmit} data-testid="product-form">
           <div className={styles.formGroup}>
             <label htmlFor="sku">SKU:</label>
             <input
@@ -166,6 +178,7 @@ export default function AddProductForm({ onClose, onSave, formId = 'admin_produc
               value={productData.description}
               onChange={handleChange}
               rows={4}
+              required
               data-testid="product-description-textarea"
             />
           </div>
@@ -210,7 +223,7 @@ export default function AddProductForm({ onClose, onSave, formId = 'admin_produc
             
             <div className={styles.attributesList}>
               {productData.attributes.map((attr, index) => (
-                <div key={index} className={styles.attributeItem}>
+                <div key={`${attr.name}-${attr.value}-${index}`} className={styles.attributeItem}>
                   <span><strong>{attr.name}</strong>: {attr.value} ({attr.type})</span>
                   <button 
                     type="button" 
