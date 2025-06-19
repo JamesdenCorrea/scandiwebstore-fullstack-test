@@ -117,18 +117,11 @@ export default function ProductDetails() {
   }, [product]);
 useEffect(() => {
   if (product) {
-    setSelectedAttributes((prev) => {
-      if (Object.keys(prev).length > 0) return prev;
-      const initial: Record<string, string> = {};
-      Object.keys(groupedAttributes).forEach(name => {
-        initial[name] = groupedAttributes[name].values[0];
-      });
-      return initial;
-    });
-
     setActiveImage((prev) => prev || product.image_url || product.gallery?.[0] || '');
+    // REMOVE auto-selection — let user/test select them
   }
 }, [product]);
+
 
 
 

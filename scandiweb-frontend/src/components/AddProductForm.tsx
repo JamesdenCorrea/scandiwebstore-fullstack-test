@@ -90,7 +90,7 @@ export default function AddProductForm({ onClose, onSave, formId = 'product_form
     try {
       onSave(productData);
       // ✅ Redirect to product list after save
-      navigate("/");
+      navigate("/product-list");
     } catch (error) {
       console.error("Failed to save product:", error);
     }
