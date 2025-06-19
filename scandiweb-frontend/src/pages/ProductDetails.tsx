@@ -115,17 +115,21 @@ export default function ProductDetails() {
     });
     return result;
   }, [product]);
-
-  useEffect(() => {
-    if (product) {
+useEffect(() => {
+  if (product) {
+    setSelectedAttributes((prev) => {
+      if (Object.keys(prev).length > 0) return prev; // Don't reset if already set
       const initial: Record<string, string> = {};
       Object.keys(groupedAttributes).forEach(name => {
         initial[name] = groupedAttributes[name].values[0];
       });
-      setSelectedAttributes(initial);
-      setActiveImage(product.image_url || product.gallery?.[0] || '');
-    }
-  }, [product, groupedAttributes]);
+      return initial;
+    });
+
+    setActiveImage(product.image_url || product.gallery?.[0] || '');
+  }
+}, [product]);
+
 
   const handleAttributeChange = (name: string, value: string) =>
     setSelectedAttributes((prev) => ({ ...prev, [name]: value }));
