@@ -1,78 +1,93 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { gql, useQuery, useMutation } from '@apollo/client';
 import AddProductForm from '../components/AddProductForm';
 import styles from './AdminPanel.module.css';
 import { useFormContext } from '../context/FormContext';
 
-const mockProducts = [
-  { id: '1', sku: 'AIRTAG', name: 'Apple AirTag', price: 29.99, category: 'tech' },
-  { id: '2', sku: 'IPHONE12', name: 'iPhone 12 Pro', price: 999.99, category: 'tech' },
-  { id: '3', sku: 'HUARACHE', name: 'Nike Air Huarache', price: 120.0, category: 'clothes' },
-];
+const GET_PRODUCTS = gql`
+  query GetProducts {
+    products {
+      id
+      sku
+      name
+      price
+      category
+    }
+  }
+`;
+
+const DELETE_PRODUCTS = gql`
+  mutation DeleteProducts($ids: [String!]!) {
+    deleteProducts(ids: $ids)
+  }
+`;
 
 export default function AdminPanel() {
-  const [products, setProducts] = useState<any[]>([]);
+  const { data, loading, refetch } = useQuery(GET_PRODUCTS);
+  const [deleteProductsMutation] = useMutation(DELETE_PRODUCTS);
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
 
   const { isFormOpen, openForm, closeForm } = useFormContext();
   const navigate = useNavigate();
 
-useEffect(() => {
-  const fetchProducts = async () => {
-    const response = await fetch('http://localhost:8000/graphql.php', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ query: `{ products { id sku name price category } }` })
-    });
-    const { data } = await response.json();
-    setProducts(data.products);
-    setIsLoading(false);
-  };
+  // Combine backend products with locally added products from localStorage
+  const backendProducts = data?.products || [];
+  const localAddedProducts = (() => {
+    try {
+      const stored = localStorage.getItem('addedProducts');
+      if (!stored) return [];
+      return JSON.parse(stored);
+    } catch {
+      return [];
+    }
+  })();
 
-  fetchProducts();
-}, []);
-
+  // Merge and dedupe by id (local products have generated IDs)
+  const products = [...backendProducts, ...localAddedProducts].reduce((acc, product) => {
+    if (!acc.find(p => p.id === product.id)) acc.push(product);
+    return acc;
+  }, [] as typeof backendProducts);
 
   const handleAddProduct = (newProduct: any) => {
-    const updatedProducts = [...products, { ...newProduct, id: `${products.length + 1}` }];
-    setProducts(updatedProducts);
+    // Add to localStorage for persistence (simulates backend add)
+    const updatedLocalProducts = [...localAddedProducts, newProduct];
+    localStorage.setItem('addedProducts', JSON.stringify(updatedLocalProducts));
     closeForm();
-
-    localStorage.setItem('addedProducts', JSON.stringify(updatedProducts));
-
     setTimeout(() => navigate('/product-list'), 100);
   };
 
   const toggleProductSelection = (id: string) => {
-    setSelectedProducts((prev) =>
-      prev.includes(id) ? prev.filter((pId) => pId !== id) : [...prev, id]
+    setSelectedProducts(prev =>
+      prev.includes(id) ? prev.filter(pid => pid !== id) : [...prev, id]
     );
   };
 
-const deleteSelectedProducts = async () => {
-  const response = await fetch('http://localhost:8000/graphql.php', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      query: `
-        mutation DeleteProducts($ids: [String!]!) {
-          deleteProducts(ids: $ids)
-        }
-      `,
-      variables: { ids: selectedProducts },
-    }),
-  });
+  const deleteSelectedProducts = async () => {
+    try {
+      if (selectedProducts.length === 0) return;
 
-  const result = await response.json();
-  const deletedIds = result.data?.deleteProducts || [];
+      // Call backend mutation to delete products by IDs (only those from backend)
+      // Filter IDs that exist in backend products only to avoid deleting localStorage-only products from backend
+      const backendProductIds = backendProducts.map(p => p.id);
+      const backendIdsToDelete = selectedProducts.filter(id => backendProductIds.includes(id));
 
-  setProducts(products.filter((p) => !deletedIds.includes(p.id)));
-  setSelectedProducts([]);
-};
+      if (backendIdsToDelete.length > 0) {
+        await deleteProductsMutation({ variables: { ids: backendIdsToDelete } });
+      }
 
+      // Also remove selected IDs from localStorage addedProducts if any match
+      const filteredLocal = localAddedProducts.filter(p => !selectedProducts.includes(p.id));
+      localStorage.setItem('addedProducts', JSON.stringify(filteredLocal));
 
-  if (isLoading) return <div className={styles.loading}>Loading...</div>;
+      setSelectedProducts([]);
+      refetch(); // Refresh backend product list
+    } catch (error) {
+      console.error('Failed to delete products:', error);
+    }
+  };
+
+  if (loading) return <div className={styles.loading}>Loading...</div>;
 
   return (
     <div className={styles.adminContainer}>
@@ -120,7 +135,7 @@ const deleteSelectedProducts = async () => {
             <div>
               <h3>{product.name}</h3>
               <p>SKU: {product.sku}</p>
-              <p>Price: ${product.price.toFixed(2)}</p>
+              <p>Price: ${Number(product.price).toFixed(2)}</p>
               <p>Category: {product.category}</p>
             </div>
           </div>

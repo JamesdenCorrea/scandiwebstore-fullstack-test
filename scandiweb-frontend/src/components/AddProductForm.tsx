@@ -1,7 +1,17 @@
 import React, { useState } from 'react';
 import styles from './AddProductForm.module.css';
 import DOMPurify from 'dompurify';
-import { useNavigate } from 'react-router-dom'; // ✅ Added for redirect
+import { useNavigate } from 'react-router-dom';
+import { gql, useMutation } from '@apollo/client';
+
+const ADD_PRODUCT = gql`
+  mutation AddProduct($input: ProductInput!) {
+    addProduct(input: $input) {
+      id
+      name
+    }
+  }
+`;
 
 type Attribute = {
   name: string;
@@ -23,9 +33,9 @@ export default function AddProductForm({ onClose, onSave, formId = 'product_form
     productType: 'DVD',
     category: '',
     description: '',
-    size: '',      // for DVD
-    weight: '',    // for Book
-    height: '',    // for Furniture
+    size: '',
+    weight: '',
+    height: '',
     width: '',
     length: '',
     attributes: [] as Attribute[],
@@ -37,14 +47,12 @@ export default function AddProductForm({ onClose, onSave, formId = 'product_form
     type: 'text'
   });
 
-  const navigate = useNavigate(); // ✅ Added
+  const navigate = useNavigate();
+  const [addProduct] = useMutation(ADD_PRODUCT);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setProductData(prev => ({
-      ...prev,
-      [name]: DOMPurify.sanitize(value)
-    }));
+    setProductData(prev => ({ ...prev, [name]: DOMPurify.sanitize(value) }));
   };
 
   const handleAttributeChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -59,12 +67,10 @@ export default function AddProductForm({ onClose, onSave, formId = 'product_form
         value: DOMPurify.sanitize(newAttribute.value),
         type: newAttribute.type
       };
-
       setProductData(prev => ({
         ...prev,
         attributes: [...prev.attributes, sanitizedAttr]
       }));
-
       setNewAttribute({ name: '', value: '', type: 'text' });
     }
   };
@@ -76,36 +82,31 @@ export default function AddProductForm({ onClose, onSave, formId = 'product_form
     }));
   };
 
-const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const newProduct = {
+      id: crypto.randomUUID(),
+      ...productData,
+      price: parseFloat(productData.price),
+      attributes: productData.attributes.map(attr => ({
+        ...attr,
+        value: DOMPurify.sanitize(attr.value)
+      }))
+    };
 
-  try {
-    const newProduct = { ...productData, id: crypto.randomUUID() };
-
-    // ✅ Save directly to localStorage before redirecting
-    const existing = localStorage.getItem("addedProducts");
-    const updated = existing ? [...JSON.parse(existing), newProduct] : [newProduct];
-    localStorage.setItem("addedProducts", JSON.stringify(updated));
-
-await Promise.resolve(onSave(newProduct));
-navigate("/product-list");
-
-
-  } catch (error) {
-    console.error("Failed to save product:", error);
-  }
-};
-
-
+    try {
+      const { data } = await addProduct({ variables: { input: newProduct } });
+      onSave(data.addProduct);
+      navigate("/product-list");
+    } catch (error) {
+      console.error("Failed to add product:", error);
+    }
+  };
 
   return (
     <div className={styles.formOverlay}>
       <div className={styles.formContainer}>
-        <button
-          className={styles.closeButton}
-          onClick={onClose}
-          data-testid="close-form-button"
-        >
+        <button className={styles.closeButton} onClick={onClose} data-testid="close-form-button">
           &times;
         </button>
 
@@ -321,18 +322,10 @@ navigate("/product-list");
           </div>
 
           <div className={styles.formActions}>
-            <button
-              type="button"
-              className={styles.cancelButton}
-              onClick={onClose}
-            >
+            <button type="button" className={styles.cancelButton} onClick={onClose}>
               Cancel
             </button>
-            <button
-              type="submit"
-              className={styles.saveButton}
-              data-testid="save-product-button"
-            >
+            <button type="submit" className={styles.saveButton} data-testid="save-product-button">
               Save Product
             </button>
           </div>
