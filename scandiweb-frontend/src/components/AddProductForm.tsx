@@ -79,32 +79,24 @@ export default function AddProductForm({ onClose, onSave, formId = 'product_form
 const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
 
-  if (
-    (productData.productType === 'configurable' || productData.productType === 'grouped') &&
-    productData.attributes.length === 0
-  ) {
-    alert('Please add at least one attribute for configurable or grouped products.');
-    return;
-  }
-
   try {
-    // Generate a simple ID (or use Date.now or uuid in production)
     const newProduct = { ...productData, id: crypto.randomUUID() };
 
-    // Save to localStorage
+    // ✅ Save directly to localStorage before redirecting
     const existing = localStorage.getItem("addedProducts");
     const updated = existing ? [...JSON.parse(existing), newProduct] : [newProduct];
     localStorage.setItem("addedProducts", JSON.stringify(updated));
 
-    // Optional: still call parent callback
-    onSave(newProduct);
-
-    // ✅ Redirect to product list after save
+    // ✅ Navigate only after localStorage is updated
     navigate("/product-list");
+
+    // Optional callback for parent
+    onSave(newProduct);
   } catch (error) {
     console.error("Failed to save product:", error);
   }
 };
+
 
 
   return (
