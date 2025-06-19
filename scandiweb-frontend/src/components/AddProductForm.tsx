@@ -19,7 +19,7 @@ export default function AddProductForm({ onClose, onSave, formId = 'product_form
     sku: '',
     name: '',
     price: '',
-    productType: 'simple',
+    productType: 'DVD',
     category: '',
     description: '',
     attributes: [] as Attribute[],
@@ -147,7 +147,9 @@ export default function AddProductForm({ onClose, onSave, formId = 'product_form
               required
               data-testid="product-type-select"
             >
-              <option value="simple" data-testid="product-type-simple">Simple</option>
+              <option value="DVD" data-testid="product-type-dvd">DVD</option>
+              <option value="Book" data-testid="product-type-book">Book</option>
+              <option value="Furniture" data-testid="product-type-furniture">Furniture</option>
               <option value="configurable" data-testid="product-type-configurable">Configurable</option>
               <option value="grouped" data-testid="product-type-grouped">Grouped</option>
             </select>
@@ -216,6 +218,7 @@ export default function AddProductForm({ onClose, onSave, formId = 'product_form
                 type="button"
                 onClick={addAttribute}
                 data-testid="add-attribute-button"
+                disabled={!newAttribute.name || !newAttribute.value}
               >
                 Add
               </button>
