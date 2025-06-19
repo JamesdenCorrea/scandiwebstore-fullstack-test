@@ -118,7 +118,7 @@ export default function ProductDetails() {
 useEffect(() => {
   if (product) {
     setSelectedAttributes((prev) => {
-      if (Object.keys(prev).length > 0) return prev; // Don't reset if already set
+      if (Object.keys(prev).length > 0) return prev;
       const initial: Record<string, string> = {};
       Object.keys(groupedAttributes).forEach(name => {
         initial[name] = groupedAttributes[name].values[0];
@@ -126,9 +126,10 @@ useEffect(() => {
       return initial;
     });
 
-    setActiveImage(product.image_url || product.gallery?.[0] || '');
+    setActiveImage((prev) => prev || product.image_url || product.gallery?.[0] || '');
   }
 }, [product]);
+
 
 
   const handleAttributeChange = (name: string, value: string) =>
