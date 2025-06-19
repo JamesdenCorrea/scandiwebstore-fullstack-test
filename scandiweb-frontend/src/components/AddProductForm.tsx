@@ -97,7 +97,7 @@ export default function AddProductForm({ onClose, onSave, formId = 'product_form
     try {
       const { data } = await addProduct({ variables: { input: newProduct } });
       onSave(data.addProduct);
-      navigate("/product-list");
+      navigate('/all'); // instead of /product-list
     } catch (error) {
       console.error("Failed to add product:", error);
     }
