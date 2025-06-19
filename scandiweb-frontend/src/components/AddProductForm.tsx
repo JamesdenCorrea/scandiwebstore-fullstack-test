@@ -88,7 +88,7 @@ const handleSubmit = async (e: React.FormEvent) => {
     localStorage.setItem("addedProducts", JSON.stringify(updated));
 
 await Promise.resolve(onSave(newProduct));
-navigate("/");
+navigate("/product-list");
 
 
   } catch (error) {

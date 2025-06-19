@@ -24,6 +24,8 @@ function App() {
                 <Route path="/product/:id" element={<ProductDetails />} />
                 <Route path="/admin" element={<AdminPanel />} />
                 <Route path="*" element={<Navigate to="/all" />} />
+                <Route path="/product-list" element={<CategoryListingPage />} />
+
               </Route>
             </Routes>
           </Router>
