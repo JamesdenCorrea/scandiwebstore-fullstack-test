@@ -22,6 +22,11 @@ export default function AddProductForm({ onClose, onSave, formId = 'product_form
     productType: 'DVD',
     category: '',
     description: '',
+    size: '',      // for DVD
+    weight: '',    // for Book
+    height: '',    // for Furniture
+    width: '',
+    length: '',
     attributes: [] as Attribute[],
   });
 
@@ -150,10 +155,75 @@ export default function AddProductForm({ onClose, onSave, formId = 'product_form
               <option value="DVD" data-testid="product-type-dvd">DVD</option>
               <option value="Book" data-testid="product-type-book">Book</option>
               <option value="Furniture" data-testid="product-type-furniture">Furniture</option>
-              <option value="configurable" data-testid="product-type-configurable">Configurable</option>
-              <option value="grouped" data-testid="product-type-grouped">Grouped</option>
             </select>
           </div>
+
+          {/* CONDITIONAL FIELDS EXPECTED BY TESTS */}
+          {productData.productType === 'DVD' && (
+            <div className={styles.formGroup}>
+              <label htmlFor="size">Size (MB):</label>
+              <input
+                type="number"
+                id="size"
+                name="size"
+                value={productData.size}
+                onChange={handleChange}
+                required
+              />
+            </div>
+          )}
+
+          {productData.productType === 'Book' && (
+            <div className={styles.formGroup}>
+              <label htmlFor="weight">Weight (KG):</label>
+              <input
+                type="number"
+                id="weight"
+                name="weight"
+                value={productData.weight}
+                onChange={handleChange}
+                required
+              />
+            </div>
+          )}
+
+          {productData.productType === 'Furniture' && (
+            <>
+              <div className={styles.formGroup}>
+                <label htmlFor="height">Height (CM):</label>
+                <input
+                  type="number"
+                  id="height"
+                  name="height"
+                  value={productData.height}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+              <div className={styles.formGroup}>
+                <label htmlFor="width">Width (CM):</label>
+                <input
+                  type="number"
+                  id="width"
+                  name="width"
+                  value={productData.width}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+              <div className={styles.formGroup}>
+                <label htmlFor="length">Length (CM):</label>
+                <input
+                  type="number"
+                  id="length"
+                  name="length"
+                  value={productData.length}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+            </>
+          )}
 
           <div className={styles.formGroup}>
             <label htmlFor="category">Category:</label>
