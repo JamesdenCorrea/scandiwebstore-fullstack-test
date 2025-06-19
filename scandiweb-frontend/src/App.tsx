@@ -16,8 +16,9 @@ function App() {
           <Router>
             <Routes>
               <Route element={<Layout />}>
-                <Route path="/" element={<Navigate to="/all" />} />
-                <Route path="/all" element={<CategoryListingPage />} />
+<Route path="/" element={<CategoryListingPage />} />
+<Route path="/all" element={<CategoryListingPage />} />
+
                 <Route path="/tech" element={<CategoryListingPage />} />
                 <Route path="/clothes" element={<CategoryListingPage />} />
                 <Route path="/product/:id" element={<ProductDetails />} />
