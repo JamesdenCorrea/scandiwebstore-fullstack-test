@@ -35,7 +35,7 @@ export default function AdminPanel() {
     localStorage.setItem('addedProducts', JSON.stringify(updatedProducts));
 
     // ✅ Redirect to confirmation page
-    navigate('/product-list');
+    setTimeout(() => navigate('/product-list'), 100); // ✅ ensure state and DOM flush first
   };
 
   const toggleProductSelection = (id: string) => {
