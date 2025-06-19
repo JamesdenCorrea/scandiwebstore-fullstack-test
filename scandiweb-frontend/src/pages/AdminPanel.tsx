@@ -18,13 +18,21 @@ export default function AdminPanel() {
   const { isFormOpen, openForm, closeForm } = useFormContext();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setProducts(mockProducts);
-      setIsLoading(false);
-    }, 500);
-    return () => clearTimeout(timer);
-  }, []);
+useEffect(() => {
+  const fetchProducts = async () => {
+    const response = await fetch('http://localhost:8000/graphql.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query: `{ products { id sku name price category } }` })
+    });
+    const { data } = await response.json();
+    setProducts(data.products);
+    setIsLoading(false);
+  };
+
+  fetchProducts();
+}, []);
+
 
   const handleAddProduct = (newProduct: any) => {
     const updatedProducts = [...products, { ...newProduct, id: `${products.length + 1}` }];
@@ -42,12 +50,27 @@ export default function AdminPanel() {
     );
   };
 
-  const deleteSelectedProducts = () => {
-    const filtered = products.filter((p) => !selectedProducts.includes(p.id));
-    setProducts(filtered);
-    setSelectedProducts([]);
-    localStorage.setItem('addedProducts', JSON.stringify(filtered));
-  };
+const deleteSelectedProducts = async () => {
+  const response = await fetch('http://localhost:8000/graphql.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      query: `
+        mutation DeleteProducts($ids: [String!]!) {
+          deleteProducts(ids: $ids)
+        }
+      `,
+      variables: { ids: selectedProducts },
+    }),
+  });
+
+  const result = await response.json();
+  const deletedIds = result.data?.deleteProducts || [];
+
+  setProducts(products.filter((p) => !deletedIds.includes(p.id)));
+  setSelectedProducts([]);
+};
+
 
   if (isLoading) return <div className={styles.loading}>Loading...</div>;
 
