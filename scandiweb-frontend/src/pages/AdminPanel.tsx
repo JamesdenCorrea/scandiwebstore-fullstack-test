@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom'; // ✅ Added useNavigate
+import { Link, useNavigate } from 'react-router-dom';
 import AddProductForm from '../components/AddProductForm';
 import styles from './AdminPanel.module.css';
 import { useFormContext } from '../context/FormContext';
@@ -16,7 +16,7 @@ export default function AdminPanel() {
   const [isLoading, setIsLoading] = useState(true);
 
   const { isFormOpen, openForm, closeForm } = useFormContext();
-  const navigate = useNavigate(); // ✅ Navigation hook
+  const navigate = useNavigate();
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -31,11 +31,9 @@ export default function AdminPanel() {
     setProducts(updatedProducts);
     closeForm();
 
-    // ✅ Save to localStorage for persistence
     localStorage.setItem('addedProducts', JSON.stringify(updatedProducts));
 
-    // ✅ Redirect to confirmation page
-    setTimeout(() => navigate('/product-list'), 100); // ✅ ensure state and DOM flush first
+    setTimeout(() => navigate('/product-list'), 100);
   };
 
   const toggleProductSelection = (id: string) => {
@@ -48,7 +46,7 @@ export default function AdminPanel() {
     const filtered = products.filter((p) => !selectedProducts.includes(p.id));
     setProducts(filtered);
     setSelectedProducts([]);
-    localStorage.setItem('addedProducts', JSON.stringify(filtered)); // ✅ Keep storage in sync
+    localStorage.setItem('addedProducts', JSON.stringify(filtered));
   };
 
   if (isLoading) return <div className={styles.loading}>Loading...</div>;
@@ -56,7 +54,7 @@ export default function AdminPanel() {
   return (
     <div className={styles.adminContainer}>
       <div className={styles.header}>
-        <h1>Product Management</h1>
+        <h1 data-testid="admin-heading">Product Management</h1>
         <div>
           <button
             onClick={deleteSelectedProducts}
