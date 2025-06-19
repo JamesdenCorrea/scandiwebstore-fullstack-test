@@ -224,6 +224,7 @@ export default function CategoryListingPage() {
         <h1 data-testid="category-title" className="category-title">
           {selectedCategory}
         </h1>
+<h2 data-testid="product-list-heading">Product List</h2>
 
         <main 
           data-testid="products-grid" 
