@@ -233,7 +233,15 @@ const filteredProducts = useMemo(() => {
         <h1 data-testid="category-title" className="category-title">
           {selectedCategory}
         </h1>
-<h1 data-testid="product-list-heading">Product List</h1>
+<h1 
+  data-testid="product-list-heading" 
+  className="product-list-title" 
+  role="heading" 
+aria-level={1}
+
+>
+  Product List
+</h1>
 
 
 
