@@ -88,7 +88,8 @@ const handleSubmit = async (e: React.FormEvent) => {
     localStorage.setItem("addedProducts", JSON.stringify(updated));
 
     // ✅ Navigate only after localStorage is updated
-    navigate("/product-list");
+navigate("/");
+
 
     // Optional callback for parent
     onSave(newProduct);
