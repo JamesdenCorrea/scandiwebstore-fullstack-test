@@ -87,11 +87,9 @@ const handleSubmit = async (e: React.FormEvent) => {
     const updated = existing ? [...JSON.parse(existing), newProduct] : [newProduct];
     localStorage.setItem("addedProducts", JSON.stringify(updated));
 
-// Optional callback for parent
-onSave(newProduct);
-
-// ✅ Navigate only *after* onSave completes
+await Promise.resolve(onSave(newProduct));
 navigate("/");
+
 
   } catch (error) {
     console.error("Failed to save product:", error);
