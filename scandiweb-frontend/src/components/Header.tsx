@@ -66,7 +66,8 @@ export default function Header({
           <ul className="category-list">
             {categories.map((category) => {
               const href = category === 'All' ? '/all' : `/${category.toLowerCase()}`;
-              const isActive = location.pathname === href;
+const normalizedPath = location.pathname === '/' ? '/all' : location.pathname;
+const isActive = normalizedPath === href;
 
               return (
                 <li key={category}>
