@@ -149,21 +149,24 @@ return mergedProducts.map((p: RawProduct) => {
 
   }, [data, currency]);
 
-  const filteredProducts = useMemo(() => {
-    if (selectedCategory === 'All') return products;
+const filteredProducts = useMemo(() => {
+  if (selectedCategory === 'All') return products;
 
-    const categoryMap: Record<string, string[]> = {
-      tech: ['tech', 'phones', 'mobiles', 'electronics', 'gadgets'],
-      clothes: ['clothes', 'apparel', 'wearables'],
-    };
+  const categoryMap: Record<string, string[]> = {
+    tech: ['tech', 'phones', 'mobiles', 'electronics', 'gadgets'],
+    clothes: ['clothes', 'apparel', 'wearables'],
+    other: ['other'],
+  };
 
-    const normalizedSelected = selectedCategory.toLowerCase();
-    const validCategories = categoryMap[normalizedSelected] || [normalizedSelected];
+  const normalizedSelected = selectedCategory.toLowerCase();
+  const validCategories = categoryMap[normalizedSelected] || [normalizedSelected];
 
-    return products.filter((p) =>
-      validCategories.includes(p.category.toLowerCase())
-    );
-  }, [products, selectedCategory]);
+  return products.filter((p) => {
+    const productCategory = (p.category || '').toLowerCase();
+    return validCategories.includes(productCategory);
+  });
+}, [products, selectedCategory]);
+
 
   const handleAddToCart = (product: Product) => {
     if (!product.inStock) {
