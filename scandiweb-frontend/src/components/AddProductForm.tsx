@@ -33,9 +33,9 @@ export default function AddProductForm({ onClose, onSave, formId = 'product_form
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setProductData(prev => ({ 
-      ...prev, 
-      [name]: DOMPurify.sanitize(value) 
+    setProductData(prev => ({
+      ...prev,
+      [name]: DOMPurify.sanitize(value)
     }));
   };
 
@@ -85,16 +85,16 @@ export default function AddProductForm({ onClose, onSave, formId = 'product_form
   return (
     <div className={styles.formOverlay}>
       <div className={styles.formContainer}>
-        <button 
-          className={styles.closeButton} 
+        <button
+          className={styles.closeButton}
           onClick={onClose}
           data-testid="close-form-button"
         >
           &times;
         </button>
-        
+
         <h2>Add New Product</h2>
-        
+
         <form id={formId} onSubmit={handleSubmit} data-testid="product-form">
           <div className={styles.formGroup}>
             <label htmlFor="sku">SKU:</label>
@@ -147,9 +147,9 @@ export default function AddProductForm({ onClose, onSave, formId = 'product_form
               required
               data-testid="product-type-select"
             >
-              <option value="simple">Simple</option>
-              <option value="configurable">Configurable</option>
-              <option value="grouped">Grouped</option>
+              <option value="simple" data-testid="product-type-simple">Simple</option>
+              <option value="configurable" data-testid="product-type-configurable">Configurable</option>
+              <option value="grouped" data-testid="product-type-grouped">Grouped</option>
             </select>
           </div>
 
@@ -163,10 +163,10 @@ export default function AddProductForm({ onClose, onSave, formId = 'product_form
               required
               data-testid="product-category-select"
             >
-              <option value="">Select a category</option>
-              <option value="tech">Tech</option>
-              <option value="clothes">Clothes</option>
-              <option value="other">Other</option>
+              <option value="" data-testid="product-category-default">Select a category</option>
+              <option value="tech" data-testid="product-category-tech">Tech</option>
+              <option value="clothes" data-testid="product-category-clothes">Clothes</option>
+              <option value="other" data-testid="product-category-other">Other</option>
             </select>
           </div>
 
@@ -212,21 +212,21 @@ export default function AddProductForm({ onClose, onSave, formId = 'product_form
                 <option value="color">Color</option>
                 <option value="swatch">Swatch</option>
               </select>
-              <button 
-                type="button" 
+              <button
+                type="button"
                 onClick={addAttribute}
                 data-testid="add-attribute-button"
               >
                 Add
               </button>
             </div>
-            
+
             <div className={styles.attributesList}>
               {productData.attributes.map((attr, index) => (
                 <div key={`${attr.name}-${attr.value}-${index}`} className={styles.attributeItem}>
                   <span><strong>{attr.name}</strong>: {attr.value} ({attr.type})</span>
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     onClick={() => removeAttribute(index)}
                     data-testid={`remove-attribute-${index}`}
                   >
@@ -238,15 +238,15 @@ export default function AddProductForm({ onClose, onSave, formId = 'product_form
           </div>
 
           <div className={styles.formActions}>
-            <button 
-              type="button" 
+            <button
+              type="button"
               className={styles.cancelButton}
               onClick={onClose}
             >
               Cancel
             </button>
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               className={styles.saveButton}
               data-testid="save-product-button"
             >
