@@ -6,7 +6,7 @@ import Layout from './components/Layout';
 import CategoryListingPage from './pages/CategoryListingPage';
 import ProductDetails from './pages/ProductDetails';
 import AdminPanel from './pages/AdminPanel';
-import ProductList from './pages/ProductList';
+
 
 function App() {
   return (
@@ -22,7 +22,6 @@ function App() {
                 <Route path="/clothes" element={<CategoryListingPage />} />
                 <Route path="/product/:id" element={<ProductDetails />} />
                 <Route path="/admin" element={<AdminPanel />} />
-                <Route path="/product-list" element={<ProductList />} />
                 <Route path="*" element={<Navigate to="/all" />} />
               </Route>
             </Routes>
