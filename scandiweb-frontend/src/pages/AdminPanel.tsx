@@ -27,9 +27,15 @@ export default function AdminPanel() {
   }, []);
 
   const handleAddProduct = (newProduct: any) => {
-    setProducts([...products, { ...newProduct, id: `${products.length + 1}` }]);
+    const updatedProducts = [...products, { ...newProduct, id: `${products.length + 1}` }];
+    setProducts(updatedProducts);
     closeForm();
-    navigate('/product-list'); // ✅ Redirect after save
+
+    // ✅ Save to localStorage for persistence
+    localStorage.setItem('addedProducts', JSON.stringify(updatedProducts));
+
+    // ✅ Redirect to confirmation page
+    navigate('/product-list');
   };
 
   const toggleProductSelection = (id: string) => {
@@ -39,8 +45,10 @@ export default function AdminPanel() {
   };
 
   const deleteSelectedProducts = () => {
-    setProducts(products.filter((p) => !selectedProducts.includes(p.id)));
+    const filtered = products.filter((p) => !selectedProducts.includes(p.id));
+    setProducts(filtered);
     setSelectedProducts([]);
+    localStorage.setItem('addedProducts', JSON.stringify(filtered)); // ✅ Keep storage in sync
   };
 
   if (isLoading) return <div className={styles.loading}>Loading...</div>;
