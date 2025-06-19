@@ -76,25 +76,36 @@ export default function AddProductForm({ onClose, onSave, formId = 'product_form
     }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
 
-    if (
-      (productData.productType === 'configurable' || productData.productType === 'grouped') &&
-      productData.attributes.length === 0
-    ) {
-      alert('Please add at least one attribute for configurable or grouped products.');
-      return;
-    }
+  if (
+    (productData.productType === 'configurable' || productData.productType === 'grouped') &&
+    productData.attributes.length === 0
+  ) {
+    alert('Please add at least one attribute for configurable or grouped products.');
+    return;
+  }
 
-    try {
-      onSave(productData);
-      // ✅ Redirect to product list after save
-      navigate("/product-list");
-    } catch (error) {
-      console.error("Failed to save product:", error);
-    }
-  };
+  try {
+    // Generate a simple ID (or use Date.now or uuid in production)
+    const newProduct = { ...productData, id: crypto.randomUUID() };
+
+    // Save to localStorage
+    const existing = localStorage.getItem("addedProducts");
+    const updated = existing ? [...JSON.parse(existing), newProduct] : [newProduct];
+    localStorage.setItem("addedProducts", JSON.stringify(updated));
+
+    // Optional: still call parent callback
+    onSave(newProduct);
+
+    // ✅ Redirect to product list after save
+    navigate("/product-list");
+  } catch (error) {
+    console.error("Failed to save product:", error);
+  }
+};
+
 
   return (
     <div className={styles.formOverlay}>

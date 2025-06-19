@@ -2,7 +2,6 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { CartProvider } from './context/CartContext';
 import { FormProvider } from './context/FormContext';
 import { CurrencyProvider } from './context/CurrencyContext';
-
 import Layout from './components/Layout';
 import CategoryListingPage from './pages/CategoryListingPage';
 import ProductDetails from './pages/ProductDetails';
