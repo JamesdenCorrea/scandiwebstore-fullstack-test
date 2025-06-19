@@ -1,15 +1,16 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { CartProvider } from './context/CartContext';
 import { FormProvider } from './context/FormContext';
-import { CurrencyProvider } from './context/CurrencyContext'; // ✅ Add this
+import { CurrencyProvider } from './context/CurrencyContext';
 import Layout from './components/Layout';
 import CategoryListingPage from './pages/CategoryListingPage';
 import ProductDetails from './pages/ProductDetails';
 import AdminPanel from './pages/AdminPanel';
+import ProductList from './pages/ProductList'; // ✅ Import new page
 
 function App() {
   return (
-    <CurrencyProvider> {/* ✅ Wrap entire app to provide currency context */}
+    <CurrencyProvider>
       <FormProvider>
         <CartProvider>
           <Router>
@@ -21,6 +22,7 @@ function App() {
                 <Route path="/clothes" element={<CategoryListingPage />} />
                 <Route path="/product/:id" element={<ProductDetails />} />
                 <Route path="/admin" element={<AdminPanel />} />
+                <Route path="/product-list" element={<ProductList />} /> {/* ✅ Added route */}
                 <Route path="*" element={<Navigate to="/all" />} />
               </Route>
             </Routes>

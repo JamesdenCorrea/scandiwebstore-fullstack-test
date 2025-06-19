@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom'; // ✅ Added for navigation
+import { Link, useNavigate } from 'react-router-dom'; // ✅ Added useNavigate
 import AddProductForm from '../components/AddProductForm';
 import styles from './AdminPanel.module.css';
 import { useFormContext } from '../context/FormContext';
@@ -16,6 +16,7 @@ export default function AdminPanel() {
   const [isLoading, setIsLoading] = useState(true);
 
   const { isFormOpen, openForm, closeForm } = useFormContext();
+  const navigate = useNavigate(); // ✅ Navigation hook
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -28,6 +29,7 @@ export default function AdminPanel() {
   const handleAddProduct = (newProduct: any) => {
     setProducts([...products, { ...newProduct, id: `${products.length + 1}` }]);
     closeForm();
+    navigate('/product-list'); // ✅ Redirect after save
   };
 
   const toggleProductSelection = (id: string) => {
@@ -67,7 +69,6 @@ export default function AdminPanel() {
         </div>
       </div>
 
-      {/* ✅ Back button to go to the storefront */}
       <div className={styles.backWrapper}>
         <Link to="/" className={styles.backButton}>
           ← Back to Category Page
