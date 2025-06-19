@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import styles from './AddProductForm.module.css';
 import DOMPurify from 'dompurify';
+import { useNavigate } from 'react-router-dom'; // ✅ Added for redirect
 
 type Attribute = {
   name: string;
@@ -35,6 +36,8 @@ export default function AddProductForm({ onClose, onSave, formId = 'product_form
     value: '',
     type: 'text'
   });
+
+  const navigate = useNavigate(); // ✅ Added
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -73,7 +76,7 @@ export default function AddProductForm({ onClose, onSave, formId = 'product_form
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (
@@ -84,7 +87,13 @@ export default function AddProductForm({ onClose, onSave, formId = 'product_form
       return;
     }
 
-    onSave(productData);
+    try {
+      onSave(productData);
+      // ✅ Redirect to product list after save
+      navigate("/");
+    } catch (error) {
+      console.error("Failed to save product:", error);
+    }
   };
 
   return (
@@ -158,7 +167,6 @@ export default function AddProductForm({ onClose, onSave, formId = 'product_form
             </select>
           </div>
 
-          {/* CONDITIONAL FIELDS EXPECTED BY TESTS */}
           {productData.productType === 'DVD' && (
             <div className={styles.formGroup}>
               <label htmlFor="size">Size (MB):</label>
