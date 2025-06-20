@@ -99,3 +99,24 @@
     padding: 1rem 0.5rem;
   }
 }
+.add-product-button-wrapper {
+  display: flex;
+  justify-content: flex-end;
+  margin: 1rem 2rem;
+}
+
+.add-product-button {
+  background-color: #5ece7b;
+  color: white;
+  padding: 0.5rem 1.5rem;
+  font-size: 1rem;
+  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.add-product-button:hover {
+  background-color: #45b56a;
+}

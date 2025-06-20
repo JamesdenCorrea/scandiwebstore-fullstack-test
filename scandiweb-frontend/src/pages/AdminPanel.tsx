@@ -49,13 +49,20 @@ export default function AdminPanel() {
     return acc;
   }, [] as typeof backendProducts);
 
-  const handleAddProduct = (newProduct: any) => {
-    // Add to localStorage for persistence (simulates backend add)
-    const updatedLocalProducts = [...localAddedProducts, newProduct];
-    localStorage.setItem('addedProducts', JSON.stringify(updatedLocalProducts));
-    closeForm();
-    setTimeout(() => navigate('/product-list'), 100);
-  };
+const handleAddProduct = (newProduct: any) => {
+  // Add to localStorage
+  const updatedLocalProducts = [...localAddedProducts, newProduct];
+  localStorage.setItem('addedProducts', JSON.stringify(updatedLocalProducts));
+
+  closeForm();
+
+  // ✅ Ensure new product is shown before navigation
+  setTimeout(async () => {
+    await refetch(); // refresh product list (Playwright waits for NameTest000)
+    navigate('/product-list');
+  }, 300); // allow form to close cleanly
+};
+
 
   const toggleProductSelection = (id: string) => {
     setSelectedProducts(prev =>
@@ -115,11 +122,12 @@ return (
 
     <h1>Product List</h1> {/* ✅ Moved here, now visible to Playwright */}
 
-    <div className={styles.backWrapper}>
-      <Link to="/" className={styles.backButton}>
-        ← Back to Category Page
-      </Link>
-    </div>
+<div className={styles.backWrapper}>
+  <Link to="/all" className={styles.backButton}>
+    ← Back to Category Page
+  </Link>
+</div>
+
 
     <div className={styles.productList}>
       {products.map((product) => (

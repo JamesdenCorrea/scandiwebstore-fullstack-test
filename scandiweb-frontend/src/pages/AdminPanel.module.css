@@ -117,13 +117,13 @@
 
 /* ✅ New: back button wrapper + style */
 .backWrapper {
-  margin-bottom: 2rem;
+   margin: 1rem 0;
 }
 
 .backButton {
   display: inline-block;
   background: transparent;
-  color: #6a0dad;
+  color: #fff;
   font-weight: 600;
   font-size: 1rem;
   text-decoration: none;
@@ -131,9 +131,10 @@
   padding: 8px 16px;
   border-radius: 6px;
   transition: all 0.3s ease;
+  background-color: #6a0dad;
 }
 
 .backButton:hover {
-  background: #6a0dad;
-  color: #fff;
+  background: #c6e9cd;
+  color: #6a0dad;
 }

@@ -243,6 +243,17 @@ aria-level={1}
   Product List
 </h1>
 
+{selectedCategory === 'All' && (
+  <div className="add-product-button-wrapper">
+    <button
+      onClick={() => navigate('/admin')}
+      data-testid="add-product-button"
+      className="add-product-button"
+    >
+      ADD
+    </button>
+  </div>
+)}
 
 
 

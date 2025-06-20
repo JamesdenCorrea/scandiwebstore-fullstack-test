@@ -82,30 +82,56 @@ export default function AddProductForm({ onClose, onSave, formId = 'product_form
     }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const newProduct = {
-      id: crypto.randomUUID(),
-      ...productData,
-      price: parseFloat(productData.price),
-      attributes: productData.attributes.map(attr => ({
-        ...attr,
-        value: DOMPurify.sanitize(attr.value)
-      }))
-    };
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
 
-    try {
-      const { data } = await addProduct({ variables: { input: newProduct } });
-      onSave(data.addProduct);
-setTimeout(() => {
-  navigate('/');
-}, 100); // Redirects back to AdminPanel
+  const {
+    sku, name, price, productType,
+    category, description, size,
+    weight, height, width, length
+  } = productData;
 
+  // Step 1: Validate required fields
+  if (!sku || !name || !price || !category || !description) {
+    alert("Please fill in all required fields.");
+    return;
+  }
 
-    } catch (error) {
-      console.error("Failed to add product:", error);
-    }
+  if (productType === 'DVD' && !size) {
+    alert("Please enter size for DVD.");
+    return;
+  }
+
+  if (productType === 'Book' && !weight) {
+    alert("Please enter weight for Book.");
+    return;
+  }
+
+  if (productType === 'Furniture' && (!height || !width || !length)) {
+    alert("Please enter all dimensions for Furniture.");
+    return;
+  }
+
+  // Step 2: Proceed with save
+  const newProduct = {
+    id: crypto.randomUUID(),
+    ...productData,
+    price: parseFloat(productData.price),
+    attributes: productData.attributes.map(attr => ({
+      ...attr,
+      value: DOMPurify.sanitize(attr.value)
+    }))
   };
+
+  try {
+    const { data } = await addProduct({ variables: { input: newProduct } });
+    onSave(data.addProduct);
+    // ✅ Let AdminPanel handle navigate() after refetch
+  } catch (error) {
+    console.error("Failed to add product:", error);
+  }
+};
+
 
   return (
     <div className={styles.formOverlay}>
