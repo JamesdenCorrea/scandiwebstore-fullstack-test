@@ -49,13 +49,17 @@ export default function AdminPanel() {
     return acc;
   }, [] as typeof backendProducts);
 
-  const handleAddProduct = (newProduct: any) => {
-    // Add to localStorage for persistence (simulates backend add)
-    const updatedLocalProducts = [...localAddedProducts, newProduct];
-    localStorage.setItem('addedProducts', JSON.stringify(updatedLocalProducts));
-    closeForm();
-    setTimeout(() => navigate('/product-list'), 100);
-  };
+const handleAddProduct = (newProduct: any) => {
+  const updatedLocalProducts = [...localAddedProducts, newProduct];
+  localStorage.setItem('addedProducts', JSON.stringify(updatedLocalProducts));
+  closeForm();
+
+  setTimeout(() => {
+    refetch(); // ✅ refresh product list
+    navigate('/'); // ✅ stay on AdminPanel route
+  }, 100);
+};
+
 
   const toggleProductSelection = (id: string) => {
     setSelectedProducts(prev =>
