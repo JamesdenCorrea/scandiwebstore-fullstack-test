@@ -123,7 +123,9 @@ const handleAddProduct = (newProduct: any) => {
         </Link>
       </div>
 
-      <div className={styles.productList}>
+      <h2 style={{ marginTop: '2rem' }}>Product List</h2>
+<div className={styles.productList}>
+
         {products.map((product) => (
           <div
             key={product.id}
