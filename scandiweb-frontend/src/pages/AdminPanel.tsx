@@ -67,14 +67,22 @@ const handleAddProduct = async (newProduct: any) => {
   setLastAddedProduct(newProduct);
   closeForm();
 
-  await new Promise((res) => setTimeout(res, 100)); // small delay to allow form animation to finish
-  await refetch(); // refresh backend products
-  mergeProducts(); // update product list with both backend + local
+  await new Promise((res) => setTimeout(res, 100)); // Small delay for form animation
+  await refetch(); // Refresh backend products
+  mergeProducts(); // Merge backend and local products
+
+  // ✅ Wait for the DOM to reflect the new product before test continues
+  await new Promise((resolve) => {
+    const checkVisible = () => {
+      const el = document.querySelector(
+        `[data-testid="product-name-${newProduct.name}"]`
+      );
+      if (el) return resolve(null);
+      requestAnimationFrame(checkVisible);
+    };
+    checkVisible();
+  });
 };
-
-
-
-
   const toggleProductSelection = (id: string) => {
     setSelectedProducts((prev) =>
       prev.includes(id) ? prev.filter((pid) => pid !== id) : [...prev, id]
