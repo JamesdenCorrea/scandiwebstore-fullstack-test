@@ -64,13 +64,20 @@ const handleAddProduct = async (newProduct: any) => {
   updatedLocal.push(newProduct);
   localStorage.setItem('addedProducts', JSON.stringify(updatedLocal));
 
-  setLastAddedProduct(newProduct); // ⬅️ Store latest added product for XSS preview
+  setLastAddedProduct(newProduct);
   closeForm();
 
-  await new Promise((res) => setTimeout(res, 100));
-  await refetch();
-  mergeProducts();
+  // Instantly update merged products so the Product List heading renders without delay
+  const backendProducts = data?.products || [];
+  const merged = [
+    ...backendProducts,
+    ...updatedLocal.filter(
+      (local: any) => !backendProducts.some((bp: any) => bp.id === local.id)
+    ),
+  ];
+  setProducts(merged);
 };
+
 
 
   const toggleProductSelection = (id: string) => {
