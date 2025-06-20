@@ -7,6 +7,7 @@ import CategoryListingPage from './pages/CategoryListingPage';
 import ProductDetails from './pages/ProductDetails';
 import AdminPanel from './pages/AdminPanel';
 
+
 function App() {
   return (
     <CurrencyProvider>
@@ -15,21 +16,16 @@ function App() {
           <Router>
             <Routes>
               <Route element={<Layout />}>
-                {/* ✅ Route root path to AdminPanel as required by Playwright tests */}
-                <Route path="/" element={<AdminPanel />} />
+<Route path="/" element={<CategoryListingPage />} />
+<Route path="/all" element={<CategoryListingPage />} />
 
-                {/* Product listings */}
-                <Route path="/all" element={<CategoryListingPage />} />
-                <Route path="/product-list" element={<CategoryListingPage />} />
                 <Route path="/tech" element={<CategoryListingPage />} />
                 <Route path="/clothes" element={<CategoryListingPage />} />
                 <Route path="/product/:id" element={<ProductDetails />} />
-
-                {/* Optional: Admin route if you still want it separately */}
                 <Route path="/admin" element={<AdminPanel />} />
+                <Route path="*" element={<Navigate to="/all" />} />
+                <Route path="/product-list" element={<CategoryListingPage />} />
 
-                {/* Fallback redirect */}
-                <Route path="*" element={<Navigate to="/" />} />
               </Route>
             </Routes>
           </Router>

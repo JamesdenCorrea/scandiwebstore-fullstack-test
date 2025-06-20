@@ -49,20 +49,13 @@ export default function AdminPanel() {
     return acc;
   }, [] as typeof backendProducts);
 
-const handleAddProduct = (newProduct: any) => {
-  // Add to localStorage
-  const updatedLocalProducts = [...localAddedProducts, newProduct];
-  localStorage.setItem('addedProducts', JSON.stringify(updatedLocalProducts));
-
-  closeForm();
-
-  // ✅ Ensure new product is shown before navigation
-  setTimeout(async () => {
-    await refetch(); // refresh product list (Playwright waits for NameTest000)
-    navigate('/product-list');
-  }, 300); // allow form to close cleanly
-};
-
+  const handleAddProduct = (newProduct: any) => {
+    // Add to localStorage for persistence (simulates backend add)
+    const updatedLocalProducts = [...localAddedProducts, newProduct];
+    localStorage.setItem('addedProducts', JSON.stringify(updatedLocalProducts));
+    closeForm();
+    setTimeout(() => navigate('/product-list'), 100);
+  };
 
   const toggleProductSelection = (id: string) => {
     setSelectedProducts(prev =>
@@ -96,68 +89,65 @@ const handleAddProduct = (newProduct: any) => {
 
   if (loading) return <div className={styles.loading}>Loading...</div>;
 
-return (
-  <div className={styles.adminContainer}>
-    <div className={styles.header}>
-      <h1 data-testid="admin-heading">Product Management</h1>
-      <div>
-        <button
-          onClick={deleteSelectedProducts}
-          disabled={selectedProducts.length === 0}
-          className={styles.deleteButton}
-          data-testid="delete-products-button"
-        >
-          Delete Selected ({selectedProducts.length})
-        </button>
-        <button
-          onClick={openForm}
-          className={styles.addButton}
-          data-testid="admin-add-button"
-          aria-label="ADD"
-        >
-          ADD
-        </button>
-      </div>
-    </div>
-
-    <h1>Product List</h1> {/* ✅ Moved here, now visible to Playwright */}
-
-<div className={styles.backWrapper}>
-  <Link to="/all" className={styles.backButton}>
-    ← Back to Category Page
-  </Link>
-</div>
-
-
-    <div className={styles.productList}>
-      {products.map((product) => (
-        <div
-          key={product.id}
-          className={styles.productItem}
-          data-testid={`admin-product-${product.id}`}
-        >
-          <input
-            type="checkbox"
-            checked={selectedProducts.includes(product.id)}
-            onChange={() => toggleProductSelection(product.id)}
-            data-testid={`select-product-${product.id}`}
-          />
-          <div>
-            <h3>{product.name}</h3>
-            <p>SKU: {product.sku}</p>
-            <p>Price: ${Number(product.price).toFixed(2)}</p>
-            <p>Category: {product.category}</p>
-          </div>
+  return (
+    <div className={styles.adminContainer}>
+      <div className={styles.header}>
+        <h1 data-testid="admin-heading">Product Management</h1>
+        <div>
+          <button
+            onClick={deleteSelectedProducts}
+            disabled={selectedProducts.length === 0}
+            className={styles.deleteButton}
+            data-testid="delete-products-button"
+          >
+            Delete Selected ({selectedProducts.length})
+          </button>
+          <button
+            onClick={openForm}
+            className={styles.addButton}
+            data-testid="admin-add-button"
+            aria-label="ADD"
+          >
+            ADD
+          </button>
         </div>
-      ))}
-    </div>
+      </div>
 
-    {isFormOpen && (
-      <AddProductForm
-        onSave={handleAddProduct}
-        onClose={closeForm}
-      />
-    )}
-  </div>
-);
+      <div className={styles.backWrapper}>
+        <Link to="/" className={styles.backButton}>
+          ← Back to Category Page
+        </Link>
+      </div>
+
+      <div className={styles.productList}>
+        {products.map((product) => (
+          <div
+            key={product.id}
+            className={styles.productItem}
+            data-testid={`admin-product-${product.id}`}
+          >
+            <input
+              type="checkbox"
+              checked={selectedProducts.includes(product.id)}
+              onChange={() => toggleProductSelection(product.id)}
+              data-testid={`select-product-${product.id}`}
+            />
+            <div>
+              <h3>{product.name}</h3>
+              <p>SKU: {product.sku}</p>
+              <p>Price: ${Number(product.price).toFixed(2)}</p>
+              <p>Category: {product.category}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {isFormOpen && (
+        <AddProductForm
+          onSave={handleAddProduct}
+          onClose={closeForm}
+        />
+      )}
+    </div>
+  );
 }
