@@ -122,21 +122,23 @@ export default function ProductCard({
       />
 
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-        <h3
-          style={{
-            margin: '0.5rem 0',
-            fontWeight: '600',
-            fontSize: '1.1rem',
-            color: '#4b0082',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            display: '-webkit-box',
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: 'vertical',
-          }}
-        >
-          {name}
-        </h3>
+<h3
+  data-testid={`product-name-${name}`}
+  style={{
+    margin: '0.5rem 0',
+    fontWeight: '600',
+    fontSize: '1.1rem',
+    color: '#4b0082',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    display: '-webkit-box',
+    WebkitLineClamp: 2,
+    WebkitBoxOrient: 'vertical',
+  }}
+>
+  {name}
+</h3>
+
 
         {brand && (
           <p
