@@ -31,35 +31,28 @@ export default function AdminPanel() {
   const { isFormOpen, openForm, closeForm } = useFormContext();
   const navigate = useNavigate();
 
-  // Combine backend products with locally added products from localStorage
   const backendProducts = data?.products || [];
   const localAddedProducts = (() => {
     try {
       const stored = localStorage.getItem('addedProducts');
-      if (!stored) return [];
-      return JSON.parse(stored);
+      return stored ? JSON.parse(stored) : [];
     } catch {
       return [];
     }
   })();
 
-  // Merge and dedupe by id (local products have generated IDs)
-const products = [
-  ...backendProducts,
-  ...localAddedProducts.filter(local => !backendProducts.some(bp => bp.id === local.id))
-];
+  const products = [
+    ...backendProducts,
+    ...localAddedProducts.filter(local => !backendProducts.some(bp => bp.id === local.id))
+  ];
 
-
-const handleAddProduct = async (newProduct: any) => {
-  const updatedLocalProducts = [...localAddedProducts, newProduct];
-  localStorage.setItem('addedProducts', JSON.stringify(updatedLocalProducts));
-  closeForm();
-  await new Promise((res) => setTimeout(res, 100)); // wait for form DOM to close
-  await refetch(); // ensure product list updates before test checks "Product List"
-};
-
-
-
+  const handleAddProduct = async (newProduct: any) => {
+    const updatedLocalProducts = [...localAddedProducts, newProduct];
+    localStorage.setItem('addedProducts', JSON.stringify(updatedLocalProducts));
+    closeForm();
+    await new Promise((res) => setTimeout(res, 100)); // allow form to close
+    await refetch(); // refresh list before test checks for "Product List"
+  };
 
   const toggleProductSelection = (id: string) => {
     setSelectedProducts(prev =>
@@ -71,21 +64,19 @@ const handleAddProduct = async (newProduct: any) => {
     try {
       if (selectedProducts.length === 0) return;
 
-      // Call backend mutation to delete products by IDs (only those from backend)
-      // Filter IDs that exist in backend products only to avoid deleting localStorage-only products from backend
-      const backendProductIds = backendProducts.map(p => p.id);
-      const backendIdsToDelete = selectedProducts.filter(id => backendProductIds.includes(id));
+      const backendIdsToDelete = selectedProducts.filter(id =>
+        backendProducts.some(bp => bp.id === id)
+      );
 
       if (backendIdsToDelete.length > 0) {
         await deleteProductsMutation({ variables: { ids: backendIdsToDelete } });
       }
 
-      // Also remove selected IDs from localStorage addedProducts if any match
       const filteredLocal = localAddedProducts.filter(p => !selectedProducts.includes(p.id));
       localStorage.setItem('addedProducts', JSON.stringify(filteredLocal));
 
       setSelectedProducts([]);
-      refetch(); // Refresh backend product list
+      refetch();
     } catch (error) {
       console.error('Failed to delete products:', error);
     }
@@ -123,9 +114,12 @@ const handleAddProduct = async (newProduct: any) => {
         </Link>
       </div>
 
+      {/* Heading must be stable for Playwright */}
+      <h2 data-testid="product-list-heading" style={{ marginTop: '2rem' }}>
+        Product List
+      </h2>
 
-<h2 style={{ marginTop: '2rem' }}>Product List</h2>
-<div className={styles.productList}>
+      <div className={styles.productList}>
         {products.map((product) => (
           <div
             key={product.id}
