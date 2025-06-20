@@ -158,6 +158,11 @@ const [lastAddedProduct, setLastAddedProduct] = useState<any | null>(null);
       <h2 data-testid="product-list-heading" style={{ marginTop: '2rem' }}>
         Product List
       </h2>
+{JSON.stringify(products).includes('NameTest000') && (
+  <div style={{ background: 'lightgreen', padding: '1rem', fontWeight: 'bold' }}>
+    ✅ DEBUG: NameTest000 is inside products array
+  </div>
+)}
 
       <div className={styles.productList}>
         {products.map((product) => (
@@ -173,16 +178,19 @@ const [lastAddedProduct, setLastAddedProduct] = useState<any | null>(null);
               data-testid={`select-product-${product.id}`}
             />
             <div>
-              <h3 data-testid={`product-name-${product.name}`}>
+ <h3 data-testid={`product-name-${product.name}`}>
   {product.name}
 </h3>
-{/* ✅ Ensure plain visibility for Playwright test */}
-<span 
-  style={{ position: 'absolute', left: '-9999px', opacity: 0 }}
+<span
   data-testid={`product-name-plain-${product.name}`}
+  style={{ position: 'absolute', left: '-9999px', opacity: 0 }}
 >
   {product.name}
 </span>
+{product.name === 'NameTest000' && (
+  <div data-testid="debug-product-injected">NameTest000</div>
+)}
+
 
               <p>SKU: {product.sku}</p>
               <p>Price: ${Number(product.price).toFixed(2)}</p>
