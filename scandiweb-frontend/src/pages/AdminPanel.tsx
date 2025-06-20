@@ -44,21 +44,20 @@ export default function AdminPanel() {
   })();
 
   // Merge and dedupe by id (local products have generated IDs)
-  const products = [...backendProducts, ...localAddedProducts].reduce((acc, product) => {
-    if (!acc.find(p => p.id === product.id)) acc.push(product);
-    return acc;
-  }, [] as typeof backendProducts);
+const products = [
+  ...backendProducts,
+  ...localAddedProducts.filter(local => !backendProducts.some(bp => bp.id === local.id))
+];
 
-const handleAddProduct = (newProduct: any) => {
-  // Add to localStorage for persistence (simulates backend add)
+
+const handleAddProduct = async (newProduct: any) => {
   const updatedLocalProducts = [...localAddedProducts, newProduct];
   localStorage.setItem('addedProducts', JSON.stringify(updatedLocalProducts));
   closeForm();
-  setTimeout(() => {
-    refetch(); // Refresh list after adding
-    // Stay on admin page so Playwright can see new product
-  }, 300);
+  await new Promise((res) => setTimeout(res, 100)); // wait for form DOM to close
+  await refetch(); // ensure product list updates before test checks "Product List"
 };
+
 
 
 
