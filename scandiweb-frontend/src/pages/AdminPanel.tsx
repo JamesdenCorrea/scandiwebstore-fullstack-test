@@ -67,16 +67,11 @@ const handleAddProduct = async (newProduct: any) => {
   setLastAddedProduct(newProduct);
   closeForm();
 
-  // Instantly update merged products so the Product List heading renders without delay
-  const backendProducts = data?.products || [];
-  const merged = [
-    ...backendProducts,
-    ...updatedLocal.filter(
-      (local: any) => !backendProducts.some((bp: any) => bp.id === local.id)
-    ),
-  ];
-  setProducts(merged);
+  await new Promise((res) => setTimeout(res, 100)); // small delay to allow form animation to finish
+  await refetch(); // refresh backend products
+  mergeProducts(); // update product list with both backend + local
 };
+
 
 
 
