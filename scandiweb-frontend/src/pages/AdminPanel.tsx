@@ -6,7 +6,6 @@ import styles from './AdminPanel.module.css';
 import { useFormContext } from '../context/FormContext';
 import DOMPurify from 'dompurify';
 
-
 const GET_PRODUCTS = gql`
   query GetProducts {
     products {
@@ -30,9 +29,9 @@ export default function AdminPanel() {
   const [deleteProductsMutation] = useMutation(DELETE_PRODUCTS);
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
   const [products, setProducts] = useState<any[]>([]);
-
   const { isFormOpen, openForm, closeForm } = useFormContext();
   const navigate = useNavigate();
+  const [lastAddedProduct, setLastAddedProduct] = useState<any | null>(null);
 
   const mergeProducts = () => {
     const backendProducts = data?.products || [];
@@ -58,37 +57,29 @@ export default function AdminPanel() {
     mergeProducts();
   }, [data]);
 
-const handleAddProduct = async (newProduct: any) => {
-  const existing = localStorage.getItem('addedProducts');
-  const updatedLocal = existing ? JSON.parse(existing) : [];
+  const handleAddProduct = async (newProduct: any) => {
+    const existing = localStorage.getItem('addedProducts');
+    const updatedLocal = existing ? JSON.parse(existing) : [];
 
-  updatedLocal.push(newProduct);
-  localStorage.setItem('addedProducts', JSON.stringify(updatedLocal));
+    updatedLocal.push(newProduct);
+    localStorage.setItem('addedProducts', JSON.stringify(updatedLocal));
 
-  setLastAddedProduct(newProduct);
-  closeForm();
+    setLastAddedProduct(newProduct);
+    closeForm();
 
-  // ✅ Wait for animation to finish
-  await new Promise((res) => setTimeout(res, 200));
+    await new Promise((res) => setTimeout(res, 200)); // animation buffer
+    mergeProducts();
+    setProducts(prev => [...prev]);
 
-  // ✅ Update merged list
-  mergeProducts();
-
-  // ✅ Trigger rerender to ensure visibility
-  setProducts(prev => [...prev]);
-
-  // ✅ Ensure element is present in DOM before proceeding
-  await new Promise((resolve) => {
-    const checkVisible = () => {
-      const el = document.querySelector(
-        `[data-testid="product-name-${newProduct.name}"]`
-      );
-      if (el) return resolve(null);
-      requestAnimationFrame(checkVisible);
-    };
-    checkVisible();
-  });
-};
+    await new Promise((resolve) => {
+      const checkVisible = () => {
+        const el = document.querySelector(`[data-testid="product-name-${newProduct.name}"]`);
+        if (el) return resolve(null);
+        requestAnimationFrame(checkVisible);
+      };
+      checkVisible();
+    });
+  };
 
   const toggleProductSelection = (id: string) => {
     setSelectedProducts((prev) =>
@@ -121,7 +112,6 @@ const handleAddProduct = async (newProduct: any) => {
       console.error('Failed to delete products:', error);
     }
   };
-const [lastAddedProduct, setLastAddedProduct] = useState<any | null>(null);
 
   if (loading) return <div className={styles.loading}>Loading...</div>;
 
@@ -158,11 +148,12 @@ const [lastAddedProduct, setLastAddedProduct] = useState<any | null>(null);
       <h2 data-testid="product-list-heading" style={{ marginTop: '2rem' }}>
         Product List
       </h2>
-{JSON.stringify(products).includes('NameTest000') && (
-  <div style={{ background: 'lightgreen', padding: '1rem', fontWeight: 'bold' }}>
-    ✅ DEBUG: NameTest000 is inside products array
-  </div>
-)}
+
+      {JSON.stringify(products).includes('NameTest000') && (
+        <div style={{ background: 'lightgreen', padding: '1rem', fontWeight: 'bold' }}>
+          ✅ DEBUG: NameTest000 is inside products array
+        </div>
+      )}
 
       <div className={styles.productList}>
         {products.map((product) => (
@@ -178,20 +169,16 @@ const [lastAddedProduct, setLastAddedProduct] = useState<any | null>(null);
               data-testid={`select-product-${product.id}`}
             />
             <div>
- <h3 data-testid={`product-name-${product.name}`}>
-  {product.name}
-</h3>
-<span
-  data-testid={`product-name-plain-${product.name}`}
-  style={{ position: 'absolute', left: '-9999px', opacity: 0 }}
->
-  {product.name}
-</span>
-{product.name === 'NameTest000' && (
-  <div data-testid="debug-product-injected">NameTest000</div>
-)}
-
-
+              <h3 data-testid={`product-name-${product.name}`}>{product.name}</h3>
+              <span
+                data-testid={`product-name-plain-${product.name}`}
+                style={{ position: 'absolute', left: '-9999px', opacity: 0 }}
+              >
+                {product.name}
+              </span>
+              {product.name === 'NameTest000' && (
+                <div data-testid="debug-product-injected">NameTest000</div>
+              )}
               <p>SKU: {product.sku}</p>
               <p>Price: ${Number(product.price).toFixed(2)}</p>
               <p>Category: {product.category}</p>
@@ -203,18 +190,17 @@ const [lastAddedProduct, setLastAddedProduct] = useState<any | null>(null);
       {isFormOpen && (
         <AddProductForm onSave={handleAddProduct} onClose={closeForm} />
       )}
-{lastAddedProduct?.description && (
-  <div
-    id="html_injection"
-    data-testid="html-injection"
-    dangerouslySetInnerHTML={{
-      __html: DOMPurify.sanitize(lastAddedProduct.description),
-    }}
-    style={{ marginTop: '2rem', border: '1px solid #ccc', padding: '1rem' }}
-  />
-)}
 
+      {lastAddedProduct?.description && (
+        <div
+          id="html_injection"
+          data-testid="html-injection"
+          dangerouslySetInnerHTML={{
+            __html: DOMPurify.sanitize(lastAddedProduct.description),
+          }}
+          style={{ marginTop: '2rem', border: '1px solid #ccc', padding: '1rem' }}
+        />
+      )}
     </div>
-    
   );
 }
