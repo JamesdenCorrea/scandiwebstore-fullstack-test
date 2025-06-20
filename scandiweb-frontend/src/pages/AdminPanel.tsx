@@ -61,17 +61,23 @@ export default function AdminPanel() {
 const handleAddProduct = async (newProduct: any) => {
   const existing = localStorage.getItem('addedProducts');
   const updatedLocal = existing ? JSON.parse(existing) : [];
+
   updatedLocal.push(newProduct);
   localStorage.setItem('addedProducts', JSON.stringify(updatedLocal));
 
   setLastAddedProduct(newProduct);
   closeForm();
 
-  await new Promise((res) => setTimeout(res, 100)); // Small delay for form animation
-  await refetch(); // Refresh backend products
-  mergeProducts(); // Merge backend and local products
+  // ✅ Wait for animation to finish
+  await new Promise((res) => setTimeout(res, 200));
 
-  // ✅ Wait for the DOM to reflect the new product before test continues
+  // ✅ Update merged list
+  mergeProducts();
+
+  // ✅ Trigger rerender to ensure visibility
+  setProducts(prev => [...prev]);
+
+  // ✅ Ensure element is present in DOM before proceeding
   await new Promise((resolve) => {
     const checkVisible = () => {
       const el = document.querySelector(
@@ -83,6 +89,7 @@ const handleAddProduct = async (newProduct: any) => {
     checkVisible();
   });
 };
+
   const toggleProductSelection = (id: string) => {
     setSelectedProducts((prev) =>
       prev.includes(id) ? prev.filter((pid) => pid !== id) : [...prev, id]
