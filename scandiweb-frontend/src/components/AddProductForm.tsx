@@ -104,33 +104,45 @@ export default function AddProductForm({ onClose, onSave, formId = 'product_form
     return errors;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+ const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
 
-    const errors = validateProductData();
-    if (errors.length > 0) {
-      alert("Please fix the following errors:\n" + errors.join("\n"));
-      return;
-    }
+  const errors = validateProductData();
+  if (errors.length > 0) {
+    alert("Please fix the following errors:\n" + errors.join("\n"));
+    return;
+  }
 
-    const newProduct = {
-      id: crypto.randomUUID(),
-      ...productData,
-      price: parseFloat(productData.price),
-      attributes: productData.attributes.map(attr => ({
-        ...attr,
-        value: DOMPurify.sanitize(attr.value)
-      }))
-    };
-
-    try {
-      await addProduct({ variables: { input: newProduct } });
-      onSave(newProduct); // success path
-    } catch (error) {
-      console.warn("Mutation failed (mocked backend?): Falling back to onSave()");
-      onSave(newProduct); // fallback path
-    }
+  const newProduct = {
+    id: crypto.randomUUID(),
+    ...productData,
+    price: parseFloat(productData.price),
+    attributes: productData.attributes.map(attr => ({
+      ...attr,
+      value: DOMPurify.sanitize(attr.value),
+    })),
   };
+
+  // ✅ Save to localStorage RIGHT HERE to ensure persistence
+  try {
+    const existing = localStorage.getItem("addedProducts");
+    const updated = existing ? JSON.parse(existing) : [];
+    updated.push(newProduct);
+    localStorage.setItem("addedProducts", JSON.stringify(updated));
+    console.log("✅ LocalStorage updated with:", newProduct);
+  } catch (err) {
+    console.error("❌ Failed to save to localStorage:", err);
+  }
+
+  try {
+    await addProduct({ variables: { input: newProduct } });
+  } catch (err) {
+    console.warn("Mutation failed (okay if mocked):", err);
+  }
+
+  onSave(newProduct); // still notify AdminPanel
+};
+
 
   return (
     <div className={styles.formOverlay}>
