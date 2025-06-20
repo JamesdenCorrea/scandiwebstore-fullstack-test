@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import styles from './AddProductForm.module.css';
 import DOMPurify from 'dompurify';
+import { useNavigate } from 'react-router-dom';
 import { gql, useMutation } from '@apollo/client';
 
 const ADD_PRODUCT = gql`
@@ -46,6 +47,7 @@ export default function AddProductForm({ onClose, onSave, formId = 'product_form
     type: 'text'
   });
 
+  const navigate = useNavigate();
   const [addProduct] = useMutation(ADD_PRODUCT);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -80,59 +82,29 @@ export default function AddProductForm({ onClose, onSave, formId = 'product_form
     }));
   };
 
-  const validateProductData = () => {
-    const errors: string[] = [];
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const newProduct = {
+      id: crypto.randomUUID(),
+      ...productData,
+      price: parseFloat(productData.price),
+      attributes: productData.attributes.map(attr => ({
+        ...attr,
+        value: DOMPurify.sanitize(attr.value)
+      }))
+    };
 
-    if (!productData.sku.trim()) errors.push("SKU is required");
-    if (!productData.name.trim()) errors.push("Product name is required");
-    if (!productData.price || isNaN(parseFloat(productData.price))) errors.push("Valid price is required");
-    if (!productData.category.trim()) errors.push("Category is required");
-    if (!productData.description.trim()) errors.push("Description is required");
+    try {
+      const { data } = await addProduct({ variables: { input: newProduct } });
+      onSave(data.addProduct);
+      setTimeout(() => {
+  navigate('/all');
+}, 100); // 100–200ms is usually enough
 
-    if (productData.productType === "DVD" && !productData.size.trim()) {
-      errors.push("Size is required for DVD");
+    } catch (error) {
+      console.error("Failed to add product:", error);
     }
-    if (productData.productType === "Book" && !productData.weight.trim()) {
-      errors.push("Weight is required for Book");
-    }
-    if (productData.productType === "Furniture") {
-      if (!productData.height.trim() || !productData.width.trim() || !productData.length.trim()) {
-        errors.push("Height, width, and length are required for Furniture");
-      }
-    }
-
-    return errors;
   };
-
- const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-
-  const errors = validateProductData();
-  if (errors.length > 0) {
-    alert("Please fix the following errors:\n" + errors.join("\n"));
-    return;
-  }
-
-  const newProduct = {
-    id: crypto.randomUUID(),
-    ...productData,
-    price: parseFloat(productData.price),
-    attributes: productData.attributes.map(attr => ({
-      ...attr,
-      value: DOMPurify.sanitize(attr.value),
-    })),
-  };
-
-  try {
-    await addProduct({ variables: { input: newProduct } });
-  } catch (err) {
-    console.warn("Mutation failed (okay if mocked):", err);
-  }
-
-  onSave(newProduct); // This is the ONLY place where localStorage will be updated — inside AdminPanel.tsx
-};
-
-
 
   return (
     <div className={styles.formOverlay}>
@@ -360,12 +332,6 @@ export default function AddProductForm({ onClose, onSave, formId = 'product_form
               Save Product
             </button>
           </div>
-
-          <div
-            id="html_injection"
-            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(productData.description || '') }}
-            data-testid="html-injection"
-          />
         </form>
       </div>
     </div>

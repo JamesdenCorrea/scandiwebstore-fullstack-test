@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { gql, useQuery, useMutation } from '@apollo/client';
 import AddProductForm from '../components/AddProductForm';
 import styles from './AdminPanel.module.css';
 import { useFormContext } from '../context/FormContext';
-import DOMPurify from 'dompurify';
 
 const GET_PRODUCTS = gql`
   query GetProducts {
@@ -28,69 +27,39 @@ export default function AdminPanel() {
   const { data, loading, refetch } = useQuery(GET_PRODUCTS);
   const [deleteProductsMutation] = useMutation(DELETE_PRODUCTS);
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
-  const [products, setProducts] = useState<any[]>([]);
+
   const { isFormOpen, openForm, closeForm } = useFormContext();
   const navigate = useNavigate();
-  const [lastAddedProduct, setLastAddedProduct] = useState<any | null>(null);
 
-  const mergeProducts = () => {
-    const backendProducts = data?.products || [];
-    const localAddedProducts = (() => {
-      try {
-        const stored = localStorage.getItem('addedProducts');
-        return stored ? JSON.parse(stored) : [];
-      } catch {
-        return [];
-      }
-    })();
-
-    const merged = [
-      ...backendProducts,
-      ...localAddedProducts.filter(
-        (local: any) => !backendProducts.some((bp: any) => bp.id === local.id)
-      ),
-    ];
-    setProducts(merged);
-  };
-
-  useEffect(() => {
-    mergeProducts();
-  }, [data]);
-
-  const handleAddProduct = async (newProduct: any) => {
-    const existing = localStorage.getItem('addedProducts');
-    const updatedLocal = existing ? JSON.parse(existing) : [];
-
-    updatedLocal.push(newProduct);
-    localStorage.setItem('addedProducts', JSON.stringify(updatedLocal));
-
-    setLastAddedProduct(newProduct);
-    closeForm();
-
-    await new Promise((res) => setTimeout(res, 200)); // animation buffer
-    mergeProducts();
-    setProducts(prev => [...prev]);
-
-await new Promise((resolve) => {
-  const timeout = setTimeout(resolve, 9000); // safety
-  const checkVisible = () => {
-    const el = Array.from(document.querySelectorAll('*'))
-      .find((node) => node.textContent?.includes(newProduct.name));
-    if (el) {
-      clearTimeout(timeout);
-      resolve(null);
-    } else {
-      requestAnimationFrame(checkVisible);
+  // Combine backend products with locally added products from localStorage
+  const backendProducts = data?.products || [];
+  const localAddedProducts = (() => {
+    try {
+      const stored = localStorage.getItem('addedProducts');
+      if (!stored) return [];
+      return JSON.parse(stored);
+    } catch {
+      return [];
     }
-  };
-  checkVisible();
-});
+  })();
 
+  // Merge and dedupe by id (local products have generated IDs)
+  const products = [...backendProducts, ...localAddedProducts].reduce((acc, product) => {
+    if (!acc.find(p => p.id === product.id)) acc.push(product);
+    return acc;
+  }, [] as typeof backendProducts);
+
+  const handleAddProduct = (newProduct: any) => {
+    // Add to localStorage for persistence (simulates backend add)
+    const updatedLocalProducts = [...localAddedProducts, newProduct];
+    localStorage.setItem('addedProducts', JSON.stringify(updatedLocalProducts));
+    closeForm();
+    setTimeout(() => navigate('/product-list'), 100);
   };
 
   const toggleProductSelection = (id: string) => {
-    setSelectedProducts((prev) =>
-      prev.includes(id) ? prev.filter((pid) => pid !== id) : [...prev, id]
+    setSelectedProducts(prev =>
+      prev.includes(id) ? prev.filter(pid => pid !== id) : [...prev, id]
     );
   };
 
@@ -98,23 +67,21 @@ await new Promise((resolve) => {
     try {
       if (selectedProducts.length === 0) return;
 
-      const backendIdsToDelete = selectedProducts.filter((id) =>
-        data?.products?.some((bp: any) => bp.id === id)
-      );
+      // Call backend mutation to delete products by IDs (only those from backend)
+      // Filter IDs that exist in backend products only to avoid deleting localStorage-only products from backend
+      const backendProductIds = backendProducts.map(p => p.id);
+      const backendIdsToDelete = selectedProducts.filter(id => backendProductIds.includes(id));
 
       if (backendIdsToDelete.length > 0) {
         await deleteProductsMutation({ variables: { ids: backendIdsToDelete } });
       }
 
-      const localAddedProducts = JSON.parse(localStorage.getItem('addedProducts') || '[]');
-      const filteredLocal = localAddedProducts.filter(
-        (p: any) => !selectedProducts.includes(p.id)
-      );
+      // Also remove selected IDs from localStorage addedProducts if any match
+      const filteredLocal = localAddedProducts.filter(p => !selectedProducts.includes(p.id));
       localStorage.setItem('addedProducts', JSON.stringify(filteredLocal));
 
       setSelectedProducts([]);
-      await refetch();
-      mergeProducts();
+      refetch(); // Refresh backend product list
     } catch (error) {
       console.error('Failed to delete products:', error);
     }
@@ -152,16 +119,6 @@ await new Promise((resolve) => {
         </Link>
       </div>
 
-      <h2 data-testid="product-list-heading" style={{ marginTop: '2rem' }}>
-        Product List
-      </h2>
-
-      {JSON.stringify(products).includes('NameTest000') && (
-        <div style={{ background: 'lightgreen', padding: '1rem', fontWeight: 'bold' }}>
-          ✅ DEBUG: NameTest000 is inside products array
-        </div>
-      )}
-
       <div className={styles.productList}>
         {products.map((product) => (
           <div
@@ -176,16 +133,7 @@ await new Promise((resolve) => {
               data-testid={`select-product-${product.id}`}
             />
             <div>
-              <h3 data-testid={`product-name-${product.name}`}>{product.name}</h3>
-              <span
-                data-testid={`product-name-plain-${product.name}`}
-                style={{ position: 'absolute', left: '-9999px', opacity: 0 }}
-              >
-                {product.name}
-              </span>
-              {product.name === 'NameTest000' && (
-                <div data-testid="debug-product-injected">NameTest000</div>
-              )}
+              <h3>{product.name}</h3>
               <p>SKU: {product.sku}</p>
               <p>Price: ${Number(product.price).toFixed(2)}</p>
               <p>Category: {product.category}</p>
@@ -195,17 +143,9 @@ await new Promise((resolve) => {
       </div>
 
       {isFormOpen && (
-        <AddProductForm onSave={handleAddProduct} onClose={closeForm} />
-      )}
-
-      {lastAddedProduct?.description && (
-        <div
-          id="html_injection"
-          data-testid="html-injection"
-          dangerouslySetInnerHTML={{
-            __html: DOMPurify.sanitize(lastAddedProduct.description),
-          }}
-          style={{ marginTop: '2rem', border: '1px solid #ccc', padding: '1rem' }}
+        <AddProductForm
+          onSave={handleAddProduct}
+          onClose={closeForm}
         />
       )}
     </div>
