@@ -95,11 +95,12 @@ export default function AddProductForm({ onClose, onSave, formId = 'product_form
     };
 
     try {
-      const { data } = await addProduct({ variables: { input: newProduct } });
-      onSave(data.addProduct);
-      setTimeout(() => {
-  navigate('/all');
-}, 100); // 100–200ms is usually enough
+const { data } = await addProduct({ variables: { input: newProduct } });
+if (data?.addProduct) {
+  onSave(data.addProduct); // optional callback
+  navigate('/all'); // navigate only after successful mutation
+}
+
 
     } catch (error) {
       console.error("Failed to add product:", error);
