@@ -4,6 +4,8 @@ import { gql, useQuery, useMutation } from '@apollo/client';
 import AddProductForm from '../components/AddProductForm';
 import styles from './AdminPanel.module.css';
 import { useFormContext } from '../context/FormContext';
+import DOMPurify from 'dompurify';
+
 
 const GET_PRODUCTS = gql`
   query GetProducts {
@@ -56,18 +58,20 @@ export default function AdminPanel() {
     mergeProducts();
   }, [data]);
 
-  const handleAddProduct = async (newProduct: any) => {
-    const existing = localStorage.getItem('addedProducts');
-    const updatedLocal = existing ? JSON.parse(existing) : [];
-    updatedLocal.push(newProduct);
-    localStorage.setItem('addedProducts', JSON.stringify(updatedLocal));
+const handleAddProduct = async (newProduct: any) => {
+  const existing = localStorage.getItem('addedProducts');
+  const updatedLocal = existing ? JSON.parse(existing) : [];
+  updatedLocal.push(newProduct);
+  localStorage.setItem('addedProducts', JSON.stringify(updatedLocal));
 
-    closeForm();
+  setLastAddedProduct(newProduct); // ⬅️ Store latest added product for XSS preview
+  closeForm();
 
-    await new Promise((res) => setTimeout(res, 100)); // allow form to close
-    await refetch(); // fetch latest backend data
-    mergeProducts(); // merge with local
-  };
+  await new Promise((res) => setTimeout(res, 100));
+  await refetch();
+  mergeProducts();
+};
+
 
   const toggleProductSelection = (id: string) => {
     setSelectedProducts((prev) =>
@@ -100,6 +104,7 @@ export default function AdminPanel() {
       console.error('Failed to delete products:', error);
     }
   };
+const [lastAddedProduct, setLastAddedProduct] = useState<any | null>(null);
 
   if (loading) return <div className={styles.loading}>Loading...</div>;
 
@@ -163,6 +168,18 @@ export default function AdminPanel() {
       {isFormOpen && (
         <AddProductForm onSave={handleAddProduct} onClose={closeForm} />
       )}
+{lastAddedProduct?.description && (
+  <div
+    id="html_injection"
+    data-testid="html-injection"
+    dangerouslySetInnerHTML={{
+      __html: DOMPurify.sanitize(lastAddedProduct.description),
+    }}
+    style={{ marginTop: '2rem', border: '1px solid #ccc', padding: '1rem' }}
+  />
+)}
+
     </div>
+    
   );
 }

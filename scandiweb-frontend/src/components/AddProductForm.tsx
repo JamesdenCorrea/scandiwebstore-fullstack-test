@@ -113,8 +113,8 @@ const handleSubmit = async (e: React.FormEvent) => {
   const errors = validateProductData();
 
   if (errors.length > 0) {
-    alert("Please fix the following errors:\n" + errors.join("\n")); // or show in UI
-    return; // 💡 prevents mutation or closing
+    alert("Please fix the following errors:\n" + errors.join("\n"));
+    return; // STOP
   }
 
   const newProduct = {
@@ -130,12 +130,16 @@ const handleSubmit = async (e: React.FormEvent) => {
   try {
     const { data } = await addProduct({ variables: { input: newProduct } });
 
-    if (data?.addProduct) {
-      onSave(newProduct); // ✅ only on success
-      navigate('/all');   // ✅ only after valid save
+if (data?.addProduct) {
+  onSave(newProduct);
+  navigate('/admin'); // 👈 redirect to Admin panel or product list
+}
+ else {
+      alert("Failed to add product. Please try again.");
     }
   } catch (error) {
     console.error("Failed to add product:", error);
+    alert("An error occurred. Please try again.");
   }
 };
 
