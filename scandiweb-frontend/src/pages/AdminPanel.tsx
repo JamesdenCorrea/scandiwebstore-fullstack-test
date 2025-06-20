@@ -50,15 +50,16 @@ export default function AdminPanel() {
   }, [] as typeof backendProducts);
 
 const handleAddProduct = (newProduct: any) => {
+  // Add to localStorage for persistence (simulates backend add)
   const updatedLocalProducts = [...localAddedProducts, newProduct];
   localStorage.setItem('addedProducts', JSON.stringify(updatedLocalProducts));
   closeForm();
-
   setTimeout(() => {
-    refetch(); // ✅ refresh product list
-    navigate('/'); // ✅ stay on AdminPanel route
-  }, 100);
+    refetch(); // Refresh list after adding
+    // Stay on admin page so Playwright can see new product
+  }, 300);
 };
+
 
 
   const toggleProductSelection = (id: string) => {
@@ -123,9 +124,9 @@ const handleAddProduct = (newProduct: any) => {
         </Link>
       </div>
 
-      <h2 style={{ marginTop: '2rem' }}>Product List</h2>
-<div className={styles.productList}>
 
+<h2 style={{ marginTop: '2rem' }}>Product List</h2>
+<div className={styles.productList}>
         {products.map((product) => (
           <div
             key={product.id}

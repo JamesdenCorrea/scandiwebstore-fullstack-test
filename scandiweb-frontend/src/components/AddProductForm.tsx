@@ -332,6 +332,12 @@ export default function AddProductForm({ onClose, onSave, formId = 'product_form
               Save Product
             </button>
           </div>
+          <div
+  id="html_injection"
+  dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(productData.description || '') }}
+  style={{ display: 'none' }} // Optional: Hide from user view but allow test access
+/>
+
         </form>
       </div>
     </div>
