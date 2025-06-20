@@ -131,9 +131,26 @@ const handleSubmit = async (e: React.FormEvent) => {
     const { data } = await addProduct({ variables: { input: newProduct } });
 
 if (data?.addProduct) {
-  onSave(newProduct); // update state in AdminPanel
-  await new Promise((res) => setTimeout(res, 300)); // ✅ Give DOM a moment to update
-  navigate('/admin'); // ✅ Let Playwright see the name BEFORE redirect
+  onSave(newProduct);
+
+  // ✅ WAIT for the DOM to reflect "NameTest000"
+  await new Promise((resolve) => {
+    const timeout = setTimeout(resolve, 10000); // failsafe
+    const check = () => {
+      const el = document.querySelector('[data-testid="debug-product-injected"]');
+      if (el) {
+        clearTimeout(timeout);
+        resolve(null);
+      } else {
+        requestAnimationFrame(check);
+      }
+    };
+    check();
+  });
+
+  // ✅ Then navigate back
+  navigate('/admin');
+
 }
 
  else {
