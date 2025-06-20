@@ -81,31 +81,64 @@ export default function AddProductForm({ onClose, onSave, formId = 'product_form
       attributes: prev.attributes.filter((_, i) => i !== index)
     }));
   };
+  const validateProductData = () => {
+  const errors: string[] = [];
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const newProduct = {
-      id: crypto.randomUUID(),
-      ...productData,
-      price: parseFloat(productData.price),
-      attributes: productData.attributes.map(attr => ({
-        ...attr,
-        value: DOMPurify.sanitize(attr.value)
-      }))
-    };
+  if (!productData.sku.trim()) errors.push("SKU is required");
+  if (!productData.name.trim()) errors.push("Product name is required");
+  if (!productData.price || isNaN(parseFloat(productData.price))) errors.push("Valid price is required");
+  if (!productData.category.trim()) errors.push("Category is required");
+  if (!productData.description.trim()) errors.push("Description is required");
 
-    try {
-const { data } = await addProduct({ variables: { input: newProduct } });
-if (data?.addProduct) {
-  onSave(data.addProduct); // optional callback
-  navigate('/all'); // navigate only after successful mutation
-}
-
-
-    } catch (error) {
-      console.error("Failed to add product:", error);
+  // Category-specific validation
+  if (productData.productType === "DVD" && !productData.size.trim()) {
+    errors.push("Size is required for DVD");
+  }
+  if (productData.productType === "Book" && !productData.weight.trim()) {
+    errors.push("Weight is required for Book");
+  }
+  if (productData.productType === "Furniture") {
+    if (!productData.height.trim() || !productData.width.trim() || !productData.length.trim()) {
+      errors.push("Height, width, and length are required for Furniture");
     }
+  }
+
+  return errors;
+};
+
+
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+
+  const errors = validateProductData();
+
+  if (errors.length > 0) {
+    alert("Please fix the following errors:\n" + errors.join("\n")); // or show in UI
+    return; // 💡 prevents mutation or closing
+  }
+
+  const newProduct = {
+    id: crypto.randomUUID(),
+    ...productData,
+    price: parseFloat(productData.price),
+    attributes: productData.attributes.map(attr => ({
+      ...attr,
+      value: DOMPurify.sanitize(attr.value)
+    }))
   };
+
+  try {
+    const { data } = await addProduct({ variables: { input: newProduct } });
+
+    if (data?.addProduct) {
+      onSave(newProduct); // ✅ only on success
+      navigate('/all');   // ✅ only after valid save
+    }
+  } catch (error) {
+    console.error("Failed to add product:", error);
+  }
+};
+
 
   return (
     <div className={styles.formOverlay}>
@@ -333,11 +366,12 @@ if (data?.addProduct) {
               Save Product
             </button>
           </div>
-          <div
+<div
   id="html_injection"
   dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(productData.description || '') }}
-  style={{ display: 'none' }} // Optional: Hide from user view but allow test access
+  data-testid="html-injection"
 />
+
 
         </form>
       </div>

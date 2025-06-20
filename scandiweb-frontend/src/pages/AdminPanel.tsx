@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { gql, useQuery, useMutation } from '@apollo/client';
 import AddProductForm from '../components/AddProductForm';
@@ -27,36 +27,51 @@ export default function AdminPanel() {
   const { data, loading, refetch } = useQuery(GET_PRODUCTS);
   const [deleteProductsMutation] = useMutation(DELETE_PRODUCTS);
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
+  const [products, setProducts] = useState<any[]>([]);
 
   const { isFormOpen, openForm, closeForm } = useFormContext();
   const navigate = useNavigate();
 
-  const backendProducts = data?.products || [];
-  const localAddedProducts = (() => {
-    try {
-      const stored = localStorage.getItem('addedProducts');
-      return stored ? JSON.parse(stored) : [];
-    } catch {
-      return [];
-    }
-  })();
+  const mergeProducts = () => {
+    const backendProducts = data?.products || [];
+    const localAddedProducts = (() => {
+      try {
+        const stored = localStorage.getItem('addedProducts');
+        return stored ? JSON.parse(stored) : [];
+      } catch {
+        return [];
+      }
+    })();
 
-  const products = [
-    ...backendProducts,
-    ...localAddedProducts.filter(local => !backendProducts.some(bp => bp.id === local.id))
-  ];
+    const merged = [
+      ...backendProducts,
+      ...localAddedProducts.filter(
+        (local: any) => !backendProducts.some((bp: any) => bp.id === local.id)
+      ),
+    ];
+    setProducts(merged);
+  };
+
+  useEffect(() => {
+    mergeProducts();
+  }, [data]);
 
   const handleAddProduct = async (newProduct: any) => {
-    const updatedLocalProducts = [...localAddedProducts, newProduct];
-    localStorage.setItem('addedProducts', JSON.stringify(updatedLocalProducts));
+    const existing = localStorage.getItem('addedProducts');
+    const updatedLocal = existing ? JSON.parse(existing) : [];
+    updatedLocal.push(newProduct);
+    localStorage.setItem('addedProducts', JSON.stringify(updatedLocal));
+
     closeForm();
+
     await new Promise((res) => setTimeout(res, 100)); // allow form to close
-    await refetch(); // refresh list before test checks for "Product List"
+    await refetch(); // fetch latest backend data
+    mergeProducts(); // merge with local
   };
 
   const toggleProductSelection = (id: string) => {
-    setSelectedProducts(prev =>
-      prev.includes(id) ? prev.filter(pid => pid !== id) : [...prev, id]
+    setSelectedProducts((prev) =>
+      prev.includes(id) ? prev.filter((pid) => pid !== id) : [...prev, id]
     );
   };
 
@@ -64,19 +79,23 @@ export default function AdminPanel() {
     try {
       if (selectedProducts.length === 0) return;
 
-      const backendIdsToDelete = selectedProducts.filter(id =>
-        backendProducts.some(bp => bp.id === id)
+      const backendIdsToDelete = selectedProducts.filter((id) =>
+        data?.products?.some((bp: any) => bp.id === id)
       );
 
       if (backendIdsToDelete.length > 0) {
         await deleteProductsMutation({ variables: { ids: backendIdsToDelete } });
       }
 
-      const filteredLocal = localAddedProducts.filter(p => !selectedProducts.includes(p.id));
+      const localAddedProducts = JSON.parse(localStorage.getItem('addedProducts') || '[]');
+      const filteredLocal = localAddedProducts.filter(
+        (p: any) => !selectedProducts.includes(p.id)
+      );
       localStorage.setItem('addedProducts', JSON.stringify(filteredLocal));
 
       setSelectedProducts([]);
-      refetch();
+      await refetch();
+      mergeProducts();
     } catch (error) {
       console.error('Failed to delete products:', error);
     }
@@ -114,7 +133,6 @@ export default function AdminPanel() {
         </Link>
       </div>
 
-      {/* Heading must be stable for Playwright */}
       <h2 data-testid="product-list-heading" style={{ marginTop: '2rem' }}>
         Product List
       </h2>
@@ -133,7 +151,7 @@ export default function AdminPanel() {
               data-testid={`select-product-${product.id}`}
             />
             <div>
-              <h3>{product.name}</h3>
+              <h3 data-testid={`product-name-${product.name}`}>{product.name}</h3>
               <p>SKU: {product.sku}</p>
               <p>Price: ${Number(product.price).toFixed(2)}</p>
               <p>Category: {product.category}</p>
@@ -143,10 +161,7 @@ export default function AdminPanel() {
       </div>
 
       {isFormOpen && (
-        <AddProductForm
-          onSave={handleAddProduct}
-          onClose={closeForm}
-        />
+        <AddProductForm onSave={handleAddProduct} onClose={closeForm} />
       )}
     </div>
   );
