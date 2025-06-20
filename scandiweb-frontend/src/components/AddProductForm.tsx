@@ -132,7 +132,6 @@ const handleSubmit = async (e: React.FormEvent) => {
 
 if (data?.addProduct) {
   onSave(newProduct);
-  navigate('/admin'); // 👈 redirect to Admin panel or product list
 }
  else {
       alert("Failed to add product. Please try again.");
