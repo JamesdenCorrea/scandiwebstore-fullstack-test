@@ -71,14 +71,21 @@ export default function AdminPanel() {
     mergeProducts();
     setProducts(prev => [...prev]);
 
-    await new Promise((resolve) => {
-      const checkVisible = () => {
-        const el = document.querySelector(`[data-testid="product-name-${newProduct.name}"]`);
-        if (el) return resolve(null);
-        requestAnimationFrame(checkVisible);
-      };
-      checkVisible();
-    });
+await new Promise((resolve) => {
+  const timeout = setTimeout(resolve, 9000); // safety
+  const checkVisible = () => {
+    const el = Array.from(document.querySelectorAll('*'))
+      .find((node) => node.textContent?.includes(newProduct.name));
+    if (el) {
+      clearTimeout(timeout);
+      resolve(null);
+    } else {
+      requestAnimationFrame(checkVisible);
+    }
+  };
+  checkVisible();
+});
+
   };
 
   const toggleProductSelection = (id: string) => {
