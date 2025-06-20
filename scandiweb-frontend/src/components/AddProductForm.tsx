@@ -131,8 +131,11 @@ const handleSubmit = async (e: React.FormEvent) => {
     const { data } = await addProduct({ variables: { input: newProduct } });
 
 if (data?.addProduct) {
-  onSave(newProduct);
+  onSave(newProduct); // update state in AdminPanel
+  await new Promise((res) => setTimeout(res, 300)); // ✅ Give DOM a moment to update
+  navigate('/admin'); // ✅ Let Playwright see the name BEFORE redirect
 }
+
  else {
       alert("Failed to add product. Please try again.");
     }
