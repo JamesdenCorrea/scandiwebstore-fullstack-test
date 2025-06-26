@@ -4,19 +4,6 @@ import DOMPurify from 'dompurify';
 import { useNavigate } from 'react-router-dom';
 import { gql, useMutation } from '@apollo/client';
 
-const FETCH_PRODUCTS = gql`
-  query {
-    products {
-      id
-      name
-      sku
-      price
-      productType
-    }
-  }
-`;
-
-
 const ADD_PRODUCT = gql`
   mutation AddProduct($input: ProductInput!) {
     addProduct(input: $input) {
@@ -27,6 +14,11 @@ const ADD_PRODUCT = gql`
       productType
       category
       description
+      size
+      weight
+      height
+      width
+      length
       attributes {
         name
         value
@@ -35,7 +27,6 @@ const ADD_PRODUCT = gql`
     }
   }
 `;
-
 type Attribute = {
   name: string;
   value: string;
@@ -134,14 +125,13 @@ export default function AddProductForm({ onClose, onSave, formId = 'product_form
   try {
     const { data } = await addProduct({ 
       variables: { input: newProduct },
-      refetchQueries: [{ query: FETCH_PRODUCTS }]
+      refetchQueries: ['products'] // This will refetch the products list after adding
     });
     
     onSave(data?.addProduct);
-setTimeout(() => {
-  navigate('/product-list');
-}, 100);
-
+    setTimeout(() => {
+      navigate('/all');
+    }, 100);
   } catch (error) {
     console.error("Failed to add product:", error);
     // Add user feedback here

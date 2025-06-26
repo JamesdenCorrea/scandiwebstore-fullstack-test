@@ -5,7 +5,7 @@ import AddProductForm from '../components/AddProductForm';
 import styles from './AdminPanel.module.css';
 import { useFormContext } from '../context/FormContext';
 
-export const GET_PRODUCTS = gql`
+const GET_PRODUCTS = gql`
   query GetProducts {
     products {
       id
@@ -27,15 +27,34 @@ export default function AdminPanel() {
   const { data, loading, refetch } = useQuery(GET_PRODUCTS);
   const [deleteProductsMutation] = useMutation(DELETE_PRODUCTS);
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
+
   const { isFormOpen, openForm, closeForm } = useFormContext();
   const navigate = useNavigate();
 
-  const products = data?.products || [];
+  // Combine backend products with locally added products from localStorage
+  const backendProducts = data?.products || [];
+  const localAddedProducts = (() => {
+    try {
+      const stored = localStorage.getItem('addedProducts');
+      if (!stored) return [];
+      return JSON.parse(stored);
+    } catch {
+      return [];
+    }
+  })();
 
-  const handleAddProduct = async (newProduct: any) => {
+  // Merge and dedupe by id (local products have generated IDs)
+  const products = [...backendProducts, ...localAddedProducts].reduce((acc, product) => {
+    if (!acc.find(p => p.id === product.id)) acc.push(product);
+    return acc;
+  }, [] as typeof backendProducts);
+
+  const handleAddProduct = (newProduct: any) => {
+    // Add to localStorage for persistence (simulates backend add)
+    const updatedLocalProducts = [...localAddedProducts, newProduct];
+    localStorage.setItem('addedProducts', JSON.stringify(updatedLocalProducts));
     closeForm();
-    await refetch(); // Important: fetch updated backend data
-    setTimeout(() => navigate('/product-list'), 1000); // 1 second
+    setTimeout(() => navigate('/product-list'), 100);
   };
 
   const toggleProductSelection = (id: string) => {
@@ -48,17 +67,21 @@ export default function AdminPanel() {
     try {
       if (selectedProducts.length === 0) return;
 
-      const backendProductIds = products.map(p => p.id);
-      const backendIdsToDelete = selectedProducts.filter(id =>
-        backendProductIds.includes(id)
-      );
+      // Call backend mutation to delete products by IDs (only those from backend)
+      // Filter IDs that exist in backend products only to avoid deleting localStorage-only products from backend
+      const backendProductIds = backendProducts.map(p => p.id);
+      const backendIdsToDelete = selectedProducts.filter(id => backendProductIds.includes(id));
 
       if (backendIdsToDelete.length > 0) {
         await deleteProductsMutation({ variables: { ids: backendIdsToDelete } });
       }
 
+      // Also remove selected IDs from localStorage addedProducts if any match
+      const filteredLocal = localAddedProducts.filter(p => !selectedProducts.includes(p.id));
+      localStorage.setItem('addedProducts', JSON.stringify(filteredLocal));
+
       setSelectedProducts([]);
-      await refetch();
+      refetch(); // Refresh backend product list
     } catch (error) {
       console.error('Failed to delete products:', error);
     }
@@ -97,7 +120,6 @@ export default function AdminPanel() {
       </div>
 
       <div className={styles.productList}>
-        <h2>Product List</h2>
         {products.map((product) => (
           <div
             key={product.id}
@@ -111,7 +133,7 @@ export default function AdminPanel() {
               data-testid={`select-product-${product.id}`}
             />
             <div>
-              <p>{product.name}</p> // ✅ make it plain text
+              <h3>{product.name}</h3>
               <p>SKU: {product.sku}</p>
               <p>Price: ${Number(product.price).toFixed(2)}</p>
               <p>Category: {product.category}</p>
