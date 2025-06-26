@@ -11,10 +11,11 @@ const FETCH_PRODUCTS = gql`
       name
       sku
       price
-      type
+      productType
     }
   }
 `;
+
 
 const ADD_PRODUCT = gql`
   mutation AddProduct($input: ProductInput!) {
