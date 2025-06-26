@@ -35,7 +35,7 @@ export default function AdminPanel() {
   const handleAddProduct = async (newProduct: any) => {
     closeForm();
     await refetch(); // Important: fetch updated backend data
-    setTimeout(() => navigate('/product-list'), 100);
+    setTimeout(() => navigate('/product-list'), 1000); // 1 second
   };
 
   const toggleProductSelection = (id: string) => {
