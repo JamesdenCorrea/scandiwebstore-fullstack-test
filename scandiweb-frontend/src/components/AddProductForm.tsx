@@ -27,11 +27,6 @@ const ADD_PRODUCT = gql`
       productType
       category
       description
-      size
-      weight
-      height
-      width
-      length
       attributes {
         name
         value
@@ -40,6 +35,7 @@ const ADD_PRODUCT = gql`
     }
   }
 `;
+
 type Attribute = {
   name: string;
   value: string;
