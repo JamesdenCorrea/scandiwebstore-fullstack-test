@@ -111,7 +111,7 @@ export default function AdminPanel() {
               data-testid={`select-product-${product.id}`}
             />
             <div>
-              <h3>{product.name}</h3>
+              <p>{product.name}</p> // ✅ make it plain text
               <p>SKU: {product.sku}</p>
               <p>Price: ${Number(product.price).toFixed(2)}</p>
               <p>Category: {product.category}</p>
