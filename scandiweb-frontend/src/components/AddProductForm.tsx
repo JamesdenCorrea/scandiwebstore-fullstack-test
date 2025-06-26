@@ -8,11 +8,25 @@ const ADD_PRODUCT = gql`
   mutation AddProduct($input: ProductInput!) {
     addProduct(input: $input) {
       id
+      sku
       name
+      price
+      productType
+      category
+      description
+      size
+      weight
+      height
+      width
+      length
+      attributes {
+        name
+        value
+        type
+      }
     }
   }
 `;
-
 type Attribute = {
   name: string;
   value: string;
@@ -82,29 +96,49 @@ export default function AddProductForm({ onClose, onSave, formId = 'product_form
     }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const newProduct = {
-      id: crypto.randomUUID(),
-      ...productData,
-      price: parseFloat(productData.price),
-      attributes: productData.attributes.map(attr => ({
-        ...attr,
-        value: DOMPurify.sanitize(attr.value)
-      }))
-    };
-
-    try {
-      const { data } = await addProduct({ variables: { input: newProduct } });
-      onSave(data.addProduct);
-      setTimeout(() => {
-  navigate('/all');
-}, 100); // 100–200ms is usually enough
-
-    } catch (error) {
-      console.error("Failed to add product:", error);
-    }
+ const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  
+  // Prepare the product data for submission
+  const newProduct = {
+    id: crypto.randomUUID(),
+    sku: productData.sku,
+    name: productData.name,
+    price: parseFloat(productData.price),
+    productType: productData.productType,
+    category: productData.category,
+    description: productData.description,
+    ...(productData.productType === 'DVD' && { size: productData.size }),
+    ...(productData.productType === 'Book' && { weight: productData.weight }),
+    ...(productData.productType === 'Furniture' && { 
+      height: productData.height,
+      width: productData.width,
+      length: productData.length
+    }),
+    attributes: productData.attributes.map(attr => ({
+      name: DOMPurify.sanitize(attr.name),
+      value: DOMPurify.sanitize(attr.value),
+      type: attr.type
+    }))
   };
+
+  try {
+    const { data } = await addProduct({ 
+      variables: { input: newProduct },
+      refetchQueries: ['products'] // This will refetch the products list after adding
+    });
+    
+    onSave(data?.addProduct);
+setTimeout(() => {
+  navigate('/product-list');
+}, 100);
+
+  } catch (error) {
+    console.error("Failed to add product:", error);
+    // Add user feedback here
+    alert("Failed to add product. Please check the console for details.");
+  }
+};
 
   return (
     <div className={styles.formOverlay}>

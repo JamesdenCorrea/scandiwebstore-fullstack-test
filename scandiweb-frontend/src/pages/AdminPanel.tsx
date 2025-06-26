@@ -49,12 +49,13 @@ export default function AdminPanel() {
     return acc;
   }, [] as typeof backendProducts);
 
-const handleAddProduct = (newProduct: any) => {
-  const updatedLocalProducts = [...localAddedProducts, newProduct];
-  localStorage.setItem('addedProducts', JSON.stringify(updatedLocalProducts));
-  closeForm();
-  setTimeout(() => navigate('/all'), 100); // Changed to '/all'
-};
+  const handleAddProduct = (newProduct: any) => {
+    // Add to localStorage for persistence (simulates backend add)
+    const updatedLocalProducts = [...localAddedProducts, newProduct];
+    localStorage.setItem('addedProducts', JSON.stringify(updatedLocalProducts));
+    closeForm();
+    setTimeout(() => navigate('/product-list'), 100);
+  };
 
   const toggleProductSelection = (id: string) => {
     setSelectedProducts(prev =>
@@ -119,6 +120,7 @@ const handleAddProduct = (newProduct: any) => {
       </div>
 
       <div className={styles.productList}>
+        <h2>Product List</h2>
         {products.map((product) => (
           <div
             key={product.id}
