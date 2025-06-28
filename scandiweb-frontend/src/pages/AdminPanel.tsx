@@ -55,10 +55,12 @@ const products = [...backendProducts, ...localAddedProducts].reduce((acc, produc
 
 
 const handleAddProduct = (newProduct: any) => {
+  if (!newProduct?.id) return; // ✅ Guard: don't close on invalid add
+
   const updatedLocalProducts = [...localAddedProducts, newProduct];
   localStorage.setItem('addedProducts', JSON.stringify(updatedLocalProducts));
   closeForm();
-  refetch(); // ✅ re-render the product list instead of navigating
+  refetch(); // update list
 };
 
 

@@ -129,13 +129,11 @@ export default function AddProductForm({ onClose, onSave, formId = 'product_form
     });
     
 if (data?.addProduct?.id) {
-  onSave(data.addProduct);
-  setTimeout(() => {
-    navigate('/all');
-  }, 100);
+  onSave(data.addProduct); // Will close form in AdminPanel
 } else {
   setErrorMessage('Product creation failed. Please check your input.');
 }
+
 
   } catch (error) {
   console.error("Failed to add product:", error);
