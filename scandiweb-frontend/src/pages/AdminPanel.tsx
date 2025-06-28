@@ -57,8 +57,11 @@ const products = [...backendProducts, ...localAddedProducts].reduce((acc, produc
 const handleAddProduct = async (newProduct: any) => {
   const updatedLocalProducts = [...localAddedProducts, newProduct];
   localStorage.setItem('addedProducts', JSON.stringify(updatedLocalProducts));
-  await refetch(); // ✅ ensure product list refreshes
-  closeForm();     // ✅ close the form *after* product list is ready
+await refetch(); // Ensure product list is updated
+setTimeout(() => {
+  closeForm();   // Let DOM update before closing the form
+}, 0);
+    // ✅ close the form *after* product list is ready
 };
 
 
@@ -123,7 +126,8 @@ const handleAddProduct = async (newProduct: any) => {
           ← Back to Category Page
         </Link>
       </div>
-<h2 style={{ display: isFormOpen ? 'none' : 'block' }}>Product List</h2>
+{!isFormOpen && <h2>Product List</h2>}
+
 
       <div className={styles.productList}>
         {products.map((product) => (
