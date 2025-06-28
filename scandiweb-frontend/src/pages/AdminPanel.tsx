@@ -123,7 +123,7 @@ const handleAddProduct = async (newProduct: any) => {
           ← Back to Category Page
         </Link>
       </div>
-{!isFormOpen && <h2>Product List</h2>}
+<h2 style={{ display: isFormOpen ? 'none' : 'block' }}>Product List</h2>
 
       <div className={styles.productList}>
         {products.map((product) => (
