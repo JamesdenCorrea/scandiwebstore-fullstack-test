@@ -57,12 +57,26 @@ const products = [...backendProducts, ...localAddedProducts].reduce((acc, produc
 const handleAddProduct = async (newProduct: any) => {
   const updatedLocalProducts = [...localAddedProducts, newProduct];
   localStorage.setItem('addedProducts', JSON.stringify(updatedLocalProducts));
-await refetch(); // Ensure product list is updated
-setTimeout(() => {
-  closeForm();   // Let DOM update before closing the form
-}, 100);
-    // ✅ close the form *after* product list is ready
+  
+  await refetch(); // ✅ wait for backend refresh
+
+  // 🔁 Wait for React to re-render with the new product before closing the form
+  const checkIfProductRendered = () => {
+    const heading = document.querySelector('h2');
+    const productExists = products.some(p => p.name === newProduct.name);
+    return heading && heading.textContent?.includes("Product List") && productExists;
+  };
+
+  let attempts = 0;
+  const interval = setInterval(() => {
+    if (checkIfProductRendered() || attempts > 10) {
+      clearInterval(interval);
+      closeForm();
+    }
+    attempts++;
+  }, 100);
 };
+
 
 
   const toggleProductSelection = (id: string) => {
@@ -126,7 +140,8 @@ setTimeout(() => {
           ← Back to Category Page
         </Link>
       </div>
-{!isFormOpen && <h2>Product List</h2>}
+{!isFormOpen && <h2 data-testid="product-list-heading">Product List</h2>
+}
 
 
       <div className={styles.productList}>
