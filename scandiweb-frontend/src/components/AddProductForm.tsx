@@ -10,19 +10,8 @@ const ADD_PRODUCT = gql`
       sku
       name
       price
-      productType
       category
-      description
-      size
-      weight
-      height
-      width
-      length
-      attributes {
-        name
-        value
-        type
-      }
+      # Remove unsupported fields
     }
   }
 `;
@@ -112,13 +101,9 @@ export default function AddProductForm({
   };
 
 const handleSubmit = async (e: React.FormEvent) => {
-  if (productData.sku === productData.name) {
-    alert("SKU and Name cannot be identical");
-    return;
-  }
-    e.preventDefault();
-    setIsSubmitting(true);
-    
+  e.preventDefault();
+  setIsSubmitting(true);
+  
     // Validate required fields
     const requiredFields = ['sku', 'name', 'price', 'productType', 'category'];
     const missingFields = requiredFields.filter(field => !productData[field]);
@@ -149,38 +134,29 @@ const handleSubmit = async (e: React.FormEvent) => {
       return;
     }
 
-    try {
-      const newProduct = {
-        id: crypto.randomUUID(),
-        sku: productData.sku,
-        name: productData.name,
-        price: parseFloat(productData.price),
-        productType: productData.productType,
-        category: productData.category,
-        description: productData.description,
-        ...(productData.productType === 'DVD' && { size: productData.size }),
-        ...(productData.productType === 'Book' && { weight: productData.weight }),
-        ...(productData.productType === 'Furniture' && { 
-          height: productData.height,
-          width: productData.width,
-          length: productData.length
-        }),
-        attributes: productData.attributes
-      };
+  try {
+    const newProduct = {
+      sku: productData.sku,
+      name: productData.name,
+      price: parseFloat(productData.price),
+      category: productData.category,
+      description: productData.description,
+      // Remove unsupported fields or map them to what your backend expects
+    };
 
-      const { data } = await addProduct({ 
-        variables: { input: newProduct }
-      });
-      
-      onSave(data?.addProduct);
-      onClose();
-    } catch (error) {
-      console.error("Failed to add product:", error);
-      alert("Failed to add product. Please try again.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+    const { data } = await addProduct({ 
+      variables: { input: newProduct }
+    });
+    
+    onSave(data?.addProduct);
+    onClose();
+  } catch (error) {
+    console.error("Failed to add product:", error);
+    alert("Failed to add product. Please check console for details.");
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   return (
     <div 
