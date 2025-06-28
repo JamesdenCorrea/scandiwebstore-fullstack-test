@@ -64,10 +64,21 @@ export default function AddProductForm({ onClose, onSave, formId = 'product_form
   const navigate = useNavigate();
   const [addProduct] = useMutation(ADD_PRODUCT);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setProductData(prev => ({ ...prev, [name]: DOMPurify.sanitize(value) }));
-  };
+  // In your form's name input, you might want to enforce consistent casing:
+const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  const { name, value } = e.target;
+  let sanitizedValue = DOMPurify.sanitize(value);
+  
+  // For name field, you might want to enforce title case
+  if (name === 'name') {
+    sanitizedValue = sanitizedValue
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+  }
+  
+  setProductData(prev => ({ ...prev, [name]: sanitizedValue }));
+};
 
   const handleAttributeChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -96,10 +107,31 @@ export default function AddProductForm({ onClose, onSave, formId = 'product_form
     }));
   };
 
- const handleSubmit = async (e: React.FormEvent) => {
+const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
   
-  // Prepare the product data for submission
+  // Validate required fields
+  if (!productData.sku || !productData.name || !productData.price) {
+    alert("Please fill in all required fields");
+    return;
+  }
+
+  // Type-specific validation
+  if (productData.productType === 'DVD' && !productData.size) {
+    alert("Please enter size for DVD");
+    return;
+  }
+  if (productData.productType === 'Book' && !productData.weight) {
+    alert("Please enter weight for Book");
+    return;
+  }
+  if (productData.productType === 'Furniture' && 
+      (!productData.height || !productData.width || !productData.length)) {
+    alert("Please enter all dimensions for Furniture");
+    return;
+  }
+
+  // Prepare the product data
   const newProduct = {
     id: crypto.randomUUID(),
     sku: productData.sku,
@@ -115,27 +147,20 @@ export default function AddProductForm({ onClose, onSave, formId = 'product_form
       width: productData.width,
       length: productData.length
     }),
-    attributes: productData.attributes.map(attr => ({
-      name: DOMPurify.sanitize(attr.name),
-      value: DOMPurify.sanitize(attr.value),
-      type: attr.type
-    }))
+    attributes: productData.attributes
   };
 
   try {
     const { data } = await addProduct({ 
-      variables: { input: newProduct },
-      refetchQueries: ['products'] // This will refetch the products list after adding
+      variables: { input: newProduct }
     });
     
     onSave(data?.addProduct);
-    setTimeout(() => {
-      navigate('/all');
-    }, 100);
+    onClose(); // Only close on successful submission
   } catch (error) {
     console.error("Failed to add product:", error);
-    // Add user feedback here
-    alert("Failed to add product. Please check the console for details.");
+    alert("Failed to add product. Please try again.");
+    // Don't close the form on error
   }
 };
 

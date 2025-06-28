@@ -54,10 +54,6 @@ export default function AdminPanel() {
     const updatedLocalProducts = [...localAddedProducts, newProduct];
     localStorage.setItem('addedProducts', JSON.stringify(updatedLocalProducts));
     closeForm();
-    setTimeout(() => {
-  refetch(); // Refresh the product list
-  closeForm();
-}, 100);
   };
 
   const toggleProductSelection = (id: string) => {
