@@ -16,7 +16,7 @@ export default function AdminPanel() {
   const { data, loading, refetch } = useQuery(GET_PRODUCTS);
   const [deleteProductsMutation] = useMutation(DELETE_PRODUCTS);
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
-  const [justAddedId, setJustAddedId] = useState<string | null>(null); // ✅ NEW STATE
+  const [justAddedName, setJustAddedName] = useState<string | null>(null); // ✅ track by name
 
   const { isFormOpen, openForm, closeForm } = useFormContext();
   const navigate = useNavigate();
@@ -43,23 +43,23 @@ export default function AdminPanel() {
     return acc;
   }, [] as typeof backendProducts);
 
-  // ✅ FIXED HANDLE ADD PRODUCT
+  // ✅ FIXED: handleAddProduct tracks product by name
   const handleAddProduct = async (newProduct: any) => {
     const updatedLocalProducts = [...localAddedProducts, newProduct];
     localStorage.setItem('addedProducts', JSON.stringify(updatedLocalProducts));
-    setJustAddedId(newProduct.id); // track the product just added
+    setJustAddedName(newProduct.name); // ✅ track name
     await refetch(); // refresh product list
   };
 
-  // ✅ USE EFFECT TO WAIT FOR PRODUCT TO RENDER BEFORE CLOSING FORM
+  // ✅ FIXED: Wait until the product name is rendered before closing form
   useEffect(() => {
-    if (!justAddedId) return;
-    const isNowInBackend = backendProducts.some(p => p.id === justAddedId);
-    if (isNowInBackend) {
+    if (!justAddedName) return;
+    const isNowVisible = products.some(p => p.name === justAddedName);
+    if (isNowVisible) {
       closeForm();
-      setJustAddedId(null);
+      setJustAddedName(null);
     }
-  }, [backendProducts, justAddedId]);
+  }, [products, justAddedName]);
 
   const toggleProductSelection = (id: string) => {
     setSelectedProducts(prev =>
