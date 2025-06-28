@@ -54,12 +54,13 @@ export default function AdminPanel() {
   // ✅ FIXED: Wait until the product name is rendered before closing form
   useEffect(() => {
     if (!justAddedName) return;
-    const isNowVisible = products.some(p => p.name === justAddedName);
+    const isNowVisible = data?.products?.some(p => p.name === justAddedName);
     if (isNowVisible) {
       closeForm();
       setJustAddedName(null);
     }
-  }, [products, justAddedName]);
+  }, [data, justAddedName]);
+
 
   const toggleProductSelection = (id: string) => {
     setSelectedProducts(prev =>
