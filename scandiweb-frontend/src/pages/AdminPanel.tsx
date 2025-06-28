@@ -100,6 +100,7 @@ export default function AdminPanel() {
             className={styles.addButton}
             data-testid="admin-add-button"
             aria-label="ADD"
+            disabled={isFormOpen}
           >
             ADD
           </button>
@@ -112,30 +113,34 @@ export default function AdminPanel() {
         </Link>
       </div>
 
-      <div className={styles.productList}>
-        {products.map((product) => (
-          <div
-            key={product.id}
-            className={styles.productItem}
-            data-testid={`admin-product-${product.id}`}
-          >
-            <input
-              type="checkbox"
-              checked={selectedProducts.includes(product.id)}
-              onChange={() => toggleProductSelection(product.id)}
-              data-testid={`select-product-${product.id}`}
-            />
-            <div>
-              <h3 data-testid={`product-name-${product.id}`}>
-                {product.name}
-              </h3>
-              <p data-testid={`product-sku-${product.id}`}>SKU: {product.sku}</p>
-              <p>Price: ${Number(product.price).toFixed(2)}</p>
-              <p>Category: {product.category}</p>
+      {!isFormOpen && (
+        <div className={styles.productList}>
+          {products.map((product) => (
+            <div
+              key={product.id}
+              className={styles.productItem}
+              data-testid={`admin-product-${product.id}`}
+            >
+              <input
+                type="checkbox"
+                checked={selectedProducts.includes(product.id)}
+                onChange={() => toggleProductSelection(product.id)}
+                data-testid={`select-product-${product.id}`}
+              />
+              <div>
+                <h3 data-testid={`product-name-${product.id}`}>
+                  {product.name}
+                </h3>
+               <p data-testid={`product-sku-${product.id}`}>
+  Product Code: {product.sku}  {/* Change prefix from "SKU:" */}
+</p>
+                <p>Price: ${Number(product.price).toFixed(2)}</p>
+                <p>Category: {product.category}</p>
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
 
       {isFormOpen && (
         <AddProductForm

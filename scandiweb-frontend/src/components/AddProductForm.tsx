@@ -111,7 +111,11 @@ export default function AddProductForm({
     }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+const handleSubmit = async (e: React.FormEvent) => {
+  if (productData.sku === productData.name) {
+    alert("SKU and Name cannot be identical");
+    return;
+  }
     e.preventDefault();
     setIsSubmitting(true);
     
