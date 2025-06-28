@@ -54,13 +54,13 @@ const products = [...backendProducts, ...localAddedProducts].reduce((acc, produc
 }, [] as typeof backendProducts);
 
 
-  const handleAddProduct = (newProduct: any) => {
-    // Add to localStorage for persistence (simulates backend add)
-    const updatedLocalProducts = [...localAddedProducts, newProduct];
-    localStorage.setItem('addedProducts', JSON.stringify(updatedLocalProducts));
-    closeForm();
-    refetch(); // reload product list from backend
-  };
+const handleAddProduct = async (newProduct: any) => {
+  const updatedLocalProducts = [...localAddedProducts, newProduct];
+  localStorage.setItem('addedProducts', JSON.stringify(updatedLocalProducts));
+  await refetch(); // ✅ ensure product list refreshes
+  closeForm();     // ✅ close the form *after* product list is ready
+};
+
 
   const toggleProductSelection = (id: string) => {
     setSelectedProducts(prev =>
@@ -123,7 +123,7 @@ const products = [...backendProducts, ...localAddedProducts].reduce((acc, produc
           ← Back to Category Page
         </Link>
       </div>
-{!isFormOpen && <h2>Product List</h2>}
+{!isFormOpen && <h2 data-testid="product-list-heading">Product List</h2>}
       <div className={styles.productList}>
         {products.map((product) => (
           <div
