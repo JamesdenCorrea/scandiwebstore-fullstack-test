@@ -124,6 +124,7 @@ const products = [...backendProducts, ...localAddedProducts].reduce((acc, produc
         </Link>
       </div>
 
+<h2>Product List</h2>
       <div className={styles.productList}>
         {products.map((product) => (
           <div
