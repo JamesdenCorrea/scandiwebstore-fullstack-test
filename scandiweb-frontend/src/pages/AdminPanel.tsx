@@ -16,12 +16,11 @@ export default function AdminPanel() {
   const { data, loading, refetch } = useQuery(GET_PRODUCTS);
   const [deleteProductsMutation] = useMutation(DELETE_PRODUCTS);
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
-  const [justAddedName, setJustAddedName] = useState<string | null>(null); // ✅ track by name
+  const [justAddedName, setJustAddedName] = useState<string | null>(null);
 
   const { isFormOpen, openForm, closeForm } = useFormContext();
   const navigate = useNavigate();
 
-  // Combine backend products with locally added products from localStorage
   const backendProducts = data?.products || [];
   const localAddedProducts = (() => {
     try {
@@ -33,7 +32,6 @@ export default function AdminPanel() {
     }
   })();
 
-  // Merge and dedupe by id (local products have generated IDs)
   const products = [...backendProducts, ...localAddedProducts].reduce((acc, product) => {
     if (product && typeof product === 'object' && product.id) {
       if (!acc.find(p => p.id === product.id)) {
@@ -43,24 +41,36 @@ export default function AdminPanel() {
     return acc;
   }, [] as typeof backendProducts);
 
-  // ✅ FIXED: handleAddProduct tracks product by name
   const handleAddProduct = async (newProduct: any) => {
     const updatedLocalProducts = [...localAddedProducts, newProduct];
     localStorage.setItem('addedProducts', JSON.stringify(updatedLocalProducts));
-    setJustAddedName(newProduct.name); // ✅ track name
-    await refetch(); // refresh product list
+    setJustAddedName(newProduct.name);
+    await refetch();
   };
 
-  // ✅ FIXED: Wait until the product name is rendered before closing form
+  // ✅ Use DOM check for actual product visibility
   useEffect(() => {
     if (!justAddedName) return;
-    const isNowVisible = data?.products?.some(p => p.name === justAddedName);
-    if (isNowVisible) {
-      closeForm();
-      setJustAddedName(null);
-    }
-  }, [data, justAddedName]);
 
+    const interval = setInterval(() => {
+      const element = document.querySelector('h3');
+      const match = Array.from(document.querySelectorAll('h3')).find(
+        h3 => h3.textContent === justAddedName
+      );
+      if (match) {
+        clearInterval(interval);
+        closeForm();
+        setJustAddedName(null);
+      }
+    }, 100);
+
+    const timeout = setTimeout(() => clearInterval(interval), 10000);
+
+    return () => {
+      clearInterval(interval);
+      clearTimeout(timeout);
+    };
+  }, [justAddedName]);
 
   const toggleProductSelection = (id: string) => {
     setSelectedProducts(prev =>
@@ -121,7 +131,6 @@ export default function AdminPanel() {
         </Link>
       </div>
 
-      {/* ✅ Always show heading so test can find it */}
       <h2 data-testid="product-list-heading">Product List</h2>
 
       <div className={styles.productList}>
