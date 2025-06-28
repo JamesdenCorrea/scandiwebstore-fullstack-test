@@ -131,7 +131,6 @@ export default function AddProductForm({ onClose, onSave, formId = 'product_form
     
     onSave(data?.addProduct);
     setTimeout(() => {
-      navigate('/all');
     }, 100);
   } catch (error) {
     console.error("Failed to add product:", error);
