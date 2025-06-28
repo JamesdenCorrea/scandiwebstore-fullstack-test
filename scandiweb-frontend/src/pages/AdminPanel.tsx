@@ -54,13 +54,13 @@ const products = [...backendProducts, ...localAddedProducts].reduce((acc, produc
 }, [] as typeof backendProducts);
 
 
-  const handleAddProduct = (newProduct: any) => {
-    // Add to localStorage for persistence (simulates backend add)
-    const updatedLocalProducts = [...localAddedProducts, newProduct];
-    localStorage.setItem('addedProducts', JSON.stringify(updatedLocalProducts));
-    closeForm();
-    setTimeout(() => navigate('/product-list'), 100);
-  };
+const handleAddProduct = (newProduct: any) => {
+  const updatedLocalProducts = [...localAddedProducts, newProduct];
+  localStorage.setItem('addedProducts', JSON.stringify(updatedLocalProducts));
+  closeForm();
+  refetch(); // ✅ re-render the product list instead of navigating
+};
+
 
   const toggleProductSelection = (id: string) => {
     setSelectedProducts(prev =>

@@ -58,6 +58,8 @@ export default function AddProductForm({ onClose, onSave, formId = 'product_form
     value: '',
     type: 'text'
   });
+  const [errorMessage, setErrorMessage] = useState('');
+
 
   const navigate = useNavigate();
   const [addProduct] = useMutation(ADD_PRODUCT);
@@ -126,15 +128,20 @@ export default function AddProductForm({ onClose, onSave, formId = 'product_form
       refetchQueries: ['products'] // This will refetch the products list after adding
     });
     
-    onSave(data?.addProduct);
-    setTimeout(() => {
-      navigate('/all');
-    }, 100);
+if (data?.addProduct?.id) {
+  onSave(data.addProduct);
+  setTimeout(() => {
+    navigate('/all');
+  }, 100);
+} else {
+  setErrorMessage('Product creation failed. Please check your input.');
+}
+
   } catch (error) {
-    console.error("Failed to add product:", error);
-    // Add user feedback here
-    alert("Failed to add product. Please check the console for details.");
-  }
+  console.error("Failed to add product:", error);
+  setErrorMessage("Failed to add product. Please check your input or try again.");
+}
+
 };
 
   return (
@@ -145,6 +152,11 @@ export default function AddProductForm({ onClose, onSave, formId = 'product_form
         </button>
 
         <h2>Add New Product</h2>
+{errorMessage && (
+  <div className={styles.errorMessage} data-testid="form-error-message">
+    {errorMessage}
+  </div>
+)}
 
         <form id={formId} onSubmit={handleSubmit} data-testid="product-form">
           <div className={styles.formGroup}>
