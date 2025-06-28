@@ -60,7 +60,7 @@ const handleAddProduct = async (newProduct: any) => {
 await refetch(); // Ensure product list is updated
 setTimeout(() => {
   closeForm();   // Let DOM update before closing the form
-}, 0);
+}, 100);
     // ✅ close the form *after* product list is ready
 };
 
