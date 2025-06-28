@@ -54,7 +54,10 @@ export default function AdminPanel() {
     const updatedLocalProducts = [...localAddedProducts, newProduct];
     localStorage.setItem('addedProducts', JSON.stringify(updatedLocalProducts));
     closeForm();
-    setTimeout(() => navigate('/product-list'), 100);
+    setTimeout(() => {
+  refetch(); // Refresh the product list
+  closeForm();
+}, 100);
   };
 
   const toggleProductSelection = (id: string) => {
@@ -92,7 +95,7 @@ export default function AdminPanel() {
   return (
     <div className={styles.adminContainer}>
       <div className={styles.header}>
-        <h1 data-testid="admin-heading">Product Management</h1>
+        <h1 data-testid="admin-heading">Product List</h1>
         <div>
           <button
             onClick={deleteSelectedProducts}
