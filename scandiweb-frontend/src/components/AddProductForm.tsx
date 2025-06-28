@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import styles from './AddProductForm.module.css';
 import DOMPurify from 'dompurify';
-import { useNavigate } from 'react-router-dom';
 import { gql, useMutation } from '@apollo/client';
 
 const ADD_PRODUCT = gql`
@@ -27,6 +26,7 @@ const ADD_PRODUCT = gql`
     }
   }
 `;
+
 type Attribute = {
   name: string;
   value: string;
@@ -37,9 +37,15 @@ type ProductFormProps = {
   onClose: () => void;
   onSave: (product: any) => void;
   formId?: string;
+  isFormOpen: boolean;
 };
 
-export default function AddProductForm({ onClose, onSave, formId = 'product_form' }: ProductFormProps) {
+export default function AddProductForm({ 
+  onClose, 
+  onSave, 
+  formId = 'product_form',
+  isFormOpen 
+}: ProductFormProps) {
   const [productData, setProductData] = useState({
     sku: '',
     name: '',
@@ -61,24 +67,22 @@ export default function AddProductForm({ onClose, onSave, formId = 'product_form
     type: 'text'
   });
 
-  const navigate = useNavigate();
   const [addProduct] = useMutation(ADD_PRODUCT);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // In your form's name input, you might want to enforce consistent casing:
-const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-  const { name, value } = e.target;
-  let sanitizedValue = DOMPurify.sanitize(value);
-  
-  // For name field, you might want to enforce title case
-  if (name === 'name') {
-    sanitizedValue = sanitizedValue
-      .split(' ')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-      .join(' ');
-  }
-  
-  setProductData(prev => ({ ...prev, [name]: sanitizedValue }));
-};
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    let sanitizedValue = DOMPurify.sanitize(value);
+    
+    if (name === 'name') {
+      sanitizedValue = sanitizedValue
+        .split(' ')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+        .join(' ');
+    }
+    
+    setProductData(prev => ({ ...prev, [name]: sanitizedValue }));
+  };
 
   const handleAttributeChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -107,67 +111,85 @@ const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement 
     }));
   };
 
-const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  
-  // Validate required fields
-  if (!productData.sku || !productData.name || !productData.price) {
-    alert("Please fill in all required fields");
-    return;
-  }
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    
+    // Validate required fields
+    const requiredFields = ['sku', 'name', 'price', 'productType', 'category'];
+    const missingFields = requiredFields.filter(field => !productData[field]);
+    
+    if (missingFields.length > 0) {
+      alert(`Missing required fields: ${missingFields.join(', ')}`);
+      setIsSubmitting(false);
+      return;
+    }
 
-  // Type-specific validation
-  if (productData.productType === 'DVD' && !productData.size) {
-    alert("Please enter size for DVD");
-    return;
-  }
-  if (productData.productType === 'Book' && !productData.weight) {
-    alert("Please enter weight for Book");
-    return;
-  }
-  if (productData.productType === 'Furniture' && 
-      (!productData.height || !productData.width || !productData.length)) {
-    alert("Please enter all dimensions for Furniture");
-    return;
-  }
+    // Type-specific validation
+    if (productData.productType === 'DVD' && !productData.size) {
+      alert("Please enter size for DVD");
+      setIsSubmitting(false);
+      return;
+    }
 
-  // Prepare the product data
-  const newProduct = {
-    id: crypto.randomUUID(),
-    sku: productData.sku,
-    name: productData.name,
-    price: parseFloat(productData.price),
-    productType: productData.productType,
-    category: productData.category,
-    description: productData.description,
-    ...(productData.productType === 'DVD' && { size: productData.size }),
-    ...(productData.productType === 'Book' && { weight: productData.weight }),
-    ...(productData.productType === 'Furniture' && { 
-      height: productData.height,
-      width: productData.width,
-      length: productData.length
-    }),
-    attributes: productData.attributes
+    if (productData.productType === 'Book' && !productData.weight) {
+      alert("Please enter weight for Book");
+      setIsSubmitting(false);
+      return;
+    }
+
+    if (productData.productType === 'Furniture' && 
+        (!productData.height || !productData.width || !productData.length)) {
+      alert("Please enter all dimensions for Furniture");
+      setIsSubmitting(false);
+      return;
+    }
+
+    try {
+      const newProduct = {
+        id: crypto.randomUUID(),
+        sku: productData.sku,
+        name: productData.name,
+        price: parseFloat(productData.price),
+        productType: productData.productType,
+        category: productData.category,
+        description: productData.description,
+        ...(productData.productType === 'DVD' && { size: productData.size }),
+        ...(productData.productType === 'Book' && { weight: productData.weight }),
+        ...(productData.productType === 'Furniture' && { 
+          height: productData.height,
+          width: productData.width,
+          length: productData.length
+        }),
+        attributes: productData.attributes
+      };
+
+      const { data } = await addProduct({ 
+        variables: { input: newProduct }
+      });
+      
+      onSave(data?.addProduct);
+      onClose();
+    } catch (error) {
+      console.error("Failed to add product:", error);
+      alert("Failed to add product. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  try {
-    const { data } = await addProduct({ 
-      variables: { input: newProduct }
-    });
-    
-    onSave(data?.addProduct);
-    onClose(); // Only close on successful submission
-  } catch (error) {
-    console.error("Failed to add product:", error);
-    alert("Failed to add product. Please try again.");
-    // Don't close the form on error
-  }
-};
-
   return (
-    <div className={styles.formOverlay}>
+    <div 
+      className={styles.formOverlay} 
+      data-testid="product-form-overlay"
+      style={{ display: isFormOpen ? 'block' : 'none' }}
+    >
       <div className={styles.formContainer}>
-        <button className={styles.closeButton} onClick={onClose} data-testid="close-form-button">
+        <button 
+          className={styles.closeButton} 
+          onClick={onClose} 
+          data-testid="close-form-button"
+        >
           &times;
         </button>
 
@@ -383,11 +405,21 @@ const handleSubmit = async (e: React.FormEvent) => {
           </div>
 
           <div className={styles.formActions}>
-            <button type="button" className={styles.cancelButton} onClick={onClose}>
+            <button 
+              type="button" 
+              className={styles.cancelButton} 
+              onClick={onClose}
+              disabled={isSubmitting}
+            >
               Cancel
             </button>
-            <button type="submit" className={styles.saveButton} data-testid="save-product-button">
-              Save Product
+            <button 
+              type="submit" 
+              className={styles.saveButton} 
+              data-testid="save-product-button"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? 'Saving...' : 'Save Product'}
             </button>
           </div>
         </form>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { gql, useQuery, useMutation } from '@apollo/client';
 import AddProductForm from '../components/AddProductForm';
 import styles from './AdminPanel.module.css';
@@ -27,32 +27,29 @@ export default function AdminPanel() {
   const { data, loading, refetch } = useQuery(GET_PRODUCTS);
   const [deleteProductsMutation] = useMutation(DELETE_PRODUCTS);
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
-
   const { isFormOpen, openForm, closeForm } = useFormContext();
-  const navigate = useNavigate();
 
   // Combine backend products with locally added products from localStorage
   const backendProducts = data?.products || [];
   const localAddedProducts = (() => {
     try {
       const stored = localStorage.getItem('addedProducts');
-      if (!stored) return [];
-      return JSON.parse(stored);
+      return stored ? JSON.parse(stored) : [];
     } catch {
       return [];
     }
   })();
 
-  // Merge and dedupe by id (local products have generated IDs)
+  // Merge and dedupe by id
   const products = [...backendProducts, ...localAddedProducts].reduce((acc, product) => {
     if (!acc.find(p => p.id === product.id)) acc.push(product);
     return acc;
   }, [] as typeof backendProducts);
 
   const handleAddProduct = (newProduct: any) => {
-    // Add to localStorage for persistence (simulates backend add)
     const updatedLocalProducts = [...localAddedProducts, newProduct];
     localStorage.setItem('addedProducts', JSON.stringify(updatedLocalProducts));
+    refetch();
     closeForm();
   };
 
@@ -66,8 +63,6 @@ export default function AdminPanel() {
     try {
       if (selectedProducts.length === 0) return;
 
-      // Call backend mutation to delete products by IDs (only those from backend)
-      // Filter IDs that exist in backend products only to avoid deleting localStorage-only products from backend
       const backendProductIds = backendProducts.map(p => p.id);
       const backendIdsToDelete = selectedProducts.filter(id => backendProductIds.includes(id));
 
@@ -75,12 +70,11 @@ export default function AdminPanel() {
         await deleteProductsMutation({ variables: { ids: backendIdsToDelete } });
       }
 
-      // Also remove selected IDs from localStorage addedProducts if any match
       const filteredLocal = localAddedProducts.filter(p => !selectedProducts.includes(p.id));
       localStorage.setItem('addedProducts', JSON.stringify(filteredLocal));
 
       setSelectedProducts([]);
-      refetch(); // Refresh backend product list
+      refetch();
     } catch (error) {
       console.error('Failed to delete products:', error);
     }
@@ -132,8 +126,10 @@ export default function AdminPanel() {
               data-testid={`select-product-${product.id}`}
             />
             <div>
-              <h3>{product.name}</h3>
-              <p>SKU: {product.sku}</p>
+              <h3 data-testid={`product-name-${product.id}`}>
+                {product.name}
+              </h3>
+              <p data-testid={`product-sku-${product.id}`}>SKU: {product.sku}</p>
               <p>Price: ${Number(product.price).toFixed(2)}</p>
               <p>Category: {product.category}</p>
             </div>
@@ -145,6 +141,8 @@ export default function AdminPanel() {
         <AddProductForm
           onSave={handleAddProduct}
           onClose={closeForm}
+          isFormOpen={isFormOpen}
+          data-testid="add-product-form"
         />
       )}
     </div>
