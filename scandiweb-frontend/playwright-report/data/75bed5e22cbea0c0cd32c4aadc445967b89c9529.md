@@ -25,7 +25,7 @@
   - button "Cart with 0 items":
     - img
 - paragraph: "Error loading products: Failed to fetch"
-- heading "All" [level=1]
+- heading "Tech" [level=1]
 - heading "Product List" [level=1]
 - main
 ```

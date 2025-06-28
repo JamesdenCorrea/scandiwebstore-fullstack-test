@@ -151,10 +151,15 @@ if (data?.addProduct?.id) {
 
         <h2>Add New Product</h2>
 {errorMessage && (
-  <div className={styles.errorMessage} data-testid="form-error-message">
+  <div
+    className={styles.errorMessage}
+    data-testid="form-error-message"
+    role="alert"  // 👈 THIS is the key fix
+  >
     {errorMessage}
   </div>
 )}
+
 
         <form id={formId} onSubmit={handleSubmit} data-testid="product-form">
           <div className={styles.formGroup}>
