@@ -108,46 +108,50 @@ export default function CategoryListingPage() {
 };
 
 
-  const products: Product[] = useMemo(() => {
-    if (!data?.products) {
-      console.log('[GraphQL] No products returned');
-      return [];
-    }
+const products: Product[] = useMemo(() => {
+  if (!data?.products) {
+    console.log('[GraphQL] No products returned');
+    return [];
+  }
 
-    const localProductsRaw = localStorage.getItem("addedProducts");
-const localProducts: RawProduct[] = localProductsRaw ? JSON.parse(localProductsRaw) : [];
-
-const mergedProducts = [...data.products, ...localProducts];
-
-return mergedProducts.map((p: RawProduct) => {
   const fallbackImage = 'https://via.placeholder.com/300';
-  const gallery = p.gallery && p.gallery.length > 0 ? p.gallery : [p.image_url || fallbackImage];
-  const uniqueGallery = Array.from(new Set([p.image_url, ...gallery]));
 
-  const stockStatus = STOCK_OVERRIDES[p.id] !== undefined 
-    ? STOCK_OVERRIDES[p.id] 
-    : p.in_stock > 0;
+  const localProductsRaw = localStorage.getItem("addedProducts");
+  const localProducts: RawProduct[] = localProductsRaw ? JSON.parse(localProductsRaw) : [];
 
-  const convertedPrice = parseFloat((p.price * currencyRates[currency]).toFixed(2));
+  const mergedProducts = [...data.products, ...localProducts];
 
-  return {
-    id: p.id,
-    sku: p.sku,
-    name: p.name,
-    price: convertedPrice,
-    type: p.type,
-    category: p.category,
-    brand: p.brand ?? '',
-    image_url: p.image_url || fallbackImage,
-    image: p.image_url || fallbackImage,
-    inStock: stockStatus,
-    description: p.description,
-    attributes: p.attributes || [],
-    gallery: uniqueGallery,
-  };
-});
+  return mergedProducts
+    .filter((p): p is RawProduct => p !== null && typeof p === 'object')
+    .map((p) => {
+      const rawGallery = Array.isArray(p.gallery) ? p.gallery : [];
+      const gallery = rawGallery.length > 0 ? rawGallery : [p.image_url || fallbackImage];
+      const uniqueGallery = Array.from(new Set([p.image_url, ...gallery].filter(Boolean)));
 
-  }, [data, currency]);
+      const stockStatus = STOCK_OVERRIDES[p.id] !== undefined
+        ? STOCK_OVERRIDES[p.id]
+        : p.in_stock > 0;
+
+      const convertedPrice = parseFloat((p.price * currencyRates[currency]).toFixed(2));
+
+      return {
+        id: p.id,
+        sku: p.sku,
+        name: p.name,
+        price: convertedPrice,
+        type: p.type,
+        category: p.category,
+        brand: p.brand ?? '',
+        image_url: p.image_url || fallbackImage,
+        image: p.image_url || fallbackImage,
+        inStock: stockStatus,
+        description: p.description,
+        attributes: p.attributes || [],
+        gallery: uniqueGallery,
+      };
+    });
+}, [data, currency]);
+
 
 const filteredProducts = useMemo(() => {
   if (selectedCategory === 'All') return products;
@@ -278,4 +282,4 @@ aria-level={1}
       </div>
     </div>
   );
-}
+  }

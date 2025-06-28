@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import styles from './AddProductForm.module.css';
 import DOMPurify from 'dompurify';
+import { useNavigate } from 'react-router-dom';
 import { gql, useMutation } from '@apollo/client';
 
 const ADD_PRODUCT = gql`
@@ -11,7 +12,15 @@ const ADD_PRODUCT = gql`
       name
       price
       category
-      # Remove unsupported fields
+      description
+      attributes {
+        name
+        value
+        type
+      }
+      image_url
+      brand
+      in_stock
     }
   }
 `;
@@ -26,15 +35,9 @@ type ProductFormProps = {
   onClose: () => void;
   onSave: (product: any) => void;
   formId?: string;
-  isFormOpen: boolean;
 };
 
-export default function AddProductForm({ 
-  onClose, 
-  onSave, 
-  formId = 'product_form',
-  isFormOpen 
-}: ProductFormProps) {
+export default function AddProductForm({ onClose, onSave, formId = 'product_form' }: ProductFormProps) {
   const [productData, setProductData] = useState({
     sku: '',
     name: '',
@@ -56,21 +59,12 @@ export default function AddProductForm({
     type: 'text'
   });
 
+  const navigate = useNavigate();
   const [addProduct] = useMutation(ADD_PRODUCT);
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    let sanitizedValue = DOMPurify.sanitize(value);
-    
-    if (name === 'name') {
-      sanitizedValue = sanitizedValue
-        .split(' ')
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-        .join(' ');
-    }
-    
-    setProductData(prev => ({ ...prev, [name]: sanitizedValue }));
+    setProductData(prev => ({ ...prev, [name]: DOMPurify.sanitize(value) }));
   };
 
   const handleAttributeChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -100,76 +94,53 @@ export default function AddProductForm({
     }));
   };
 
-const handleSubmit = async (e: React.FormEvent) => {
+ const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
-  setIsSubmitting(true);
   
-    // Validate required fields
-    const requiredFields = ['sku', 'name', 'price', 'productType', 'category'];
-    const missingFields = requiredFields.filter(field => !productData[field]);
-    
-    if (missingFields.length > 0) {
-      alert(`Missing required fields: ${missingFields.join(', ')}`);
-      setIsSubmitting(false);
-      return;
-    }
-
-    // Type-specific validation
-    if (productData.productType === 'DVD' && !productData.size) {
-      alert("Please enter size for DVD");
-      setIsSubmitting(false);
-      return;
-    }
-
-    if (productData.productType === 'Book' && !productData.weight) {
-      alert("Please enter weight for Book");
-      setIsSubmitting(false);
-      return;
-    }
-
-    if (productData.productType === 'Furniture' && 
-        (!productData.height || !productData.width || !productData.length)) {
-      alert("Please enter all dimensions for Furniture");
-      setIsSubmitting(false);
-      return;
-    }
+  // Prepare the product data for submission
+  const newProduct = {
+    id: crypto.randomUUID(),
+    sku: productData.sku,
+    name: productData.name,
+    price: parseFloat(productData.price),
+    productType: productData.productType,
+    category: productData.category,
+    description: productData.description,
+    ...(productData.productType === 'DVD' && { size: productData.size }),
+    ...(productData.productType === 'Book' && { weight: productData.weight }),
+    ...(productData.productType === 'Furniture' && { 
+      height: productData.height,
+      width: productData.width,
+      length: productData.length
+    }),
+    attributes: productData.attributes.map(attr => ({
+      name: DOMPurify.sanitize(attr.name),
+      value: DOMPurify.sanitize(attr.value),
+      type: attr.type
+    }))
+  };
 
   try {
-    const newProduct = {
-      sku: productData.sku,
-      name: productData.name,
-      price: parseFloat(productData.price),
-      category: productData.category,
-      description: productData.description,
-      // Remove unsupported fields or map them to what your backend expects
-    };
-
     const { data } = await addProduct({ 
-      variables: { input: newProduct }
+      variables: { input: newProduct },
+      refetchQueries: ['products'] // This will refetch the products list after adding
     });
     
     onSave(data?.addProduct);
-    onClose();
+    setTimeout(() => {
+      navigate('/all');
+    }, 100);
   } catch (error) {
     console.error("Failed to add product:", error);
-    alert("Failed to add product. Please check console for details.");
-  } finally {
-    setIsSubmitting(false);
+    // Add user feedback here
+    alert("Failed to add product. Please check the console for details.");
   }
 };
 
   return (
-    <div 
-      className={styles.formOverlay} 
-      data-testid="product-form-overlay"
-      style={{ display: isFormOpen ? 'block' : 'none' }}
-    >
+    <div className={styles.formOverlay}>
       <div className={styles.formContainer}>
-        <button 
-          className={styles.closeButton} 
-          onClick={onClose} 
-          data-testid="close-form-button"
-        >
+        <button className={styles.closeButton} onClick={onClose} data-testid="close-form-button">
           &times;
         </button>
 
@@ -385,21 +356,11 @@ const handleSubmit = async (e: React.FormEvent) => {
           </div>
 
           <div className={styles.formActions}>
-            <button 
-              type="button" 
-              className={styles.cancelButton} 
-              onClick={onClose}
-              disabled={isSubmitting}
-            >
+            <button type="button" className={styles.cancelButton} onClick={onClose}>
               Cancel
             </button>
-            <button 
-              type="submit" 
-              className={styles.saveButton} 
-              data-testid="save-product-button"
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? 'Saving...' : 'Save Product'}
+            <button type="submit" className={styles.saveButton} data-testid="save-product-button">
+              Save Product
             </button>
           </div>
         </form>
