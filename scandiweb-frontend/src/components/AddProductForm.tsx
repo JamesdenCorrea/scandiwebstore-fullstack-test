@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import styles from './AddProductForm.module.css';
 import DOMPurify from 'dompurify';
-import { useNavigate } from 'react-router-dom';
 import { gql, useMutation } from '@apollo/client';
 import { GET_PRODUCTS } from '../graphql/queries';
 
@@ -62,7 +61,6 @@ export default function AddProductForm({ onClose, onSave, formId = 'product_form
     type: 'text'
   });
 
-  const navigate = useNavigate();
   const [addProduct] = useMutation(ADD_PRODUCT);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -105,7 +103,7 @@ export default function AddProductForm({ onClose, onSave, formId = 'product_form
     id: crypto.randomUUID(),
     sku: productData.sku,
     name: productData.name,
-    price: parseFloat(productData.price),
+    price: parseFloat(productData.price) || 0, // fallback in case input is invalid
     productType: productData.productType,
     category: productData.category,
     description: productData.description,
@@ -129,9 +127,7 @@ export default function AddProductForm({ onClose, onSave, formId = 'product_form
       refetchQueries: [{ query: GET_PRODUCTS }] // This will refetch the products list after adding
     });
     
-    onSave(data?.addProduct);
-    setTimeout(() => {
-    }, 100);
+    await onSave(data?.addProduct); // ensures form only closes after product list updates
   } catch (error) {
     console.error("Failed to add product:", error);
     // Add user feedback here
