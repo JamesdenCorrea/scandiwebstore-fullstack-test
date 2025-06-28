@@ -54,15 +54,13 @@ const products = [...backendProducts, ...localAddedProducts].reduce((acc, produc
 }, [] as typeof backendProducts);
 
 
-const handleAddProduct = (newProduct: any) => {
-  if (!newProduct?.id) return; // ✅ Guard: don't close on invalid add
-
-  const updatedLocalProducts = [...localAddedProducts, newProduct];
-  localStorage.setItem('addedProducts', JSON.stringify(updatedLocalProducts));
-  closeForm();
-  refetch(); // update list
-};
-
+  const handleAddProduct = (newProduct: any) => {
+    // Add to localStorage for persistence (simulates backend add)
+    const updatedLocalProducts = [...localAddedProducts, newProduct];
+    localStorage.setItem('addedProducts', JSON.stringify(updatedLocalProducts));
+    closeForm();
+    setTimeout(() => navigate('/product-list'), 100);
+  };
 
   const toggleProductSelection = (id: string) => {
     setSelectedProducts(prev =>
@@ -126,7 +124,6 @@ const handleAddProduct = (newProduct: any) => {
         </Link>
       </div>
 
-<h2>Product List</h2>
       <div className={styles.productList}>
         {products.map((product) => (
           <div
