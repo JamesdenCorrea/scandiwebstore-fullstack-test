@@ -3,6 +3,9 @@ import styles from './AddProductForm.module.css';
 import DOMPurify from 'dompurify';
 import { useNavigate } from 'react-router-dom';
 import { gql, useMutation } from '@apollo/client';
+import { GET_PRODUCTS } from '../graphql/queries';
+
+
 
 const ADD_PRODUCT = gql`
   mutation AddProduct($input: ProductInput!) {
@@ -123,7 +126,7 @@ export default function AddProductForm({ onClose, onSave, formId = 'product_form
   try {
     const { data } = await addProduct({ 
       variables: { input: newProduct },
-      refetchQueries: ['products'] // This will refetch the products list after adding
+      refetchQueries: [{ query: GET_PRODUCTS }] // This will refetch the products list after adding
     });
     
     onSave(data?.addProduct);

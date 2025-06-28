@@ -4,18 +4,12 @@ import { gql, useQuery, useMutation } from '@apollo/client';
 import AddProductForm from '../components/AddProductForm';
 import styles from './AdminPanel.module.css';
 import { useFormContext } from '../context/FormContext';
+import { GET_PRODUCTS } from '../graphql/queries';
 
-const GET_PRODUCTS = gql`
-  query GetProducts {
-    products {
-      id
-      sku
-      name
-      price
-      category
-    }
-  }
-`;
+
+// Change this in AdminPanel.tsx
+
+
 
 const DELETE_PRODUCTS = gql`
   mutation DeleteProducts($ids: [String!]!) {
