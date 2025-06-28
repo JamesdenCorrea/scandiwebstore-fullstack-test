@@ -59,7 +59,7 @@ const products = [...backendProducts, ...localAddedProducts].reduce((acc, produc
     const updatedLocalProducts = [...localAddedProducts, newProduct];
     localStorage.setItem('addedProducts', JSON.stringify(updatedLocalProducts));
     closeForm();
-    setTimeout(() => navigate('/product-list'), 100);
+    refetch(); // reload product list from backend
   };
 
   const toggleProductSelection = (id: string) => {
