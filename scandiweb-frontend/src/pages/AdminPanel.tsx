@@ -49,28 +49,30 @@ export default function AdminPanel() {
   };
 
   // ✅ Use DOM check for actual product visibility
-  useEffect(() => {
-    if (!justAddedName) return;
+// ✅ Use DOM check for actual product visibility
+useEffect(() => {
+  if (!justAddedName) return;
 
-    const interval = setInterval(() => {
-      const element = document.querySelector('h3');
-      const match = Array.from(document.querySelectorAll('h3')).find(
-        h3 => h3.textContent === justAddedName
-      );
-      if (match) {
-        clearInterval(interval);
-        closeForm();
-        setJustAddedName(null);
-      }
-    }, 100);
-
-    const timeout = setTimeout(() => clearInterval(interval), 10000);
-
-    return () => {
+  const interval = setInterval(() => {
+    const element = document.querySelector('h3');
+    const match = Array.from(document.querySelectorAll('h3')).find(
+      h3 => h3.textContent === justAddedName
+    );
+    if (match) {
       clearInterval(interval);
-      clearTimeout(timeout);
-    };
-  }, [justAddedName]);
+      closeForm();
+      setJustAddedName(null);
+    }
+  }, 100);
+
+  const timeout = setTimeout(() => clearInterval(interval), 10000);
+
+  return () => {
+    clearInterval(interval);
+    clearTimeout(timeout);
+  };
+}, [justAddedName]);
+
 
   const toggleProductSelection = (id: string) => {
     setSelectedProducts(prev =>
