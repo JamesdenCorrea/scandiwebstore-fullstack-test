@@ -138,7 +138,7 @@ useEffect(() => {
         </Link>
       </div>
 
-      <h2 data-testid="product-list-heading">Product List</h2>
+      {!isFormOpen && <h2 data-testid="product-list-heading">Product List</h2>}
 
       <div className={styles.productList}>
         {products.map((product) => (

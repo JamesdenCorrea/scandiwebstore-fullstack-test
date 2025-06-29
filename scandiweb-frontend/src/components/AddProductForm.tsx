@@ -100,26 +100,28 @@ export default function AddProductForm({ onClose, onSave, formId = 'product_form
   
   // Prepare the product data for submission
   const newProduct = {
-    id: crypto.randomUUID(),
-    sku: productData.sku,
-    name: productData.name,
-    price: parseFloat(productData.price) || 0, // fallback in case input is invalid
-    productType: productData.productType,
-    category: productData.category,
-    description: productData.description,
-    ...(productData.productType === 'DVD' && { size: productData.size }),
-    ...(productData.productType === 'Book' && { weight: productData.weight }),
-    ...(productData.productType === 'Furniture' && { 
+  id: crypto.randomUUID(),
+  sku: productData.sku,
+  name: productData.name,
+  price: parseFloat(productData.price) || 0,
+  productType: productData.productType,
+  category: productData.category,
+  description: productData.description,
+  ...(productData.productType === 'DVD' && productData.size && { size: productData.size }),
+  ...(productData.productType === 'Book' && productData.weight && { weight: productData.weight }),
+  ...(productData.productType === 'Furniture' &&
+    productData.height && productData.width && productData.length && {
       height: productData.height,
       width: productData.width,
-      length: productData.length
-    }),
-    attributes: productData.attributes.map(attr => ({
-      name: DOMPurify.sanitize(attr.name),
-      value: DOMPurify.sanitize(attr.value),
-      type: attr.type
-    }))
-  };
+      length: productData.length,
+  }),
+  attributes: productData.attributes.map(attr => ({
+    name: DOMPurify.sanitize(attr.name),
+    value: DOMPurify.sanitize(attr.value),
+    type: attr.type,
+  }))
+};
+
 
   try {
     const { data } = await addProduct({ 
