@@ -41,12 +41,17 @@ export default function AdminPanel() {
     return acc;
   }, [] as typeof backendProducts);
 
-  const handleAddProduct = async (newProduct: any) => {
+ const handleAddProduct = async (newProduct: any) => {
+  // ✅ Only store locally if product has no backend ID
+  if (!newProduct.id || newProduct.id.startsWith('temp_')) {
     const updatedLocalProducts = [...localAddedProducts, newProduct];
     localStorage.setItem('addedProducts', JSON.stringify(updatedLocalProducts));
-    setJustAddedName(newProduct.name);
-    await refetch();
-  };
+  }
+
+  setJustAddedName(newProduct.name);
+  await refetch();
+};
+
 
   // ✅ Use DOM check for actual product visibility
 // ✅ Use DOM check for actual product visibility
